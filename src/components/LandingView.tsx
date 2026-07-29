@@ -1,4 +1,5 @@
 import React from 'react';
+import { TopBar } from './TopBar';
 import { 
   Sparkles, 
   Upload, 
@@ -37,23 +38,8 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSwitchView, onLoadSa
             TÍCH HỢP <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-purple-300 to-amber-300">NĂNG LỰC SỐ</span> VÀO DẠY HỌC
           </h1>
 
-          <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
-            <button
-              onClick={() => onSwitchView('studio')}
-              className="px-8 py-4 text-base font-bold text-slate-900 bg-amber-400 hover:bg-amber-300 rounded-2xl shadow-xl hover:shadow-amber-400/20 transition-all flex items-center justify-center space-x-3 group"
-            >
-              <Upload className="w-5 h-5 text-indigo-900 group-hover:scale-110 transition-transform" />
-              <span>Trải Nghiệm AI Studio Ngay</span>
-              <ArrowRight className="w-5 h-5 text-indigo-900" />
-            </button>
-            <button
-              onClick={onLoadSample}
-              className="px-7 py-4 text-base font-semibold text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-2xl transition flex items-center justify-center space-x-2"
-            >
-              <FileText className="w-5 h-5 text-indigo-400" />
-              <span>Nạp Giáo Án Mẫu (Toán 10 CV 5512)</span>
-            </button>
-          </div>
+          {/* Clock, Date, and Scrolling Text Bar placed below the main title */}
+          <TopBar />
         </div>
       </section>
 
