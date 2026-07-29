@@ -1,9 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Wand2, 
   Upload, 
   FileCode, 
   FileDown, 
+  FolderOpen,
   Sliders, 
   Sparkles, 
   CheckCircle2, 
@@ -44,6 +45,23 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
   const [activeTabSide, setActiveTabSide] = useState<'both' | 'integrated'>('both');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-load sampleLesson or viewed lesson when changed/selected
+  useEffect(() => {
+    if (sampleLesson) {
+      setOriginalHtml(sampleLesson.originalContent || '');
+      setIntegratedHtml(sampleLesson.integratedContent || '');
+      if (sampleLesson.subject) {
+        const subPart = sampleLesson.subject.split('-')[0]?.trim();
+        if (subPart) setSubject(subPart);
+      }
+      if (sampleLesson.grade) setGrade(sampleLesson.grade);
+      if (sampleLesson.framework) setFramework(sampleLesson.framework);
+      if (sampleLesson.template) setTemplate(sampleLesson.template);
+      setIsLoaded(true);
+      setIsProcessed(!!sampleLesson.integratedContent);
+    }
+  }, [sampleLesson]);
 
   // Load sample plan handler
   const handleLoadSample = () => {
@@ -191,8 +209,44 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
       const fallback = generateFallbackIntegrated(originalHtml, subject, framework);
       setIntegratedHtml(fallback);
       setIsProcessed(true);
-      onSuccessToast('Đã tích hợp thành công bằng bộ phân tích nội bộ!');
+
+      onSaveLesson({
+        title: `KHBD ${subject} (${grade}) - Tích hợp NLS`,
+        subject: `${subject} - ${grade}`,
+        grade,
+        framework,
+        template,
+        status: 'Đã tích hợp NLS',
+        originalContent: originalHtml,
+        integratedContent: fallback,
+      });
+
+      onSuccessToast('Đã tích hợp NLS và lưu thành công vào Kho giáo án!');
     }
+  };
+
+  // Manual save to repository handler
+  const handleSaveToRepository = () => {
+    if (!originalHtml) {
+      onSuccessToast('Vui lòng tải lên giáo án trước khi lưu!');
+      return;
+    }
+    const currentIntegrated = integratedHtml || generateFallbackIntegrated(originalHtml, subject, framework);
+    if (!integratedHtml) {
+      setIntegratedHtml(currentIntegrated);
+      setIsProcessed(true);
+    }
+    onSaveLesson({
+      title: `KHBD ${subject} (${grade}) - Tích hợp NLS`,
+      subject: `${subject} - ${grade}`,
+      grade,
+      framework,
+      template,
+      status: 'Đã tích hợp NLS',
+      originalContent: originalHtml,
+      integratedContent: currentIntegrated,
+    });
+    onSuccessToast('Đã lưu Kế hoạch bài dạy vào Kho Giáo Án!');
   };
 
   // Fallback intelligent HTML NLS injector
@@ -376,6 +430,16 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
             <FileCode className="w-4 h-4 mr-1.5 text-purple-600" />
             Nạp Giáo Án Mẫu
           </button>
+
+          {isLoaded && (
+            <button
+              onClick={handleSaveToRepository}
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center"
+            >
+              <FolderOpen className="w-4 h-4 mr-1.5" />
+              Lưu Về Kho Giáo Án
+            </button>
+          )}
 
           {isProcessed && (
             <button

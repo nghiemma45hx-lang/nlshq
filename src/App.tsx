@@ -47,13 +47,20 @@ function AppContent() {
     return SAMPLE_LESSONS;
   });
 
-  // Sync Supabase on initial load
+  // Sync Supabase on initial load without wiping local cache
   useEffect(() => {
     const loadFromSupabase = async () => {
       try {
         const remoteLessons = await fetchLessonsFromSupabase();
         if (remoteLessons && remoteLessons.length > 0) {
-          setLessons(remoteLessons);
+          setLessons(prev => {
+            const map = new Map<string, LessonPlanItem>();
+            // Add remote lessons first
+            remoteLessons.forEach(l => map.set(l.id, l));
+            // Overlay local lessons so recent local saves/edits are preserved
+            prev.forEach(l => map.set(l.id, l));
+            return Array.from(map.values());
+          });
         } else {
           // Seed sample data to Supabase
           await seedSampleDataToSupabase();
