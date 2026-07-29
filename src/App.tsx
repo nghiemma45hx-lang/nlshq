@@ -120,6 +120,11 @@ function AppContent() {
     showToast('Đã xóa giáo án khỏi Supabase Database.');
   };
 
+  const handleUpdateLessonTitle = (id: string, newTitle: string) => {
+    setLessons(prev => prev.map(l => l.id === id ? { ...l, title: newTitle } : l));
+    showToast('Đã cập nhật tên bài dạy!');
+  };
+
   const handleSelectSavedLesson = (lesson: LessonPlanItem) => {
     setActiveSample(lesson);
     setCurrentView('studio');
@@ -169,6 +174,7 @@ function AppContent() {
             lessons={lessons}
             onSelectLesson={handleSelectSavedLesson}
             onDeleteLesson={handleDeleteLesson}
+            onUpdateLessonTitle={handleUpdateLessonTitle}
             onSwitchView={setCurrentView}
             onSuccessToast={showToast}
           />

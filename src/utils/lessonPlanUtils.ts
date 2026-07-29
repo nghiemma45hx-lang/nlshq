@@ -116,45 +116,112 @@ export function relocateNlsToLeftColumn(htmlStr: string): string {
  * from lesson content HTML or raw text.
  */
 export function extractLessonTitle(contentHtml: string, subject: string, grade: string): string {
-  if (!contentHtml) return `KHBD ${subject} (${grade}) - Tích hợp NLS`;
-
-  // Strip HTML tags to get plain lines
-  const cleanText = contentHtml.replace(/<[^>]+>/g, '\n').replace(/&nbsp;/g, ' ');
-  const lines = cleanText.split('\n').map(l => l.trim()).filter(Boolean);
-
-  // Search first 35 lines for explicit lesson title patterns
-  for (const line of lines.slice(0, 35)) {
-    // Check for "Tên bài dạy: ...", "TÊN BÀI DẠY: ...", "BÀI DẠY: ..."
-    const matchExplicit = line.match(/(?:TÊN BÀI DẠY|Tên bài dạy|BÀI DẠY|Bài dạy|TÊN BÀI|Tên bài)\s*:\s*(.+)/i);
-    if (matchExplicit && matchExplicit[1]?.trim().length > 3) {
-      return matchExplicit[1].trim();
-    }
-
-    // Check for "Bài 9: HÔM NAY VÀ NGÀY MAI (13 tiết)", "Bài 1. ...", "Chủ đề 2: ...", "Tiết 12: ..."
-    const matchBai = line.match(/^(Bài\s+\d+[^:\n]*:[^\n]+)/i) || 
-                     line.match(/^(Bài\s+\d+\.[^\n]+)/i) ||
-                     line.match(/^(Chủ đề\s+\d+[^:\n]*:[^\n]+)/i) ||
-                     line.match(/^(Tiết\s+\d+[^:\n]*:[^\n]+)/i);
-    if (matchBai && matchBai[1]?.trim().length > 5) {
-      return matchBai[1].trim();
-    }
+  if (!contentHtml) {
+    const subClean = subject || 'Ngữ văn';
+    const grdClean = grade || 'Khối THCS';
+    return `Bài dạy ${subClean} (${grdClean}) - Tích hợp NLS`;
   }
 
-  // Check for lines starting with "Bài ", "BÀI ", "Chủ đề "
+  // Strip HTML tags to get plain text lines
+  const cleanText = contentHtml
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<\/div>/gi, '\n')
+    .replace(/<\/tr>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ');
+
+  const lines = cleanText
+    .split('\n')
+    .map(l => l.trim())
+    .filter(l => l.length > 2);
+
+  let detectedBai = '';
+  let detectedDocVanBan = '';
+  let detectedExplicit = '';
+
+  // Non-title boilerplate keywords to filter out
+  const isBoilerplate = (str: string) => {
+    return /^(TRƯỜNG|PHÒNG GIÁO DỤC|TỔ CHUYÊN MÔN|CÔNG VĂN|THÔNG TƯ|QUYẾT ĐỊNH|BỘ GIÁO DỤC|CỘNG HÒA|ĐỘC LẬP|GIÁO VIÊN|HỌ VÀ TÊN|NGÀY SOẠN|LỚP|SĨ SỐ|I\.|II\.|III\.|IV\.|1\. Kiến thức|1\. Năng lực|MỤC TIÊU|THIẾT BỊ|TIẾN TRÌNH)/i.test(str);
+  };
+
+  // Search first 40 lines for explicit markers and key patterns
   for (const line of lines.slice(0, 45)) {
-    if (/^(bài|chủ đề|tiết)\s+\d+/i.test(line) && line.length > 5 && line.length < 130) {
+    if (isBoilerplate(line)) continue;
+
+    // 1. Check for "TÊN BÀI DẠY: ...", "KẾ HOẠCH BÀI DẠY: ...", "BÀI DẠY: ...", "TÊN BÀI: ..."
+    const matchExplicit = line.match(/(?:TÊN BÀI DẠY|Tên bài dạy|KẾ HOẠCH BÀI DẠY|BÀI DẠY|Bài dạy|TÊN BÀI|Tên bài|TÊN BÀI HỌC)\s*[:\-]\s*(.+)/i);
+    if (matchExplicit && matchExplicit[1]?.trim().length > 3) {
+      const candidate = matchExplicit[1].trim();
+      if (!isBoilerplate(candidate) && candidate.toLowerCase() !== 'tích hợp nls') {
+        detectedExplicit = candidate;
+        break;
+      }
+    }
+
+    // 2. Check for "Bài 9: HÔM NAY VÀ NGÀY MAI (13 tiết)", "Bài 1. ...", "Chủ đề 2: ...", "Tiết 12: ..."
+    if (!detectedBai) {
+      const matchBai = line.match(/^(Bài\s+\d+[^:\n]*:[^\n]+)/i) || 
+                       line.match(/^(Bài\s+\d+\.[^\n]+)/i) ||
+                       line.match(/^(Chủ đề\s+\d+[^:\n]*:[^\n]+)/i) ||
+                       line.match(/^(Tiết\s+\d+[^:\n]*:[^\n]+)/i) ||
+                       line.match(/^(Văn bản\s+\d+:[^\n]+)/i);
+      if (matchBai && matchBai[1]?.trim().length > 4) {
+        detectedBai = matchBai[1].trim();
+      }
+    }
+
+    // 3. Check for specific text reading title like "B. Đọc văn bản: Nhà thơ của quê hương..." or "Đọc văn bản: ..." or "Văn bản 1: ..."
+    if (!detectedDocVanBan) {
+      const matchDoc = line.match(/(?:Đọc văn bản|Văn bản|Đọc - tìm hiểu chung|Văn bản 1|Văn bản 2|Văn bản 3)\s*[:\-]\s*([^\n]+)/i);
+      if (matchDoc && matchDoc[1]?.trim().length > 3) {
+        const val = matchDoc[1].trim();
+        if (!/^(i|ii|iii|1|2|3|mục tiêu|thiết bị)/i.test(val)) {
+          detectedDocVanBan = `Đọc văn bản: ${val}`;
+        }
+      }
+    }
+  }
+
+  // Combine detected components if available
+  if (detectedExplicit) {
+    return detectedExplicit;
+  }
+
+  if (detectedBai && detectedDocVanBan) {
+    // Avoid duplication if detectedDocVanBan is already inside detectedBai
+    if (detectedBai.toLowerCase().includes(detectedDocVanBan.toLowerCase().replace('đọc văn bản:', '').trim())) {
+      return detectedBai;
+    }
+    return `${detectedBai} - ${detectedDocVanBan}`;
+  }
+
+  if (detectedBai) {
+    return detectedBai;
+  }
+
+  if (detectedDocVanBan) {
+    return detectedDocVanBan;
+  }
+
+  // Check uppercase headings or lines starting with "BÀI ", "CHỦ ĐỀ ", "NGỮ VĂN "
+  for (const line of lines.slice(0, 30)) {
+    if (isBoilerplate(line)) continue;
+    if (/^(bài|chủ đề|tiết|văn bản)\s+/i.test(line) && line.length > 5 && line.length < 140) {
       return line;
     }
   }
 
-  // Check for lines like "BÀI 9: ...", "CHỦ ĐỀ 3: ..."
   for (const line of lines.slice(0, 20)) {
-    if (/^BÀI\s+/i.test(line) || /^CHỦ ĐỀ\s+/i.test(line)) {
+    if (isBoilerplate(line)) continue;
+    if (line === line.toUpperCase() && line.length >= 8 && line.length <= 100 && !line.includes('CỘNG HÒA')) {
       return line;
     }
   }
 
-  return `KHBD ${subject} (${grade}) - Tích hợp NLS`;
+  const subClean = subject || 'Ngữ văn';
+  const grdClean = grade || 'Khối THCS';
+  return `Bài dạy ${subClean} (${grdClean}) - Tích hợp NLS`;
 }
 
 /**

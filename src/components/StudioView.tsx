@@ -190,7 +190,7 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
 
         // Auto Save to Repository
         onSaveLesson({
-          title: extractLessonTitle(originalHtml, subject, grade),
+          title: extractLessonTitle(originalHtml + '\n' + finalIntegrated, subject, grade),
           subject: `${subject} - ${grade}`,
           grade,
           framework,
@@ -212,7 +212,7 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
       setIsProcessed(true);
 
       onSaveLesson({
-        title: extractLessonTitle(originalHtml, subject, grade),
+        title: extractLessonTitle(originalHtml + '\n' + fallback, subject, grade),
         subject: `${subject} - ${grade}`,
         grade,
         framework,
@@ -238,7 +238,7 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
       setIsProcessed(true);
     }
     onSaveLesson({
-      title: extractLessonTitle(originalHtml, subject, grade),
+      title: extractLessonTitle(originalHtml + '\n' + currentIntegrated, subject, grade),
       subject: `${subject} - ${grade}`,
       grade,
       framework,

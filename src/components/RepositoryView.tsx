@@ -13,7 +13,9 @@ import {
   X,
   ExternalLink,
   Clock,
-  Columns
+  Columns,
+  Pencil,
+  Save
 } from 'lucide-react';
 import { LessonPlanItem } from '../types';
 import { formatDateTime } from '../utils/lessonPlanUtils';
@@ -22,6 +24,7 @@ interface RepositoryViewProps {
   lessons: LessonPlanItem[];
   onSelectLesson: (lesson: LessonPlanItem) => void;
   onDeleteLesson: (id: string) => void;
+  onUpdateLessonTitle?: (id: string, newTitle: string) => void;
   onSwitchView: (view: string) => void;
   onSuccessToast: (msg: string) => void;
 }
@@ -30,6 +33,7 @@ export const RepositoryView: React.FC<RepositoryViewProps> = ({
   lessons,
   onSelectLesson,
   onDeleteLesson,
+  onUpdateLessonTitle,
   onSwitchView,
   onSuccessToast,
 }) => {
@@ -37,6 +41,28 @@ export const RepositoryView: React.FC<RepositoryViewProps> = ({
   const [subjectFilter, setSubjectFilter] = useState('All');
   const [previewLesson, setPreviewLesson] = useState<LessonPlanItem | null>(null);
   const [viewTab, setViewTab] = useState<'integrated' | 'original' | 'split'>('integrated');
+
+  // Inline title edit state
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitleText, setEditTitleText] = useState('');
+
+  const startEditTitle = (l: LessonPlanItem, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingId(l.id);
+    setEditTitleText(l.title);
+  };
+
+  const saveEditedTitle = (id: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    if (!editTitleText.trim()) return;
+    if (onUpdateLessonTitle) {
+      onUpdateLessonTitle(id, editTitleText.trim());
+    }
+    if (previewLesson && previewLesson.id === id) {
+      setPreviewLesson(prev => prev ? { ...prev, title: editTitleText.trim() } : null);
+    }
+    setEditingId(null);
+  };
 
   const filtered = lessons.filter(l => {
     const matchesSearch = l.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -155,8 +181,39 @@ export const RepositoryView: React.FC<RepositoryViewProps> = ({
                     onClick={() => setPreviewLesson(item)}
                     className="hover:bg-slate-50/80 transition border-b border-slate-100 cursor-pointer"
                   >
-                    <td className="p-4 font-bold text-indigo-950 max-w-[320px]" title={item.title}>
-                      <div className="line-clamp-2">{item.title}</div>
+                    <td className="p-4 font-bold text-indigo-950 max-w-[360px]" title={item.title}>
+                      {editingId === item.id ? (
+                        <div className="flex items-center space-x-1.5" onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="text"
+                            value={editTitleText}
+                            onChange={(e) => setEditTitleText(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && saveEditedTitle(item.id)}
+                            className="w-full text-xs p-1.5 border border-indigo-500 rounded bg-white text-slate-900 font-bold focus:outline-none focus:ring-1 focus:ring-indigo-600"
+                            autoFocus
+                          />
+                          <button
+                            onClick={(e) => saveEditedTitle(item.id, e)}
+                            className="p-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-bold transition shrink-0"
+                            title="Lưu tên bài"
+                          >
+                            <Save className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="group flex items-start justify-between gap-1">
+                          <div className="line-clamp-2 text-indigo-950 group-hover:text-indigo-600 transition">
+                            {item.title}
+                          </div>
+                          <button
+                            onClick={(e) => startEditTitle(item, e)}
+                            className="opacity-60 group-hover:opacity-100 p-1 hover:bg-indigo-50 text-indigo-600 rounded transition shrink-0 ml-1"
+                            title="Đổi tên bài dạy / tiết dạy"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      )}
                     </td>
                     <td className="p-4 text-slate-600 font-medium whitespace-nowrap">{item.subject}</td>
                     <td className="p-4 whitespace-nowrap">
@@ -228,9 +285,18 @@ export const RepositoryView: React.FC<RepositoryViewProps> = ({
                     Tạo lúc: {formatDateTime(previewLesson.dateString, previewLesson.createdAt)}
                   </span>
                 </div>
-                <h2 className="text-base sm:text-lg font-bold text-white leading-snug">
-                  {previewLesson.title}
-                </h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-base sm:text-lg font-bold text-white leading-snug">
+                    {previewLesson.title}
+                  </h2>
+                  <button
+                    onClick={(e) => startEditTitle(previewLesson, e)}
+                    className="p-1 bg-white/10 hover:bg-white/20 text-indigo-200 rounded transition shrink-0"
+                    title="Đổi tên giáo án"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
 
               <button
