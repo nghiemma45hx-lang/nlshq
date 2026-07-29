@@ -44,15 +44,10 @@ export const TopBar: React.FC = () => {
           <Sparkles className="w-2.5 h-2.5 text-amber-400 animate-pulse" />
           <span>THÔNG BÁO</span>
         </span>
-        <div className="flex-1 overflow-hidden">
-          <marquee 
-            behavior="scroll" 
-            direction="left" 
-            scrollamount={5} 
-            className="text-xs font-semibold text-indigo-100 tracking-wide"
-          >
+        <div className="flex-1 overflow-hidden relative">
+          <div className="whitespace-nowrap text-xs font-semibold text-indigo-100 tracking-wide inline-block animate-[marquee_20s_linear_infinite]">
             Chào mừng quý thầy cô giáo đến với ứng dụng tích hợp năng lực số vào bài dạy.
-          </marquee>
+          </div>
         </div>
       </div>
     </div>
