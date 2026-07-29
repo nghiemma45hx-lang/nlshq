@@ -18,10 +18,21 @@ import {
   Layers,
   Zap,
   Download,
-  Copy
+  Copy,
+  KeyRound,
+  Lock,
+  Unlock,
+  Eye,
+  EyeOff,
+  UserPlus,
+  X,
+  Phone,
+  Mail,
+  UserCheck,
+  UserX
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { LessonPlanItem, AdminStats } from '../types';
+import { LessonPlanItem, AdminStats, UserProfile } from '../types';
 
 interface AdminDashboardProps {
   lessons: LessonPlanItem[];
@@ -34,11 +45,36 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onDeleteLesson,
   onSuccessToast,
 }) => {
-  const { currentUser, isAdmin } = useAuth();
-  const [activeTab, setActiveTab] = useState<'overview' | 'lessons' | 'competencies' | 'logs' | 'sql'>('overview');
+  const { 
+    currentUser, 
+    isAdmin, 
+    registeredUsers, 
+    adminResetUserPassword, 
+    adminToggleUserStatus, 
+    adminDeleteUser, 
+    adminAddUser 
+  } = useAuth();
+
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'lessons' | 'competencies' | 'logs' | 'sql'>('overview');
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(false);
   const [searchFilter, setSearchFilter] = useState('');
+  const [userSearchFilter, setUserSearchFilter] = useState('');
+
+  // Admin Reset Password Modal State
+  const [resetModalUser, setResetModalUser] = useState<UserProfile | null>(null);
+  const [adminNewPass, setAdminNewPass] = useState('');
+  const [showAdminNewPassEye, setShowAdminNewPassEye] = useState(false);
+
+  // Admin Add User Modal State
+  const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
+  const [addName, setAddName] = useState('');
+  const [addEmail, setAddEmail] = useState('');
+  const [addPhone, setAddPhone] = useState('');
+  const [addPass, setAddPass] = useState('password123');
+  const [addRole, setAddRole] = useState<'user' | 'admin'>('user');
+  const [showAddPassEye, setShowAddPassEye] = useState(false);
+  const [addError, setAddError] = useState('');
 
   const sqlScript = `-- ====================================================================
 -- EDU NLS AI 2026 - SUPABASE DATABASE SCHEMA INITIALIZATION SCRIPT
@@ -126,7 +162,7 @@ ON CONFLICT (id) DO NOTHING;`;
       setStats({
         totalLessons: lessons.length + 140,
         totalAiAnalyses: 312,
-        activeUsers: 84,
+        activeUsers: registeredUsers.length,
         avgResponseTimeMs: 1350,
         topCompetency: 'Miền 1: Khai thác dữ liệu [NLS 1.1-a]',
         subjectStats: [
@@ -150,7 +186,7 @@ ON CONFLICT (id) DO NOTHING;`;
 
   useEffect(() => {
     fetchStats();
-  }, [lessons.length]);
+  }, [lessons.length, registeredUsers.length]);
 
   if (!isAdmin) {
     return (
@@ -160,7 +196,7 @@ ON CONFLICT (id) DO NOTHING;`;
         </div>
         <h2 className="text-2xl font-bold text-slate-900 mb-2">Quyền Truy Cập Bị Hạn Chế</h2>
         <p className="text-slate-600 text-sm max-w-md mx-auto mb-6">
-          Trang quản trị hệ thống EduNLS AI dành riêng cho Tài khoản Quản trị viên (Admin). Vui lòng đăng nhập với tài khoản <code className="bg-slate-100 text-rose-700 font-bold px-1.5 py-0.5 rounded">admin / admin</code>.
+          Trang quản trị hệ thống EduNLS AI dành riêng cho Tài khoản Quản trị viên (Admin).
         </p>
       </div>
     );
@@ -171,6 +207,39 @@ ON CONFLICT (id) DO NOTHING;`;
     l.subject.toLowerCase().includes(searchFilter.toLowerCase())
   );
 
+  const filteredUsers = registeredUsers.filter(u =>
+    u.displayName.toLowerCase().includes(userSearchFilter.toLowerCase()) ||
+    u.email.toLowerCase().includes(userSearchFilter.toLowerCase()) ||
+    (u.phone && u.phone.includes(userSearchFilter))
+  );
+
+  const handleAdminResetPasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetModalUser || !adminNewPass || adminNewPass.length < 6) return;
+    
+    adminResetUserPassword(resetModalUser.uid, adminNewPass);
+    onSuccessToast(`Đã cấp lại mật khẩu thành công cho ${resetModalUser.displayName}!`);
+    setResetModalUser(null);
+    setAdminNewPass('');
+  };
+
+  const handleAdminAddUserSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setAddError('');
+
+    const res = adminAddUser(addName, addEmail, addPhone, addPass, addRole);
+    if (res.success) {
+      onSuccessToast(`Đã thêm tài khoản ${addName} thành công!`);
+      setIsAddUserModalOpen(false);
+      setAddName('');
+      setAddEmail('');
+      setAddPhone('');
+      setAddPass('password123');
+    } else {
+      setAddError(res.message || 'Thêm tài khoản không thành công.');
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Admin Top Header Banner */}
@@ -178,16 +247,16 @@ ON CONFLICT (id) DO NOTHING;`;
         <div>
           <div className="flex items-center space-x-2 mb-1">
             <span className="bg-rose-500/30 text-rose-300 border border-rose-500/40 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">
-              Quản Trị Viên Mặc Định (user/pass: admin/admin)
+              Quản Trị Viên Hệ Thống
             </span>
-            <span className="text-xs text-slate-400">Hệ thống EduNLS AI 2026</span>
+            <span className="text-xs text-slate-400">EduNLS AI 2026</span>
           </div>
           <h1 className="text-2xl font-extrabold text-white flex items-center">
             <ShieldCheck className="w-6 h-6 text-rose-500 mr-2.5" />
             Bảng Điều Khiển Quản Trị Hệ Thống
           </h1>
           <p className="text-xs text-slate-300 mt-1">
-            Xin chào <strong className="text-amber-300">{currentUser?.displayName}</strong>! Bạn đang quản lý toàn bộ Kho Giáo án, Thống kê AI Gemini và Khung Chuẩn NLS.
+            Xin chào <strong className="text-amber-300">{currentUser?.displayName}</strong>! Quản lý Giáo viên Đăng ký, Kho Bài dạy, và Cấu hình Hệ thống.
           </p>
         </div>
 
@@ -204,65 +273,77 @@ ON CONFLICT (id) DO NOTHING;`;
       </div>
 
       {/* Admin Tab Switcher */}
-      <div className="flex border-b border-slate-200 bg-white p-1.5 rounded-2xl shadow-2xs">
+      <div className="flex flex-wrap border-b border-slate-200 bg-white p-1.5 rounded-2xl shadow-2xs gap-1">
         <button
           onClick={() => setActiveTab('overview')}
-          className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition flex items-center justify-center space-x-2 ${
+          className={`flex-1 min-w-[140px] py-2.5 text-xs font-bold rounded-xl transition flex items-center justify-center space-x-2 ${
             activeTab === 'overview'
               ? 'bg-rose-600 text-white shadow-2xs'
               : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
           <BarChart3 className="w-4 h-4" />
-          <span>Tổng Quan & Thống Kê</span>
+          <span>Tổng Quan</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('users')}
+          className={`flex-1 min-w-[160px] py-2.5 text-xs font-bold rounded-xl transition flex items-center justify-center space-x-2 ${
+            activeTab === 'users'
+              ? 'bg-rose-600 text-white shadow-2xs'
+              : 'text-slate-600 hover:bg-slate-100'
+          }`}
+        >
+          <Users className="w-4 h-4" />
+          <span>Tài Khoản Đăng Ký ({registeredUsers.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('lessons')}
-          className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition flex items-center justify-center space-x-2 ${
+          className={`flex-1 min-w-[160px] py-2.5 text-xs font-bold rounded-xl transition flex items-center justify-center space-x-2 ${
             activeTab === 'lessons'
               ? 'bg-rose-600 text-white shadow-2xs'
               : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
           <FileText className="w-4 h-4" />
-          <span>Quản Lý Kho Giáo Án ({lessons.length})</span>
+          <span>Kho Giáo Án ({lessons.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('competencies')}
-          className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition flex items-center justify-center space-x-2 ${
+          className={`flex-1 min-w-[150px] py-2.5 text-xs font-bold rounded-xl transition flex items-center justify-center space-x-2 ${
             activeTab === 'competencies'
               ? 'bg-rose-600 text-white shadow-2xs'
               : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
           <Sliders className="w-4 h-4" />
-          <span>Cấu Hình Khung NLS & AI</span>
+          <span>Cấu Hình NLS</span>
         </button>
 
         <button
           onClick={() => setActiveTab('logs')}
-          className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition flex items-center justify-center space-x-2 ${
+          className={`flex-1 min-w-[130px] py-2.5 text-xs font-bold rounded-xl transition flex items-center justify-center space-x-2 ${
             activeTab === 'logs'
               ? 'bg-rose-600 text-white shadow-2xs'
               : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
           <Activity className="w-4 h-4" />
-          <span>Nhật Ký Gọi AI</span>
+          <span>Nhật Ký AI</span>
         </button>
 
         <button
           onClick={() => setActiveTab('sql')}
-          className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition flex items-center justify-center space-x-2 ${
+          className={`flex-1 min-w-[140px] py-2.5 text-xs font-bold rounded-xl transition flex items-center justify-center space-x-2 ${
             activeTab === 'sql'
               ? 'bg-rose-600 text-white shadow-2xs'
               : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
           <Database className="w-4 h-4" />
-          <span>Mã SQL Supabase</span>
+          <span>Mã SQL</span>
         </button>
       </div>
 
@@ -282,11 +363,11 @@ ON CONFLICT (id) DO NOTHING;`;
 
             <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
               <div className="flex items-center justify-between text-slate-500 mb-2">
-                <span className="text-xs font-bold uppercase">Yêu Cầu Gọi AI Gemini</span>
-                <Bot className="w-5 h-5 text-purple-600" />
+                <span className="text-xs font-bold uppercase">Tài Khoản Giáo Viên</span>
+                <Users className="w-5 h-5 text-purple-600" />
               </div>
-              <div className="text-2xl font-black text-slate-900">{stats?.totalAiAnalyses || 320}</div>
-              <p className="text-[11px] text-indigo-600 font-bold mt-1">Lưu log vào ai_logs Supabase</p>
+              <div className="text-2xl font-black text-slate-900">{registeredUsers.length}</div>
+              <p className="text-[11px] text-purple-600 font-bold mt-1">Đã kích hoạt & sử dụng</p>
             </div>
 
             <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
@@ -309,7 +390,7 @@ ON CONFLICT (id) DO NOTHING;`;
                 <Zap className="w-5 h-5 text-amber-500" />
               </div>
               <div className="text-2xl font-black text-slate-900">{stats?.avgResponseTimeMs || 1380} ms</div>
-              <p className="text-[11px] text-slate-500 font-medium mt-1">Tối ưu Vercel & Cloud Run</p>
+              <p className="text-[11px] text-slate-500 font-medium mt-1">Tối ưu Gemini 3.6 Flash</p>
             </div>
           </div>
 
@@ -362,7 +443,168 @@ ON CONFLICT (id) DO NOTHING;`;
         </div>
       )}
 
-      {/* TAB 2: MANAGE LESSONS */}
+      {/* TAB 2: REGISTERED USER MANAGEMENT ("QUẢN TRỊ TÀI KHOẢN ĐĂNG KÝ") */}
+      {activeTab === 'users' && (
+        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-2xs space-y-4">
+          <div className="p-4 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            <div className="relative max-w-md w-full">
+              <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+              <input
+                type="text"
+                value={userSearchFilter}
+                onChange={(e) => setUserSearchFilter(e.target.value)}
+                placeholder="Tìm kiếm theo Tên, Email hoặc Số điện thoại..."
+                className="w-full pl-9 pr-4 py-2 text-xs border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-rose-500 bg-white"
+              />
+            </div>
+            
+            <button
+              onClick={() => setIsAddUserModalOpen(true)}
+              className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl transition flex items-center space-x-1.5 shrink-0 shadow-sm"
+            >
+              <UserPlus className="w-4 h-4" />
+              <span>Tạo Tài Khoản Giáo Viên</span>
+            </button>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs text-slate-600">
+              <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 uppercase text-[10px]">
+                <tr>
+                  <th className="p-4">Họ & Tên Giáo Viên</th>
+                  <th className="p-4">Email</th>
+                  <th className="p-4">Số Điện Thoại</th>
+                  <th className="p-4">Mật Khẩu Phân Cấp</th>
+                  <th className="p-4">Trạng Thái</th>
+                  <th className="p-4">Ngày Đăng Ký</th>
+                  <th className="p-4 text-right">Thao Tác Quản Trị</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200">
+                {filteredUsers.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="p-8 text-center text-slate-400 font-medium">
+                      Không tìm thấy tài khoản đăng ký nào khớp với từ khóa search.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredUsers.map((u) => (
+                    <tr key={u.uid} className="hover:bg-slate-50 transition">
+                      <td className="p-4 font-bold text-slate-900 flex items-center space-x-2">
+                        <div className="w-7 h-7 bg-indigo-100 text-indigo-700 font-bold rounded-full flex items-center justify-center text-xs shrink-0">
+                          {u.displayName.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <span>{u.displayName}</span>
+                          {u.role === 'admin' && (
+                            <span className="ml-2 bg-rose-100 text-rose-700 text-[10px] font-extrabold px-1.5 py-0.5 rounded">ADMIN</span>
+                          )}
+                        </div>
+                      </td>
+
+                      <td className="p-4 font-mono text-[11px] text-slate-700">{u.email}</td>
+
+                      <td className="p-4 font-mono text-[11px] text-slate-700">
+                        {u.phone ? (
+                          <span className="flex items-center text-slate-800 font-semibold">
+                            <Phone className="w-3 h-3 text-slate-400 mr-1" />
+                            {u.phone}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 italic">Chưa cập nhật</span>
+                        )}
+                      </td>
+
+                      <td className="p-4 font-mono text-[11px]">
+                        <code className="bg-slate-100 text-slate-800 px-2 py-0.5 rounded border border-slate-200 font-bold">
+                          {u.password || '••••••••'}
+                        </code>
+                      </td>
+
+                      <td className="p-4">
+                        {u.status === 'locked' ? (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-700">
+                            <UserX className="w-3 h-3 mr-1" />
+                            Tạm khóa
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
+                            <UserCheck className="w-3 h-3 mr-1" />
+                            Hoạt động
+                          </span>
+                        )}
+                      </td>
+
+                      <td className="p-4 font-mono text-[11px] text-slate-500">
+                        {u.createdAt || 'Mới khởi tạo'}
+                      </td>
+
+                      <td className="p-4 text-right">
+                        <div className="flex items-center justify-end space-x-1.5">
+                          {/* Cấp lại mật khẩu */}
+                          <button
+                            onClick={() => {
+                              setResetModalUser(u);
+                              setAdminNewPass('');
+                            }}
+                            className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold text-xs rounded-lg transition inline-flex items-center border border-amber-200"
+                            title="Cấp lại mật khẩu mới cho tài khoản này"
+                          >
+                            <KeyRound className="w-3.5 h-3.5 mr-1 text-amber-600" />
+                            Cấp lại MK
+                          </button>
+
+                          {/* Khóa / Mở khóa */}
+                          <button
+                            onClick={() => {
+                              adminToggleUserStatus(u.uid);
+                              onSuccessToast(`Đã ${u.status === 'locked' ? 'mở khóa' : 'tạm khóa'} tài khoản ${u.displayName}`);
+                            }}
+                            className={`px-2.5 py-1 font-bold text-xs rounded-lg transition inline-flex items-center border ${
+                              u.status === 'locked'
+                                ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-200'
+                                : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300'
+                            }`}
+                            title={u.status === 'locked' ? 'Mở khóa tài khoản' : 'Khóa tài khoản'}
+                          >
+                            {u.status === 'locked' ? (
+                              <>
+                                <Unlock className="w-3.5 h-3.5 mr-1 text-emerald-600" />
+                                Mở khóa
+                              </>
+                            ) : (
+                              <>
+                                <Lock className="w-3.5 h-3.5 mr-1 text-slate-500" />
+                                Khóa
+                              </>
+                            )}
+                          </button>
+
+                          {/* Xóa */}
+                          <button
+                            onClick={() => {
+                              if (window.confirm(`Bạn có chắc muốn xóa vĩnh viễn tài khoản ${u.displayName}?`)) {
+                                adminDeleteUser(u.uid);
+                                onSuccessToast(`Đã xóa tài khoản ${u.displayName}`);
+                              }
+                            }}
+                            className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
+                            title="Xóa tài khoản"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 3: MANAGE LESSONS */}
       {activeTab === 'lessons' && (
         <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-2xs space-y-4">
           <div className="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
@@ -417,7 +659,7 @@ ON CONFLICT (id) DO NOTHING;`;
         </div>
       )}
 
-      {/* TAB 3: FRAMEWORK & PROMPTS CONFIG */}
+      {/* TAB 4: FRAMEWORK & PROMPTS CONFIG */}
       {activeTab === 'competencies' && (
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs space-y-4">
           <div className="flex justify-between items-center border-b border-slate-200 pb-3">
@@ -450,7 +692,7 @@ ON CONFLICT (id) DO NOTHING;`;
         </div>
       )}
 
-      {/* TAB 4: GEMINI AI LOGS */}
+      {/* TAB 5: GEMINI AI LOGS */}
       {activeTab === 'logs' && (
         <div className="bg-slate-900 text-slate-200 p-6 rounded-2xl border border-slate-800 space-y-4 font-mono text-xs">
           <div className="flex justify-between items-center border-b border-slate-800 pb-3 text-slate-400">
@@ -472,7 +714,7 @@ ON CONFLICT (id) DO NOTHING;`;
         </div>
       )}
 
-      {/* TAB 5: SUPABASE SQL QUERY */}
+      {/* TAB 6: SUPABASE SQL QUERY */}
       {activeTab === 'sql' && (
         <div className="bg-slate-900 text-slate-100 p-6 rounded-2xl border border-slate-800 space-y-4 font-mono text-xs">
           <div className="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -494,6 +736,187 @@ ON CONFLICT (id) DO NOTHING;`;
 
           <div className="p-4 bg-slate-950 rounded-xl border border-slate-800 text-emerald-300 font-mono text-xs leading-relaxed overflow-x-auto max-h-[500px]">
             <pre>{sqlScript}</pre>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 1: ADMIN RESET USER PASSWORD */}
+      {resetModalUser && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl relative border border-slate-200 animate-in fade-in zoom-in duration-150">
+            <button
+              onClick={() => setResetModalUser(null)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 p-2 rounded-full transition"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="w-10 h-10 bg-amber-100 text-amber-700 rounded-2xl flex items-center justify-center">
+                <KeyRound className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-bold text-slate-900 text-base">Cấp Lại Mật Khẩu Cho Giáo Viên</h3>
+                <p className="text-xs text-slate-500">{resetModalUser.displayName} ({resetModalUser.email})</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleAdminResetPasswordSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Mật khẩu mới cấp lại</label>
+                <div className="relative">
+                  <input
+                    type={showAdminNewPassEye ? 'text' : 'password'}
+                    required
+                    minLength={6}
+                    value={adminNewPass}
+                    onChange={(e) => setAdminNewPass(e.target.value)}
+                    placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)"
+                    className="w-full pl-3.5 pr-10 py-2.5 border border-slate-300 rounded-xl text-sm outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowAdminNewPassEye(!showAdminNewPassEye)}
+                    className="absolute right-3 top-3 text-slate-400 hover:text-amber-600 transition"
+                  >
+                    {showAdminNewPassEye ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setResetModalUser(null)}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-xs transition shadow-sm"
+                >
+                  Xác Nhận Cấp Lại MK
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 2: ADMIN ADD NEW TEACHER ACCOUNT */}
+      {isAddUserModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl relative border border-slate-200 animate-in fade-in zoom-in duration-150">
+            <button
+              onClick={() => setIsAddUserModalOpen(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 p-2 rounded-full transition"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="w-10 h-10 bg-rose-100 text-rose-700 rounded-2xl flex items-center justify-center">
+                <UserPlus className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-bold text-slate-900 text-base">Tạo Tài Khoản Giáo Viên Mới</h3>
+                <p className="text-xs text-slate-500">Thêm mới tài khoản trực tiếp bởi Quản trị viên</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleAdminAddUserSubmit} className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Họ và tên Giáo viên</label>
+                <input
+                  type="text"
+                  required
+                  value={addName}
+                  onChange={(e) => setAddName(e.target.value)}
+                  placeholder="Ví dụ: Trần Văn Nam"
+                  className="w-full px-3.5 py-2 border border-slate-300 rounded-xl text-sm outline-none focus:ring-2 focus:ring-rose-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Email trường / cá nhân</label>
+                <input
+                  type="email"
+                  required
+                  value={addEmail}
+                  onChange={(e) => setAddEmail(e.target.value)}
+                  placeholder="tranvannam@school.edu.vn"
+                  className="w-full px-3.5 py-2 border border-slate-300 rounded-xl text-sm outline-none focus:ring-2 focus:ring-rose-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Số điện thoại</label>
+                <input
+                  type="tel"
+                  required
+                  value={addPhone}
+                  onChange={(e) => setAddPhone(e.target.value)}
+                  placeholder="0988123456"
+                  className="w-full px-3.5 py-2 border border-slate-300 rounded-xl text-sm outline-none focus:ring-2 focus:ring-rose-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Mật khẩu ban đầu</label>
+                <div className="relative">
+                  <input
+                    type={showAddPassEye ? 'text' : 'password'}
+                    required
+                    minLength={6}
+                    value={addPass}
+                    onChange={(e) => setAddPass(e.target.value)}
+                    className="w-full pl-3.5 pr-10 py-2 border border-slate-300 rounded-xl text-sm outline-none focus:ring-2 focus:ring-rose-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowAddPassEye(!showAddPassEye)}
+                    className="absolute right-3 top-2.5 text-slate-400 hover:text-rose-600 transition"
+                  >
+                    {showAddPassEye ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Vai trò</label>
+                <select
+                  value={addRole}
+                  onChange={(e) => setAddRole(e.target.value as 'user' | 'admin')}
+                  className="w-full px-3.5 py-2 border border-slate-300 rounded-xl text-sm outline-none focus:ring-2 focus:ring-rose-500 bg-white"
+                >
+                  <option value="user">Giáo viên (User)</option>
+                  <option value="admin">Quản trị viên (Admin)</option>
+                </select>
+              </div>
+
+              {addError && (
+                <div className="p-2.5 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl">
+                  {addError}
+                </div>
+              )}
+
+              <div className="flex justify-end space-x-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAddUserModalOpen(false)}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs transition shadow-sm"
+                >
+                  Tạo Tài Khoản
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

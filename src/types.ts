@@ -39,6 +39,10 @@ export interface UserProfile {
   displayName: string;
   role: 'user' | 'admin';
   isAdmin?: boolean;
+  phone?: string;
+  password?: string;
+  status?: 'active' | 'locked';
+  createdAt?: string;
 }
 
 export interface AdminStats {

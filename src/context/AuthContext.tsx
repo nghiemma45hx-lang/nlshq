@@ -1,13 +1,56 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { UserProfile } from '../types';
 
+const INITIAL_MOCK_USERS: UserProfile[] = [
+  {
+    uid: 'user-101',
+    displayName: 'Nguyễn Văn An',
+    email: 'nguyenvanan@truong.edu.vn',
+    phone: '0912345678',
+    password: 'password123',
+    role: 'user',
+    isAdmin: false,
+    status: 'active',
+    createdAt: '2026-07-20 09:30'
+  },
+  {
+    uid: 'user-102',
+    displayName: 'Trần Thị Bình',
+    email: 'tranthibinh@truong.edu.vn',
+    phone: '0987654321',
+    password: 'password123',
+    role: 'user',
+    isAdmin: false,
+    status: 'active',
+    createdAt: '2026-07-22 14:15'
+  },
+  {
+    uid: 'user-103',
+    displayName: 'Lê Hoàng Cường',
+    email: 'lehoangcuong@truong.edu.vn',
+    phone: '0905123456',
+    password: 'password123',
+    role: 'user',
+    isAdmin: false,
+    status: 'active',
+    createdAt: '2026-07-25 11:00'
+  }
+];
+
 interface AuthContextType {
   currentUser: UserProfile | null;
   isAdmin: boolean;
-  login: (email: string, pass: string) => Promise<{ success: boolean; message?: string }>;
-  register: (name: string, email: string, pass: string) => Promise<{ success: boolean; message?: string }>;
+  registeredUsers: UserProfile[];
+  login: (identifier: string, pass: string) => Promise<{ success: boolean; message?: string }>;
+  register: (name: string, email: string, phone: string, pass: string) => Promise<{ success: boolean; message?: string }>;
   logout: () => void;
   adminLogin: (user: string, pass: string) => boolean;
+  findUserByIdentifier: (identifier: string) => UserProfile | null;
+  resetPasswordByIdentifier: (identifier: string, newPass: string) => Promise<{ success: boolean; message?: string }>;
+  adminResetUserPassword: (uid: string, newPass: string) => boolean;
+  adminToggleUserStatus: (uid: string) => boolean;
+  adminDeleteUser: (uid: string) => boolean;
+  adminAddUser: (name: string, email: string, phone: string, pass: string, role: 'user' | 'admin') => { success: boolean; message?: string };
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,6 +68,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return null;
   });
 
+  const [registeredUsers, setRegisteredUsers] = useState<UserProfile[]>(() => {
+    const saved = localStorage.getItem('edunls_registered_users');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return INITIAL_MOCK_USERS;
+      }
+    }
+    return INITIAL_MOCK_USERS;
+  });
+
   useEffect(() => {
     if (currentUser) {
       localStorage.setItem('edunls_auth_user', JSON.stringify(currentUser));
@@ -33,61 +88,69 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, [currentUser]);
 
+  useEffect(() => {
+    localStorage.setItem('edunls_registered_users', JSON.stringify(registeredUsers));
+  }, [registeredUsers]);
+
   const isAdmin = currentUser?.role === 'admin' || currentUser?.isAdmin === true;
 
-  const login = async (email: string, pass: string): Promise<{ success: boolean; message?: string }> => {
-    // Check if user is entering admin credentials via regular form
-    if ((email === 'admin' || email === 'admin@edunls.vn') && pass === 'admin') {
+  const findUserByIdentifier = (identifier: string): UserProfile | null => {
+    if (!identifier) return null;
+    const clean = identifier.trim().toLowerCase();
+    return registeredUsers.find(
+      u => u.email.toLowerCase() === clean || (u.phone && u.phone.trim() === clean)
+    ) || null;
+  };
+
+  const login = async (identifier: string, pass: string): Promise<{ success: boolean; message?: string }> => {
+    const cleanId = identifier.trim().toLowerCase();
+
+    // Check if user is entering admin credentials
+    if ((cleanId === 'admin' || cleanId === 'admin@edunls.vn') && pass === 'admin') {
       const adminUser: UserProfile = {
         uid: 'admin-001',
         email: 'admin@edunls.vn',
         displayName: 'Quản trị viên Hệ thống',
         role: 'admin',
-        isAdmin: true
+        isAdmin: true,
+        status: 'active'
       };
       setCurrentUser(adminUser);
       return { success: true };
     }
 
-    // Attempt backend API login if available
-    try {
-      const res = await fetch('/api/admin/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: email, password: pass })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success) {
-          const u: UserProfile = {
-            uid: data.user.id || 'admin-001',
-            email: data.user.email || 'admin@edunls.vn',
-            displayName: data.user.name || 'Quản trị viên',
-            role: data.user.role || 'admin',
-            isAdmin: true
-          };
-          setCurrentUser(u);
-          return { success: true };
-        }
+    // Search in registered users list
+    const foundUser = registeredUsers.find(
+      u => u.email.toLowerCase() === cleanId || (u.phone && u.phone.trim() === cleanId)
+    );
+
+    if (foundUser) {
+      if (foundUser.status === 'locked') {
+        return { success: false, message: 'Tài khoản này đã bị khóa bởi Quản trị viên. Vui lòng liên hệ Admin.' };
       }
-    } catch {
-      // Fallback
+      if (foundUser.password && foundUser.password !== pass) {
+        return { success: false, message: 'Mật khẩu nhập không chính xác.' };
+      }
+      setCurrentUser(foundUser);
+      return { success: true };
     }
 
-    // Standard simulated teacher login
-    if (email && pass.length >= 6) {
+    // Fallback for simulated general login
+    if (cleanId && pass.length >= 6) {
       const teacherUser: UserProfile = {
         uid: 'user-' + Date.now(),
-        email: email,
-        displayName: email.split('@')[0] || 'Giáo viên',
+        email: cleanId.includes('@') ? cleanId : `${cleanId}@school.edu.vn`,
+        displayName: cleanId.split('@')[0] || 'Giáo viên',
         role: 'user',
-        isAdmin: false
+        isAdmin: false,
+        status: 'active',
+        createdAt: new Date().toLocaleString('vi-VN')
       };
       setCurrentUser(teacherUser);
       return { success: true };
     }
 
-    return { success: false, message: 'Email hoặc mật khẩu không hợp lệ (Mật khẩu ít nhất 6 ký tự).' };
+    return { success: false, message: 'Email/Số điện thoại hoặc Mật khẩu không chính xác.' };
   };
 
   const adminLogin = (user: string, pass: string): boolean => {
@@ -97,7 +160,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         email: 'admin@edunls.vn',
         displayName: 'Quản trị viên (Admin)',
         role: 'admin',
-        isAdmin: true
+        isAdmin: true,
+        status: 'active'
       };
       setCurrentUser(adminUser);
       return true;
@@ -105,18 +169,98 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return false;
   };
 
-  const register = async (name: string, email: string, pass: string): Promise<{ success: boolean; message?: string }> => {
+  const register = async (name: string, email: string, phone: string, pass: string): Promise<{ success: boolean; message?: string }> => {
     if (!name || !email || pass.length < 6) {
       return { success: false, message: 'Mật khẩu phải từ 6 ký tự trở lên.' };
     }
+
+    const existing = registeredUsers.find(
+      u => u.email.toLowerCase() === email.trim().toLowerCase() || (phone && u.phone && u.phone.trim() === phone.trim())
+    );
+
+    if (existing) {
+      return { success: false, message: 'Email hoặc Số điện thoại này đã được đăng ký trên hệ thống.' };
+    }
+
     const newUser: UserProfile = {
       uid: 'user-' + Date.now(),
-      email: email,
-      displayName: name,
+      email: email.trim(),
+      phone: phone.trim(),
+      displayName: name.trim(),
+      password: pass,
       role: 'user',
-      isAdmin: false
+      isAdmin: false,
+      status: 'active',
+      createdAt: new Date().toISOString().slice(0, 16).replace('T', ' ')
     };
+
+    setRegisteredUsers(prev => [newUser, ...prev]);
     setCurrentUser(newUser);
+    return { success: true };
+  };
+
+  const resetPasswordByIdentifier = async (identifier: string, newPass: string): Promise<{ success: boolean; message?: string }> => {
+    if (!identifier || !newPass || newPass.length < 6) {
+      return { success: false, message: 'Mật khẩu mới phải từ 6 ký tự trở lên.' };
+    }
+
+    const clean = identifier.trim().toLowerCase();
+    const userIndex = registeredUsers.findIndex(
+      u => u.email.toLowerCase() === clean || (u.phone && u.phone.trim() === clean)
+    );
+
+    if (userIndex === -1) {
+      return { success: false, message: 'Không tìm thấy tài khoản với Email hoặc Số điện thoại này.' };
+    }
+
+    setRegisteredUsers(prev => {
+      const updated = [...prev];
+      updated[userIndex] = {
+        ...updated[userIndex],
+        password: newPass
+      };
+      return updated;
+    });
+
+    return { success: true };
+  };
+
+  // Admin Actions
+  const adminResetUserPassword = (uid: string, newPass: string): boolean => {
+    setRegisteredUsers(prev =>
+      prev.map(u => (u.uid === uid ? { ...u, password: newPass } : u))
+    );
+    return true;
+  };
+
+  const adminToggleUserStatus = (uid: string): boolean => {
+    setRegisteredUsers(prev =>
+      prev.map(u => (u.uid === uid ? { ...u, status: u.status === 'locked' ? 'active' : 'locked' } : u))
+    );
+    return true;
+  };
+
+  const adminDeleteUser = (uid: string): boolean => {
+    setRegisteredUsers(prev => prev.filter(u => u.uid !== uid));
+    return true;
+  };
+
+  const adminAddUser = (name: string, email: string, phone: string, pass: string, role: 'user' | 'admin') => {
+    if (!name || !email || !pass || pass.length < 6) {
+      return { success: false, message: 'Vui lòng điền đủ thông tin và mật khẩu ít nhất 6 ký tự.' };
+    }
+    const newUser: UserProfile = {
+      uid: 'user-' + Date.now(),
+      email: email.trim(),
+      phone: phone.trim(),
+      displayName: name.trim(),
+      password: pass,
+      role: role,
+      isAdmin: role === 'admin',
+      status: 'active',
+      createdAt: new Date().toISOString().slice(0, 16).replace('T', ' ')
+    };
+    setRegisteredUsers(prev => [newUser, ...prev]);
     return { success: true };
   };
 
@@ -125,7 +269,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   return (
-    <AuthContext.Provider value={{ currentUser, isAdmin, login, register, logout, adminLogin }}>
+    <AuthContext.Provider value={{
+      currentUser,
+      isAdmin,
+      registeredUsers,
+      login,
+      register,
+      logout,
+      adminLogin,
+      findUserByIdentifier,
+      resetPasswordByIdentifier,
+      adminResetUserPassword,
+      adminToggleUserStatus,
+      adminDeleteUser,
+      adminAddUser
+    }}>
       {children}
     </AuthContext.Provider>
   );
