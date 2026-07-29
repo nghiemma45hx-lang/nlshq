@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import mammoth from 'mammoth';
 import { LessonPlanItem } from '../types';
-import { relocateNlsToLeftColumn } from '../utils/lessonPlanUtils';
+import { relocateNlsToLeftColumn, extractLessonTitle } from '../utils/lessonPlanUtils';
 
 interface StudioViewProps {
   onSaveLesson: (lesson: Omit<LessonPlanItem, 'id' | 'createdAt' | 'dateString'>) => void;
@@ -190,7 +190,7 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
 
         // Auto Save to Repository
         onSaveLesson({
-          title: `KHBD ${subject} (${grade}) - Tích hợp NLS`,
+          title: extractLessonTitle(originalHtml, subject, grade),
           subject: `${subject} - ${grade}`,
           grade,
           framework,
@@ -212,7 +212,7 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
       setIsProcessed(true);
 
       onSaveLesson({
-        title: `KHBD ${subject} (${grade}) - Tích hợp NLS`,
+        title: extractLessonTitle(originalHtml, subject, grade),
         subject: `${subject} - ${grade}`,
         grade,
         framework,
@@ -238,7 +238,7 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
       setIsProcessed(true);
     }
     onSaveLesson({
-      title: `KHBD ${subject} (${grade}) - Tích hợp NLS`,
+      title: extractLessonTitle(originalHtml, subject, grade),
       subject: `${subject} - ${grade}`,
       grade,
       framework,

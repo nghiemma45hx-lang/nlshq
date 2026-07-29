@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { LessonPlanItem, AdminStats, UserProfile } from '../types';
+import { formatDateTime } from '../utils/lessonPlanUtils';
 
 interface AdminDashboardProps {
   lessons: LessonPlanItem[];
@@ -638,7 +639,7 @@ ON CONFLICT (id) DO NOTHING;`;
                     <td className="p-4 font-bold text-slate-800 max-w-[280px] truncate">{item.title}</td>
                     <td className="p-4 font-medium">{item.subject}</td>
                     <td className="p-4"><span className="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded font-bold">{item.framework}</span></td>
-                    <td className="p-4 font-mono text-[11px] text-slate-500">{item.dateString}</td>
+                    <td className="p-4 font-mono text-[11px] text-slate-500">{formatDateTime(item.dateString, item.createdAt)}</td>
                     <td className="p-4 text-right">
                       <button
                         onClick={() => {

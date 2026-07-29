@@ -99,3 +99,74 @@ export function relocateNlsToLeftColumn(htmlStr: string): string {
 
   return processed;
 }
+
+/**
+ * Dynamically extract specific Lesson Title, Topic, or Lesson Number
+ * from lesson content HTML or raw text.
+ */
+export function extractLessonTitle(contentHtml: string, subject: string, grade: string): string {
+  if (!contentHtml) return `KHBD ${subject} (${grade}) - Tích hợp NLS`;
+
+  // Strip HTML tags to get plain lines
+  const cleanText = contentHtml.replace(/<[^>]+>/g, '\n').replace(/&nbsp;/g, ' ');
+  const lines = cleanText.split('\n').map(l => l.trim()).filter(Boolean);
+
+  // Search first 35 lines for explicit lesson title patterns
+  for (const line of lines.slice(0, 35)) {
+    // Check for "Tên bài dạy: ...", "TÊN BÀI DẠY: ...", "BÀI DẠY: ..."
+    const matchExplicit = line.match(/(?:TÊN BÀI DẠY|Tên bài dạy|BÀI DẠY|Bài dạy|TÊN BÀI|Tên bài)\s*:\s*(.+)/i);
+    if (matchExplicit && matchExplicit[1]?.trim().length > 3) {
+      return matchExplicit[1].trim();
+    }
+
+    // Check for "Bài 9: HÔM NAY VÀ NGÀY MAI (13 tiết)", "Bài 1. ...", "Chủ đề 2: ...", "Tiết 12: ..."
+    const matchBai = line.match(/^(Bài\s+\d+[^:\n]*:[^\n]+)/i) || 
+                     line.match(/^(Bài\s+\d+\.[^\n]+)/i) ||
+                     line.match(/^(Chủ đề\s+\d+[^:\n]*:[^\n]+)/i) ||
+                     line.match(/^(Tiết\s+\d+[^:\n]*:[^\n]+)/i);
+    if (matchBai && matchBai[1]?.trim().length > 5) {
+      return matchBai[1].trim();
+    }
+  }
+
+  // Check for lines starting with "Bài ", "BÀI ", "Chủ đề "
+  for (const line of lines.slice(0, 45)) {
+    if (/^(bài|chủ đề|tiết)\s+\d+/i.test(line) && line.length > 5 && line.length < 130) {
+      return line;
+    }
+  }
+
+  // Check for lines like "BÀI 9: ...", "CHỦ ĐỀ 3: ..."
+  for (const line of lines.slice(0, 20)) {
+    if (/^BÀI\s+/i.test(line) || /^CHỦ ĐỀ\s+/i.test(line)) {
+      return line;
+    }
+  }
+
+  return `KHBD ${subject} (${grade}) - Tích hợp NLS`;
+}
+
+/**
+ * Format timestamp / dateString into full HH:mm - DD/MM/YYYY display.
+ */
+export function formatDateTime(dateString: string, createdAt?: number): string {
+  if (createdAt && typeof createdAt === 'number' && !isNaN(createdAt) && createdAt > 1000000000) {
+    const d = new Date(createdAt);
+    const timeStr = d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+    const dateStr = d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    return `${timeStr} - ${dateStr}`;
+  }
+
+  if (dateString && dateString.includes(':') && dateString.includes('-')) {
+    return dateString;
+  }
+
+  // Fallback format current date with time if only date was provided
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+  if (dateString) {
+    return `${timeStr} - ${dateString}`;
+  }
+  return `${timeStr} - ${now.toLocaleDateString('vi-VN')}`;
+}
+

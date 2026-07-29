@@ -77,14 +77,9 @@ function AppContent() {
       localStorage.setItem('edunls_lessons', JSON.stringify(lessons));
     } catch (e) {
       console.warn('localStorage quota exceeded while saving lessons cache:', e);
-      // Attempt saving lightweight summaries if full quota is exceeded
+      // Fallback: Store fewer recent items intact without truncating any text content
       try {
-        const lightweight = lessons.slice(0, 10).map(l => ({
-          ...l,
-          originalContent: l.originalContent ? l.originalContent.slice(0, 500) + '...' : '',
-          integratedContent: l.integratedContent ? l.integratedContent.slice(0, 1000) + '...' : '',
-        }));
-        localStorage.setItem('edunls_lessons', JSON.stringify(lightweight));
+        localStorage.setItem('edunls_lessons', JSON.stringify(lessons.slice(0, 8)));
       } catch {
         try {
           localStorage.removeItem('edunls_lessons');
@@ -97,11 +92,16 @@ function AppContent() {
   const [activeSample, setActiveSample] = useState<LessonPlanItem | null>(null);
 
   const handleSaveLesson = async (newLessonData: Omit<LessonPlanItem, 'id' | 'createdAt' | 'dateString'>) => {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+    const dateStr = now.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const fullDateString = `${timeStr} - ${dateStr}`;
+
     const newLesson: LessonPlanItem = {
       ...newLessonData,
       id: 'lesson-' + Date.now(),
       createdAt: Date.now(),
-      dateString: new Date().toLocaleDateString('vi-VN'),
+      dateString: fullDateString,
     };
     setLessons(prev => [newLesson, ...prev]);
 
