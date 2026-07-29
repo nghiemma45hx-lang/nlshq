@@ -33,13 +33,9 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSwitchView, onLoadSa
             <span>Chuẩn Khung Năng Lực Số TT 02/2025/TT-BGDĐT & QĐ 3439/QĐ-BGDĐT</span>
           </div>
 
-          <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight leading-tight max-w-4xl mx-auto">
-            Tích Hợp <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-purple-300 to-amber-300">Năng Lực Số & AI</span> Vào Kế Hoạch Bài Dạy Chỉ Trong 30 Giây
+          <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight leading-tight max-w-4xl mx-auto uppercase">
+            TÍCH HỢP <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-purple-300 to-amber-300">NĂNG LỰC SỐ</span> VÀO DẠY HỌC
           </h1>
-
-          <p className="text-base sm:text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
-            Tải lên file Giáo án gốc (<code className="text-amber-300 font-mono">.docx</code>), hệ thống AI tự động bóc tách cấu trúc, đối chiếu Khung NLS chuẩn Bộ GD&ĐT, chèn chỉ báo số, gợi ý công cụ tương tác & xuất file Word hoàn chỉnh.
-          </p>
 
           <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
             <button
