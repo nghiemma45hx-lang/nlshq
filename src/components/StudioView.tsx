@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import mammoth from 'mammoth';
 import { LessonPlanItem } from '../types';
+import { relocateNlsToLeftColumn } from '../utils/lessonPlanUtils';
 
 interface StudioViewProps {
   onSaveLesson: (lesson: Omit<LessonPlanItem, 'id' | 'createdAt' | 'dateString'>) => void;
@@ -176,10 +177,10 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
 
       let finalIntegrated = '';
       if (data.success && data.integratedHtml) {
-        finalIntegrated = data.integratedHtml;
+        finalIntegrated = relocateNlsToLeftColumn(data.integratedHtml);
       } else {
         // Fallback generator if offline/no key
-        finalIntegrated = generateFallbackIntegrated(originalHtml, subject, framework);
+        finalIntegrated = relocateNlsToLeftColumn(generateFallbackIntegrated(originalHtml, subject, framework));
       }
 
       setTimeout(() => {
@@ -206,7 +207,7 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
       console.error(err);
       clearInterval(interval);
       setIsProcessing(false);
-      const fallback = generateFallbackIntegrated(originalHtml, subject, framework);
+      const fallback = relocateNlsToLeftColumn(generateFallbackIntegrated(originalHtml, subject, framework));
       setIntegratedHtml(fallback);
       setIsProcessed(true);
 
@@ -295,7 +296,7 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
       `;
     }
 
-    return `
+    return relocateNlsToLeftColumn(`
       <div class="space-y-4 text-xs text-slate-800 leading-relaxed font-sans">
         <div class="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
           <div class="border-b border-slate-200 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -357,7 +358,7 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
                   </div>`
                 );
 
-                return modified;
+                return relocateNlsToLeftColumn(modified);
               }
 
               // Fallback if inputHtml is unstructured raw text
@@ -424,7 +425,7 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
           </div>
         </div>
       </div>
-    `;
+    `);
   };
 
   // Export to Word document (.doc / .docx)

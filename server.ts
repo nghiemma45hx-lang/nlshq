@@ -5,6 +5,7 @@ import { GoogleGenAI } from '@google/genai';
 import dotenv from 'dotenv';
 import mammoth from 'mammoth';
 import { supabase, supabaseAdmin } from './src/lib/supabase.js';
+import { relocateNlsToLeftColumn } from './src/utils/lessonPlanUtils.js';
 
 dotenv.config();
 
@@ -224,23 +225,28 @@ app.post('/api/gemini/analyze', async (req, res) => {
 3. Công văn 5512/BGDĐT-GDTrH về Cấu trúc Kế hoạch bài dạy (I. Mục tiêu, II. Thiết bị & Học liệu số, III. Tiến trình dạy học 4 Hoạt động: Khởi động, Hình thành kiến thức, Luyện tập, Vận dụng).
 
 QUY TẮC PHÂN TÍCH VÀ TÍCH HỢP BẮT BUỘC (QUAN TRỌNG NHẤT):
-1. TÍCH HỢP TRỰC TIẾP VÀO NỘI DUNG BÀI HỌC (KHÔNG DÙNG HỘP TỔNG HỢP TÁCH BIỆT):
+1. QUY TẮC BẢNG 2 CỘT (CÔNG VĂN 5512 - TỔ CHỨC THỰC HIỆN VÀ SẢN PHẨM):
+   - Khi giáo án dạng Bảng 2 Cột (Cột 1 bên trái: 'Tổ chức thực hiện' / 'Hoạt động của GV và HS'; Cột 2 bên phải: 'Nội dung / Sản phẩm' / 'Sản phẩm dự kiến'):
+     + TOÀN BỘ các mã chỉ báo NLS ([NLS 1.1-a], [NLS 2.4-a]...), các khối [Ứng dụng NLS & AI...] và hướng dẫn tổ chức hoạt động BẮT BUỘC CHÈN VÀO CỘT BÊN TRÁI ('Tổ chức thực hiện').
+     + TUYỆT ĐỐI KHÔNG chèn hoặc để các khối tích hợp NLS/AI ở CỘT BÊN PHẢI ('Nội dung / Sản phẩm'). Cột bên phải chỉ để nội dung bài tập / sản phẩm đơn thuần của học sinh.
+
+2. TÍCH HỢP TRỰC TIẾP VÀO NỘI DUNG BÀI HỌC (KHÔNG DÙNG HỘP TỔNG HỢP TÁCH BIỆT):
    - TUYỆT ĐỐI KHÔNG tạo các hộp tổng hợp riêng biệt ở đầu trang (như "I. MỤC TIÊU BÀI HỌC (TÍCH HỢP...)", "II. THIẾT BỊ...", "III. TIẾN TRÌNH...") rồi xếp phần giáo án gốc ở dưới cùng.
    - BẮT BUỘC viết lại/chỉnh sửa trực tiếp trên chính văn bản Giáo án gốc. Chèn trực tiếp các mã NLS/AI, công cụ số và hướng dẫn hoạt động vào từng mục:
      + Mục I. MỤC TIÊU: Bổ sung trực tiếp dòng Năng lực Số & AI bổ sung.
      + Mục II. THIẾT BỊ DẠY HỌC & HỌC LIỆU SỐ: Bổ sung trực tiếp danh mục thiết bị số và ứng dụng AI.
-     + Mục III. TIẾN TRÌNH DẠY HỌC: Tích hợp trực tiếp mã NLS, công cụ số, lệnh Prompt AI và hoạt động GV/HS vào MỌI HOẠT ĐỘNG:
-       * Hoạt động 1 (Mở đầu / Khởi động): Tích hợp NLS tìm kiếm/khởi động số ([NLS 1.1-a], Quizizz AI, Kahoot...).
-       * Hoạt động 2 (Hình thành kiến thức): Tích hợp NLS mô phỏng/hợp tác/trợ lý AI ([NLS 3.1-a], [AI-NLc], GeoGebra, ChatGPT, Padlet...).
-       * Hoạt động 3 (Luyện tập): Tích hợp NLS đánh giá/đối sánh số ([NLS 2.4-a], [NLS 4.1-a], Azota, Quizizz, Google Form...).
-       * Hoạt động 4 (Vận dụng): Tích hợp NLS sáng tạo sản phẩm số ([NLS 5.3-a], [AI-NLd], Canva AI, CapCut, Infographic...).
+     + Mục III. TIẾN TRÌNH DẠY HỌC: Tích hợp trực tiếp mã NLS, công cụ số, lệnh Prompt AI và hoạt động GV/HS vào CỘT BÊN TRÁI (Tổ chức thực hiện) cho MỌI HOẠT ĐỘNG:
+       * Hoạt động 1 (Mở đầu / Khởi động): Tích hợp NLS tìm kiếm/khởi động số ([NLS 1.1-a], Quizizz AI, Kahoot...) vào cột Tổ chức thực hiện.
+       * Hoạt động 2 (Hình thành kiến thức): Tích hợp NLS mô phỏng/hợp tác/trợ lý AI ([NLS 3.1-a], [AI-NLc], GeoGebra, ChatGPT, Padlet...) vào cột Tổ chức thực hiện.
+       * Hoạt động 3 (Luyện tập): Tích hợp NLS đánh giá/đối sánh số ([NLS 2.4-a], [NLS 4.1-a], Azota, Quizizz, Google Form...) vào cột Tổ chức thực hiện.
+       * Hoạt động 4 (Vận dụng): Tích hợp NLS sáng tạo sản phẩm số ([NLS 5.3-a], [AI-NLd], Canva AI, CapCut, Infographic...) vào cột Tổ chức thực hiện.
    - Áp dụng quy tắc tích hợp trực tiếp này cho TẤT CẢ CÁC TIẾT HỌC / BÀI HỌC trong tệp giáo án gửi lên (dù là bài 1 tiết hay bài dài nhiều tiết).
 
-2. NGOẠI TRỪ TIẾT KIỂM TRA CHÍNH THỨC:
+3. NGOẠI TRỪ TIẾT KIỂM TRA CHÍNH THỨC:
    - Chỉ ngoại trừ KHÔNG tích hợp NLS/AI khi tệp bài dạy là Tiết kiểm tra chính thức (như: Kiểm tra thường xuyên, Kiểm tra giữa học kỳ I/II, Kiểm tra cuối học kỳ I/II).
    - Với các tiết kiểm tra này, giữ nguyên đề/giáo án kiểm tra và chỉ ghi 1 thông báo ngắn gọn: "TIẾT KIỂM TRA / ĐÁNH GIÁ ĐỊNH KỲ (ĐỘC LẬP) - Giữ nguyên hình thức kiểm tra đánh giá độc lập của học sinh, không thực hiện tích hợp NLS & AI".
 
-3. QUY TẮC ĐỊNH DẠNG HTML TRẢ VỀ:
+4. QUY TẮC ĐỊNH DẠNG HTML TRẢ VỀ:
    - Trả về mã HTML chuẩn đẹp, rõ ràng, dễ đọc.
    - Các mã chỉ báo NLS/AI phải được đóng gói trong thẻ span nổi bật font-mono:
      <span class="bg-indigo-100 text-indigo-800 font-bold px-1.5 py-0.5 rounded font-mono text-xs">[NLS 1.1-a]</span>
@@ -274,6 +280,9 @@ ${lessonText}
       // Clean up any unwanted Legal Basis banner if outputted
       resultHtml = resultHtml.replace(/<div[^>]*class="[^"]*bg-rose-50[^"]*"[\s\S]*?CĂN CỨ PHÁP LÝ[\s\S]*?<\/div>/gi, '');
       resultHtml = resultHtml.replace(/<div[^>]*>[\s\S]*?CĂN CỨ PHÁP LÝ TÍCH HỢP[\s\S]*?<\/div>/gi, '');
+      
+      // Ensure all NLS integration blocks are strictly in the left column (Tổ chức thực hiện)
+      resultHtml = relocateNlsToLeftColumn(resultHtml);
     } else {
       source = 'local-engine';
     }
