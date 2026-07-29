@@ -296,59 +296,131 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
     }
 
     return `
-      <div class="space-y-4 text-xs text-slate-800 leading-relaxed">
-        <div class="bg-indigo-50 border-l-4 border-indigo-500 p-3.5 rounded-r-lg">
-          <span class="font-bold text-indigo-900 block text-xs uppercase mb-1">I. MỤC TIÊU BÀI HỌC (TÍCH HỢP NLS & AI CHUẨN BỘ)</span>
-          <p class="text-slate-700"><b>1. Kiến thức & Năng lực đặc thù:</b> Đảm bảo chuẩn kiến thức môn ${sub}.</p>
-          <p class="text-indigo-800 font-bold mt-1.5">2. Năng lực Số & AI bổ sung:</p>
-          <ul class="list-none space-y-1.5 mt-1 pl-1">
-            <li>
-              <span class="bg-indigo-100 text-indigo-800 font-bold px-1.5 py-0.5 rounded font-mono">[NLS 1.1-a]</span>
-              Khai thác dữ liệu - Học sinh tìm kiếm, chọn lọc tư liệu trên môi trường số số hóa.
-            </li>
-            <li>
-              <span class="bg-purple-100 text-purple-800 font-bold px-1.5 py-0.5 rounded font-mono">[NLS 2.4-a]</span>
-              Hợp tác số - Thảo luận nhóm trên nền tảng trực tuyến Padlet/Google Docs.
-            </li>
-            <li>
-              <span class="bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded font-mono">[AI-NLc: Prompting]</span>
-              Kĩ thuật AI - Sử dụng Prompt tương tác với AI trợ lý để hỗ trợ mở rộng kiến thức.
-            </li>
-          </ul>
-        </div>
-
-        <div class="bg-emerald-50 border-l-4 border-emerald-500 p-3.5 rounded-r-lg">
-          <span class="font-bold text-emerald-900 block text-xs uppercase mb-1">II. THIẾT BỊ DẠY HỌC & HỌC LIỆU SỐ</span>
-          <p><b>1. Thiết bị:</b> Máy tính giáo viên, màn hình tương tác, thiết bị di động cá nhân/nhóm học sinh.</p>
-          <p className="mt-1"><b>2. Nền tảng AI & Ứng dụng:</b> Quizizz AI, GeoGebra, Canva AI, ChatGPT / Gemini.</p>
-        </div>
-
-        <div class="bg-amber-50 border-l-4 border-amber-500 p-3.5 rounded-r-lg">
-          <span class="font-bold text-amber-900 block text-xs uppercase mb-1.5">III. TIẾN TRÌNH DẠY HỌC TÍCH HỢP NLS (4 HOẠT ĐỘNG CV 5512)</span>
-          <div class="space-y-2">
-            <div class="bg-white p-2.5 rounded border border-amber-200">
-              <span class="font-bold text-slate-900">Hoạt động 1: Mở đầu với Quizizz AI <span class="text-indigo-700 font-mono">[NLS 1.1-a]</span></span>
-              <p class="mt-1">GV quét mã QR cho HS tham gia 3 câu hỏi trắc nghiệm số khảo sát kiến thức nền.</p>
+      <div class="space-y-4 text-xs text-slate-800 leading-relaxed font-sans">
+        <div class="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+          <div class="border-b border-slate-200 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h2 class="text-sm font-extrabold text-indigo-950 uppercase tracking-wide">
+                KẾ HOẠCH BÀI DẠY (TÍCH HỢP NĂNG LỰC SỐ & AI)
+              </h2>
+              <p class="text-[11px] font-semibold text-slate-500 mt-0.5">
+                Môn: ${sub} (${grade}) | Tích hợp chuẩn TT 02/2025/TT-BGDĐT & QĐ 3439/QĐ-BGDĐT
+              </p>
             </div>
-            <div class="bg-white p-2.5 rounded border border-amber-200">
-              <span class="font-bold text-slate-900">Hoạt động 2: Hình thành kiến thức qua nền tảng tương tác <span class="text-purple-700 font-mono">[NLS 3.1-a]</span></span>
-              <p class="mt-1">HS khai thác mô phỏng trực quan, sử dụng AI đóng vai trò làm trợ lý giải đáp thuật ngữ khó.</p>
-            </div>
-            <div class="bg-white p-2.5 rounded border border-amber-200">
-              <span class="font-bold text-slate-900">Hoạt động 3: Luyện tập & Đánh giá số <span class="text-emerald-700 font-mono">[NLS 2.4-a]</span></span>
-              <p class="mt-1">HS thảo luận nhóm, tải sản phẩm bài tập lên Padlet/Azota để GV và bạn bè đối sánh.</p>
-            </div>
-            <div class="bg-white p-2.5 rounded border border-amber-200">
-              <span class="font-bold text-slate-900">Hoạt động 4: Vận dụng & Sáng tạo nội dung số <span class="text-amber-700 font-mono">[NLS 5.3-a]</span></span>
-              <p class="mt-1">HS làm Infographic/Video ngắn trên Canva chia sẻ kết quả học tập thực tiễn.</p>
-            </div>
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 w-fit">
+              ✓ Đã tích hợp NLS trực tiếp
+            </span>
           </div>
-        </div>
 
-        <div class="border-t border-slate-200 pt-3">
-          <div class="font-bold text-slate-800 uppercase mb-2">NỘI DUNG NGUYÊN BẢN GIÁO ÁN GỐC:</div>
-          <div class="bg-white p-3.5 rounded-lg border border-slate-200">
-            ${inputHtml}
+          <!-- Direct Integrated Content Area -->
+          <div class="lesson-content space-y-4 leading-relaxed text-slate-800">
+            ${(() => {
+              let modified = inputHtml;
+
+              // Check if inputHtml already has 4 activities
+              const hasAct1 = /hoạt động 1|khởi động|mở đầu/i.test(modified);
+              const hasAct2 = /hoạt động 2|hình thành kiến thức/i.test(modified);
+              const hasAct3 = /hoạt động 3|luyện tập/i.test(modified);
+              const hasAct4 = /hoạt động 4|vận dụng/i.test(modified);
+
+              if (hasAct1 || hasAct2 || hasAct3 || hasAct4) {
+                // Direct regex replacement into original HTML
+                modified = modified.replace(
+                  /(hoạt động 1[^:\n<]*|khởi động[^:\n<]*|mở đầu[^:\n<]*)/gi,
+                  `$1 <span class="bg-indigo-100 text-indigo-800 font-bold px-1.5 py-0.5 rounded font-mono text-[11px] ml-1">[NLS 1.1-a]</span>
+                  <div class="my-1.5 p-2 bg-indigo-50/80 border-l-3 border-indigo-500 rounded-r text-[11px] text-indigo-900">
+                    <b>[Ứng dụng NLS & AI Khởi động]:</b> GV quét mã QR cho HS sử dụng <i>Quizizz AI</i> làm 3 câu hỏi tương tác trắc nghiệm số khởi động.
+                  </div>`
+                );
+
+                modified = modified.replace(
+                  /(hoạt động 2[^:\n<]*|hình thành kiến thức[^:\n<]*)/gi,
+                  `$1 <span class="bg-purple-100 text-purple-800 font-bold px-1.5 py-0.5 rounded font-mono text-[11px] ml-1">[NLS 3.1-a]</span> <span class="bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded font-mono text-[11px]">[AI-NLc: Prompting]</span>
+                  <div class="my-1.5 p-2 bg-purple-50/80 border-l-3 border-purple-500 rounded-r text-[11px] text-purple-900">
+                    <b>[Ứng dụng NLS & AI Hình thành kiến thức]:</b> HS thao tác trên mô phỏng trực quan <i>GeoGebra / Chatbot AI</i>, thực hành nhập Prompt tương tác để mở rộng và làm rõ khái niệm.
+                  </div>`
+                );
+
+                modified = modified.replace(
+                  /(hoạt động 3[^:\n<]*|luyện tập[^:\n<]*)/gi,
+                  `$1 <span class="bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded font-mono text-[11px] ml-1">[NLS 2.4-a]</span>
+                  <div class="my-1.5 p-2 bg-emerald-50/80 border-l-3 border-emerald-500 rounded-r text-[11px] text-emerald-900">
+                    <b>[Ứng dụng NLS & AI Luyện tập]:</b> HS thảo luận nhóm, nộp bài tập số lên <i>Padlet / Azota</i> để GV và các nhóm học sinh đối sánh, chấm chéo trực tuyến.
+                  </div>`
+                );
+
+                modified = modified.replace(
+                  /(hoạt động 4[^:\n<]*|vận dụng[^:\n<]*)/gi,
+                  `$1 <span class="bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded font-mono text-[11px] ml-1">[NLS 5.3-a]</span>
+                  <div class="my-1.5 p-2 bg-amber-50/80 border-l-3 border-amber-500 rounded-r text-[11px] text-amber-900">
+                    <b>[Ứng dụng NLS & AI Vận dụng]:</b> HS sử dụng <i>Canva AI / CapCut</i> thiết kế Infographic hoặc video ngắn chia sẻ kết quả vận dụng bài học vào thực tiễn.
+                  </div>`
+                );
+
+                return modified;
+              }
+
+              // Fallback if inputHtml is unstructured raw text
+              return `
+                <div>
+                  <div class="mb-3">
+                    <h3 class="font-bold text-slate-900 text-xs border-l-3 border-indigo-600 pl-2 uppercase">I. MỤC TIÊU BÀI HỌC (TÍCH HỢP NLS & AI)</h3>
+                    <ul class="list-disc pl-5 mt-1 space-y-1 text-slate-700">
+                      <li><b>Kiến thức:</b> Đảm bảo chuẩn môn ${sub} (${grade}).</li>
+                      <li><b>Năng lực Số:</b> <span class="bg-indigo-100 text-indigo-800 font-bold px-1.5 py-0.5 rounded font-mono text-[11px]">[NLS 1.1-a]</span> Tìm kiếm học liệu số, <span class="bg-purple-100 text-purple-800 font-bold px-1.5 py-0.5 rounded font-mono text-[11px]">[NLS 2.4-a]</span> Hợp tác trực tuyến.</li>
+                      <li><b>Năng lực AI:</b> <span class="bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded font-mono text-[11px]">[AI-NLc]</span> Sử dụng kỹ thuật Prompt tương tác trợ lý AI.</li>
+                    </ul>
+                  </div>
+
+                  <div class="mb-3">
+                    <h3 class="font-bold text-slate-900 text-xs border-l-3 border-indigo-600 pl-2 uppercase">II. THIẾT BỊ DẠY HỌC VÀ HỌC LIỆU SỐ</h3>
+                    <p class="pl-3 mt-1 text-slate-700">Máy tính, màn hình tương tác, Quizizz AI, GeoGebra, Padlet, Canva AI, ChatGPT / Gemini.</p>
+                  </div>
+
+                  <div>
+                    <h3 class="font-bold text-slate-900 text-xs border-l-3 border-indigo-600 pl-2 uppercase mb-2">III. TIẾN TRÌNH DẠY HỌC (TÍCH HỢP NLS CẢ 4 HOẠT ĐỘNG)</h3>
+                    <div class="space-y-2.5 pl-2">
+                      <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+                        <div class="font-bold text-indigo-900 flex items-center justify-between">
+                          <span>Hoạt động 1: Khởi động / Mở đầu</span>
+                          <span class="bg-indigo-100 text-indigo-800 font-bold px-1.5 py-0.5 rounded font-mono text-[11px]">[NLS 1.1-a]</span>
+                        </div>
+                        <p class="mt-1 text-slate-700">GV tổ chức trắc nghiệm số trên Quizizz AI quét QR code để khảo sát kiến thức nền của học sinh.</p>
+                      </div>
+
+                      <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+                        <div class="font-bold text-purple-900 flex items-center justify-between">
+                          <span>Hoạt động 2: Hình thành kiến thức mới</span>
+                          <span class="bg-purple-100 text-purple-800 font-bold px-1.5 py-0.5 rounded font-mono text-[11px]">[NLS 3.1-a] [AI-NLc]</span>
+                        </div>
+                        <p class="mt-1 text-slate-700">HS nghiên cứu bài học kết hợp thao tác trên phần mềm mô phỏng số và thực hành tương tác câu hỏi Prompt với trợ lý AI.</p>
+                      </div>
+
+                      <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+                        <div class="font-bold text-emerald-900 flex items-center justify-between">
+                          <span>Hoạt động 3: Luyện tập</span>
+                          <span class="bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded font-mono text-[11px]">[NLS 2.4-a]</span>
+                        </div>
+                        <p class="mt-1 text-slate-700">HS giải bài tập nhóm và tải sản phẩm học tập lên Padlet/Azota để lớp và giáo viên đối sánh, nhận xét trực tuyến.</p>
+                      </div>
+
+                      <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+                        <div class="font-bold text-amber-900 flex items-center justify-between">
+                          <span>Hoạt động 4: Vận dụng</span>
+                          <span class="bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded font-mono text-[11px]">[NLS 5.3-a]</span>
+                        </div>
+                        <p class="mt-1 text-slate-700">HS thiết kế Infographic hoặc video ngắn bằng Canva AI/CapCut để giải quyết tình huống thực tiễn liên quan đến bài học.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="mt-4 pt-3 border-t border-slate-200">
+                    <div class="font-bold text-slate-800 text-xs uppercase mb-1.5">VĂN BẢN GIÁO ÁN GỐC:</div>
+                    <div class="text-slate-700 leading-relaxed">${inputHtml}</div>
+                  </div>
+                </div>
+              `;
+            })()}
           </div>
         </div>
       </div>

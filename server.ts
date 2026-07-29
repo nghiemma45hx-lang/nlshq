@@ -223,20 +223,29 @@ app.post('/api/gemini/analyze', async (req, res) => {
 2. Quyết định 3439/QĐ-BGDĐT về Giáo dục AI (4 Mạch Năng lực: [AI-NLa: Human Centered], [AI-NLb: AI Ethics], [AI-NLc: Prompting], [AI-NLd: AI Design]).
 3. Công văn 5512/BGDĐT-GDTrH về Cấu trúc Kế hoạch bài dạy (I. Mục tiêu, II. Thiết bị & Học liệu số, III. Tiến trình dạy học 4 Hoạt động: Khởi động, Hình thành kiến thức, Luyện tập, Vận dụng).
 
-Nhiệm vụ của bạn:
-Phân tích Kế hoạch bài dạy gốc được cung cấp, đối chiếu và bổ sung trực tiếp các MÃ CHỈ BÁO NĂNG LỰC SỐ ([NLS x.x]), MÃ MẠCH AI ([AI-NLx]), CÔNG CỤ CÔNG NGHỆ, PROMPT AI MẪU và HƯỚNG DẪN GIÁO VIÊN cụ thể cho môn ${subject || 'Tổng hợp'}, ${grade || 'THPT'}.
+QUY TẮC PHÂN TÍCH VÀ TÍCH HỢP BẮT BUỘC (QUAN TRỌNG NHẤT):
+1. TÍCH HỢP TRỰC TIẾP VÀO NỘI DUNG BÀI HỌC (KHÔNG DÙNG HỘP TỔNG HỢP TÁCH BIỆT):
+   - TUYỆT ĐỐI KHÔNG tạo các hộp tổng hợp riêng biệt ở đầu trang (như "I. MỤC TIÊU BÀI HỌC (TÍCH HỢP...)", "II. THIẾT BỊ...", "III. TIẾN TRÌNH...") rồi xếp phần giáo án gốc ở dưới cùng.
+   - BẮT BUỘC viết lại/chỉnh sửa trực tiếp trên chính văn bản Giáo án gốc. Chèn trực tiếp các mã NLS/AI, công cụ số và hướng dẫn hoạt động vào từng mục:
+     + Mục I. MỤC TIÊU: Bổ sung trực tiếp dòng Năng lực Số & AI bổ sung.
+     + Mục II. THIẾT BỊ DẠY HỌC & HỌC LIỆU SỐ: Bổ sung trực tiếp danh mục thiết bị số và ứng dụng AI.
+     + Mục III. TIẾN TRÌNH DẠY HỌC: Tích hợp trực tiếp mã NLS, công cụ số, lệnh Prompt AI và hoạt động GV/HS vào MỌI HOẠT ĐỘNG:
+       * Hoạt động 1 (Mở đầu / Khởi động): Tích hợp NLS tìm kiếm/khởi động số ([NLS 1.1-a], Quizizz AI, Kahoot...).
+       * Hoạt động 2 (Hình thành kiến thức): Tích hợp NLS mô phỏng/hợp tác/trợ lý AI ([NLS 3.1-a], [AI-NLc], GeoGebra, ChatGPT, Padlet...).
+       * Hoạt động 3 (Luyện tập): Tích hợp NLS đánh giá/đối sánh số ([NLS 2.4-a], [NLS 4.1-a], Azota, Quizizz, Google Form...).
+       * Hoạt động 4 (Vận dụng): Tích hợp NLS sáng tạo sản phẩm số ([NLS 5.3-a], [AI-NLd], Canva AI, CapCut, Infographic...).
+   - Áp dụng quy tắc tích hợp trực tiếp này cho TẤT CẢ CÁC TIẾT HỌC / BÀI HỌC trong tệp giáo án gửi lên (dù là bài 1 tiết hay bài dài nhiều tiết).
 
-QUY TẮC BẮT BUỘC KHI TÍCH HỢP NLS VÀO KẾ HOẠCH BÀI DẠY (KHBD):
-1. BỎ HOÀN TOÀN BẢNG/HỘP CĂN CỨ PHÁP LÝ TÍCH HỢP: TUYỆT ĐỐI KHÔNG xuất hiện bất kỳ khung hay tiêu đề "CĂN CỨ PHÁP LÝ TÍCH HỢP NĂNG LỰC SỐ & AI" ở đầu tệp bài dạy. Tích hợp NLS thẳng và trực tiếp vào khung giáo án gốc.
-2. NGOẠI TRỪ TIẾT KIỂM TRA CHÍNH THỨC: Chỉ ngoại trừ không tích hợp NLS/AI khi tệp bài dạy là Tiết kiểm tra chính thức (bao gồm: Kiểm tra thường xuyên, Kiểm tra giữa học kỳ I, Kiểm tra giữa học kỳ II, Kiểm tra cuối học kỳ I, Kiểm tra cuối học kỳ II). Những tiết này giữ nguyên giáo án kiểm tra gốc và hiển thị thông báo: "Tiết kiểm tra/đánh giá độc lập - Giữ nguyên hình thức kiểm tra, không tích hợp NLS".
-3. VỚI TẤT CẢ CÁC BÀI HỌC / TIẾT HỌC DẠY HỌC THÔNG THƯỜNG (kể cả các bài dài nhiều tiết như 12 tiết, các bài đọc hiểu, thực hành, luyện tập, viết, nói và nghe, ôn tập): BẮT BUỘC TÍCH HỢP ĐẦY ĐỦ NĂNG LỰC SỐ (NLS) VÀ AI vào trực tiếp tất cả các mục (Mục tiêu, Thiết bị & Học liệu số, Tiến trình 4 Hoạt động CV 5512). KHÔNG ĐƯỢC nhầm lẫn bài học thông thường có chứa các cụm từ như "kiểm tra bài cũ" hay "đánh giá học sinh" thành tiết kiểm tra định kỳ.
+2. NGOẠI TRỪ TIẾT KIỂM TRA CHÍNH THỨC:
+   - Chỉ ngoại trừ KHÔNG tích hợp NLS/AI khi tệp bài dạy là Tiết kiểm tra chính thức (như: Kiểm tra thường xuyên, Kiểm tra giữa học kỳ I/II, Kiểm tra cuối học kỳ I/II).
+   - Với các tiết kiểm tra này, giữ nguyên đề/giáo án kiểm tra và chỉ ghi 1 thông báo ngắn gọn: "TIẾT KIỂM TRA / ĐÁNH GIÁ ĐỊNH KỲ (ĐỘC LẬP) - Giữ nguyên hình thức kiểm tra đánh giá độc lập của học sinh, không thực hiện tích hợp NLS & AI".
 
-Quy tắc xuất bản định dạng HTML trả về:
-- Trả về mã HTML đẹp mắt, rõ ràng với các thẻ <div>, <ul>, <li>, <span>, <code>.
-- TUYỆT ĐỐI KHÔNG tạo hộp banner "CĂN CỨ PHÁP LÝ TÍCH HỢP" ở đầu bài dạy.
-- Các thẻ mã NLS/AI phải được đóng gói trong các span nổi bật (ví dụ: <span class="bg-indigo-100 text-indigo-800 font-bold px-1.5 py-0.5 rounded font-mono">[NLS 1.1-a]</span>).
-- Bổ sung cụ thể ví dụ Prompt AI và tên công cụ công nghệ thực tế (như Quizizz AI, GeoGebra, ChatGPT, Canva AI, Padlet, Teachable Machine).
-- Giữ nguyên nội dung khung sư phạm gốc của bài dạy, chèn trực tiếp các chỉ báo TÍCH HỢP NLS & AI tương ứng vào từng phần Mục tiêu, Thiết bị học liệu và các Hoạt động tiến trình.`;
+3. QUY TẮC ĐỊNH DẠNG HTML TRẢ VỀ:
+   - Trả về mã HTML chuẩn đẹp, rõ ràng, dễ đọc.
+   - Các mã chỉ báo NLS/AI phải được đóng gói trong thẻ span nổi bật font-mono:
+     <span class="bg-indigo-100 text-indigo-800 font-bold px-1.5 py-0.5 rounded font-mono text-xs">[NLS 1.1-a]</span>
+     <span class="bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded font-mono text-xs">[AI-NLc: Prompting]</span>
+   - Đảm bảo toàn bộ giáo án sau tích hợp là MỘT VĂN BẢN KHINHKHÍT, THỐNG NHẤT từ Mục tiêu -> Thiết bị -> Hoạt động 1 -> Hoạt động 2 -> Hoạt động 3 -> Hoạt động 4.`;
 
     const userPrompt = `Môn học: ${subject}
 Cấp/Khối: ${grade}

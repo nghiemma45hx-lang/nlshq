@@ -409,55 +409,68 @@ export const SAMPLE_LESSONS: LessonPlanItem[] = [
 - HS lên bảng làm bài, GV sửa lỗi.<br><br>
 <b>Hoạt động 4: Vận dụng</b><br>
 - GV giao bài tập thực tế tính chiều cao cổng Parabol tích hợp toán thực tiễn.`,
-    integratedContent: `<div class="space-y-4">
-  <div class="bg-indigo-50 border-l-4 border-indigo-500 p-3.5 rounded-r-lg">
-    <span class="font-bold text-indigo-900 block text-xs uppercase mb-1">I. MỤC TIÊU BÀI HỌC (TÍCH HỢP NLS & AI CHUẨN BỘ)</span>
-    <p class="text-xs text-indigo-800"><b>1. Kiến thức & Năng lực Toán học:</b> Giữ nguyên theo chuẩn chương trình 2018.</p>
-    <p class="text-xs text-brand-700 font-semibold mt-1.5">
-      2. Năng lực Số & AI (Đối chiếu TT 02/2025 & QĐ 3439):
-    </p>
-    <ul class="list-disc pl-5 text-xs text-slate-700 space-y-1 mt-1">
-      <li>
-        <span class="bg-indigo-100 text-indigo-800 font-semibold px-1.5 py-0.5 rounded font-mono">[NLS 1.1-a]</span>
-        <span class="bg-emerald-100 text-emerald-800 font-semibold px-1.5 py-0.5 rounded font-mono">[TT 02/2025]</span>
-        Học sinh khai thác công cụ mô phỏng <b>GeoGebra Dynamic Graphing</b> để khảo sát sự thay đổi hình dáng Parabol.
-      </li>
-      <li>
-        <span class="bg-purple-100 text-purple-800 font-semibold px-1.5 py-0.5 rounded font-mono">[AI-NLc: Kĩ thuật AI]</span>
-        <span class="bg-amber-100 text-amber-800 font-semibold px-1.5 py-0.5 rounded font-mono">[QĐ 3439/2025]</span>
-        Sử dụng trợ lý AI tương tác để kiểm chứng đồ thị và nhận diện tọa độ đỉnh Parabol.
-      </li>
-      <li>
-        <span class="bg-rose-100 text-rose-800 font-semibold px-1.5 py-0.5 rounded font-mono">[AI-NLb: Đạo đức AI]</span>
-        Học sinh biết kiểm tra tính chính xác của đáp án do AI gợi ý, không phụ thuộc thụ động vào máy tính.
-      </li>
-    </ul>
+    integratedContent: `<div class="space-y-4 text-xs text-slate-800 font-sans leading-relaxed">
+  <div class="border-b border-slate-200 pb-2">
+    <h2 class="text-sm font-extrabold text-indigo-950 uppercase tracking-wide">KẾ HOẠCH BÀI DẠY: ĐỒ THỊ HÀM SỐ BẬC HAI Y = AX² + BX + C</h2>
+    <p class="text-[11px] font-semibold text-slate-500">Môn: Toán 10 | Tích hợp Năng lực số chuẩn TT 02/2025 & QĐ 3439/QĐ-BGDĐT</p>
   </div>
 
-  <div class="bg-emerald-50 border-l-4 border-emerald-500 p-3 rounded-r-lg">
-    <span class="font-bold text-emerald-900 block text-xs uppercase mb-1">II. THIẾT BỊ DẠY HỌC & HỌC LIỆU SỐ (CV 5512)</span>
-    <p class="text-xs text-slate-700"><b>1. Thiết bị số:</b> Máy tính giáo viên, màn hình tương tác, thiết bị di động cá nhân/nhóm học sinh.</p>
-    <p class="text-xs text-slate-700 mt-1"><b>2. Học liệu số & Nền tảng AI:</b> GeoGebra App, Quizizz AI, ChatGPT / Gemini.</p>
-  </div>
+  <div class="space-y-3">
+    <div>
+      <h3 class="font-bold text-slate-900 text-xs border-l-3 border-indigo-600 pl-2 uppercase">I. MỤC TIÊU BÀI HỌC</h3>
+      <div class="pl-3 mt-1 space-y-1">
+        <p><b>1. Kiến thức & Năng lực Toán học:</b> Nắm vững dạng Parabol, tọa độ đỉnh I(-b/2a; -Δ/4a), trục đối xứng x = -b/2a và sự biến thiên của hàm số bậc hai.</p>
+        <p><b>2. Năng lực Số & AI tích hợp:</b></p>
+        <ul class="list-disc pl-5 space-y-1 text-slate-700">
+          <li><span class="bg-indigo-100 text-indigo-800 font-bold px-1.5 py-0.5 rounded font-mono text-[11px]">[NLS 1.1-a]</span> Thao tác tìm kiếm, khai thác mô phỏng <b>GeoGebra Dynamic Graphing</b> để khảo sát sự biến thiên đồ thị.</li>
+          <li><span class="bg-purple-100 text-purple-800 font-bold px-1.5 py-0.5 rounded font-mono text-[11px]">[NLS 2.4-a]</span> Hợp tác số, nộp và chấm chéo sản phẩm vẽ Parabol nhóm trên nền tảng <b>Padlet / Google Classroom</b>.</li>
+          <li><span class="bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded font-mono text-[11px]">[AI-NLc: Prompting]</span> Sử dụng câu lệnh Prompt hỏi trợ lý AI để kiểm chứng công thức tọa độ đỉnh và chiều quay bề lõm.</li>
+        </ul>
+      </div>
+    </div>
 
-  <div class="bg-amber-50 border-l-4 border-amber-500 p-3 rounded-r-lg">
-    <span class="font-bold text-amber-900 block text-xs uppercase mb-1">III. TIẾN TRÌNH DẠY HỌC TÍCH HỢP NLS & AI (4 HOẠT ĐỘNG CV 5512)</span>
-    <div class="space-y-3 mt-2 text-xs text-slate-700">
-      <div class="bg-white p-2.5 rounded border border-amber-200">
-        <span class="font-bold text-slate-800">Hoạt động 1: Mở đầu với Quizizz AI <span class="text-brand-600 font-mono">[NLS 1.1-a]</span></span>
-        <p class="mt-1">GV quét mã QR cho HS tham gia 3 câu hỏi khởi động tương tác về quỹ đạo Parabol. AI tự động phân tích tỷ lệ trả lời đúng/sai của lớp.</p>
+    <div>
+      <h3 class="font-bold text-slate-900 text-xs border-l-3 border-indigo-600 pl-2 uppercase">II. THIẾT BỊ DẠY HỌC VÀ HỌC LIỆU SỐ</h3>
+      <div class="pl-3 mt-1 space-y-0.5 text-slate-700">
+        <p><b>1. Thiết bị:</b> Máy tính giáo viên, màn hình tương tác, điện thoại di động/máy tính bảng cá nhân hoặc nhóm HS.</p>
+        <p><b>2. Ứng dụng & Học liệu số:</b> GeoGebra App, Quizizz AI, Padlet, Canva AI, Trợ lý Chatbot AI.</p>
       </div>
-      <div class="bg-white p-2.5 rounded border border-amber-200">
-        <span class="font-bold text-slate-800">Hoạt động 2: Hình thành kiến thức qua GeoGebra App <span class="text-brand-600 font-mono">[NLS 3.1-a]</span> <span class="text-amber-700 font-mono">[AI-NLc]</span></span>
-        <p class="mt-1">HS thao tác trên thanh trượt hệ số a, b, c trong ứng dụng GeoGebra để quan sát sự biến thiên của đỉnh Parabol.</p>
-      </div>
-      <div class="bg-white p-2.5 rounded border border-amber-200">
-        <span class="font-bold text-slate-800">Hoạt động 3: Luyện tập & Đánh giá tự động <span class="text-brand-600 font-mono">[NLS 2.4-a]</span></span>
-        <p class="mt-1">HS vẽ đồ thị ra giấy, chụp ảnh sản phẩm nộp lên Padlet/Google Classroom để GV và các nhóm bạn đối sánh, góp ý trực tiếp.</p>
-      </div>
-      <div class="bg-white p-2.5 rounded border border-amber-200">
-        <span class="font-bold text-slate-800">Hoạt động 4: Vận dụng & Sáng tạo Số <span class="text-brand-600 font-mono">[NLS 5.3-a]</span></span>
-        <p class="mt-1">HS dùng công cụ Canva/AI thiết kế infographic ngắn mô phỏng ứng dụng của Parabol trong kiến trúc gửi về kho tài nguyên số bài học.</p>
+    </div>
+
+    <div>
+      <h3 class="font-bold text-slate-900 text-xs border-l-3 border-indigo-600 pl-2 uppercase mb-2">III. TIẾN TRÌNH DẠY HỌC TÍCH HỢP NLS & AI</h3>
+      <div class="space-y-3 pl-2">
+        <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+          <div class="font-bold text-indigo-900 flex items-center justify-between">
+            <span>Hoạt động 1: Mở đầu / Khởi động</span>
+            <span class="bg-indigo-100 text-indigo-800 font-bold px-1.5 py-0.5 rounded font-mono text-[11px]">[NLS 1.1-a]</span>
+          </div>
+          <p class="mt-1 text-slate-700"><b>Tiến trình thực hiện:</b> GV quét mã QR cho HS tham gia 3 câu hỏi trắc nghiệm số trên <i>Quizizz AI</i> nhận diện dạng đường cong Parabol thực tế (vòm cầu, vòi nước). AI thống kê ngay kết quả và tỷ lệ trả lời đúng của lớp.</p>
+        </div>
+
+        <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+          <div class="font-bold text-purple-900 flex items-center justify-between">
+            <span>Hoạt động 2: Hình thành kiến thức mới</span>
+            <span class="bg-purple-100 text-purple-800 font-bold px-1.5 py-0.5 rounded font-mono text-[11px]">[NLS 3.1-a] [AI-NLc]</span>
+          </div>
+          <p class="mt-1 text-slate-700"><b>Tiến trình thực hiện:</b> HS thao tác trên thanh trượt hệ số a, b, c trong ứng dụng <i>GeoGebra</i> để quan sát vị trí đỉnh I và bề lõm Parabol. HS thực hành gõ Prompt hỏi AI trợ lý kiểm chứng công thức đỉnh I(-b/2a; -Δ/4a).</p>
+        </div>
+
+        <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+          <div class="font-bold text-emerald-900 flex items-center justify-between">
+            <span>Hoạt động 3: Luyện tập</span>
+            <span class="bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded font-mono text-[11px]">[NLS 2.4-a]</span>
+          </div>
+          <p class="mt-1 text-slate-700"><b>Tiến trình thực hiện:</b> HS làm bài tập vẽ đồ thị hàm số y = x² - 4x + 3 ra giấy, chụp ảnh sản phẩm tải lên không gian lớp học <i>Padlet</i>. Giáo viên và các nhóm đối sánh, bình luận góp ý bài làm trực tuyến.</p>
+        </div>
+
+        <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+          <div class="font-bold text-amber-900 flex items-center justify-between">
+            <span>Hoạt động 4: Vận dụng</span>
+            <span class="bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded font-mono text-[11px]">[NLS 5.3-a]</span>
+          </div>
+          <p class="mt-1 text-slate-700"><b>Tiến trình thực hiện:</b> HS sử dụng công cụ <i>Canva AI</i> thiết kế Infographic mô phỏng bài toán thực tế tính chiều cao cổng Parabol tích hợp kiến thức toán học và nộp về kho tài liệu số của lớp.</p>
+        </div>
       </div>
     </div>
   </div>
