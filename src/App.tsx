@@ -176,10 +176,8 @@ function AppContent() {
             <span className="font-extrabold text-indigo-700 text-sm">EduNLS AI 2026</span> - Nền tảng Tích Hợp Năng Lực Số & AI Dành Cho Giáo Viên
             <p className="text-[11px] text-slate-400 mt-0.5">Căn cứ Thông tư 02/2025/TT-BGDĐT, Quyết định 3439/QĐ-BGDĐT & Công văn 5512/BGDĐT-GDTrH</p>
           </div>
-          <div className="flex items-center space-x-4 font-medium">
-            <button onClick={() => setCurrentView('legal')} className="hover:text-indigo-600 transition">Cơ Sở Pháp Lý</button>
-            <button onClick={() => setCurrentView('library')} className="hover:text-indigo-600 transition">Khung NLS</button>
-            <button onClick={() => setIsAuthOpen(true)} className="hover:text-indigo-600 transition">Quản Trị (admin / admin)</button>
+          <div className="text-right text-xs font-semibold text-slate-600 bg-slate-100/80 px-3.5 py-1.5 rounded-full border border-slate-200">
+            Bản quyền thuộc về thầy giáo Nghiêm Hồng Quân - 0984839799
           </div>
         </div>
       </footer>
