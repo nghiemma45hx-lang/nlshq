@@ -121,6 +121,74 @@ export const LEGAL_DOCUMENTS: LegalDocument[] = [
     ],
     icon: "FileCheck",
     badgeColor: "bg-indigo-100 text-indigo-800",
+    fullText: `CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
+Độc lập - Tự do - Hạnh phúc
+------------------
+BỘ GIÁO DỤC VÀ ĐÀO TẠO
+
+Số: 02/2025/TT-BGDĐT                          Hà Nội, ngày 24 tháng 01 năm 2025
+
+THÔNG TƯ
+BAN HÀNH KHUNG NĂNG LỰC SỐ CHO NGƯỜI HỌC TRONG HỆ THỐNG GIÁO DỤC QUỐC DÂN
+
+Căn cứ Luật Giáo dục ngày 14 tháng 6 năm 2019;
+Căn cứ Nghị định số 86/2022/NĐ-CP ngày 24 tháng 10 năm 2022 của Chính phủ quy định chức năng, nhiệm vụ, quyền hạn và cơ cấu tổ chức của Bộ Giáo dục và Đào tạo;
+Căn cứ Quyết định số 749/QĐ-TTg ngày 03 tháng 6 năm 2020 của Thủ tướng Chính phủ phê duyệt "Chương trình Chuyển đổi số quốc gia đến năm 2025, định hướng đến năm 2030";
+Theo đề nghị của Cục trưởng Cục Công nghệ thông tin;
+
+Bộ trưởng Bộ Giáo dục và Đào tạo ban hành Thông tư Khung Năng lực số cho người học trong hệ thống giáo dục quốc dân.
+
+Điều 1. Ban hành kèm theo Thông tư này "Khung Năng lực số cho người học trong hệ thống giáo dục quốc dân".
+
+Điều 2. Đối tượng áp dụng
+Thông tư này áp dụng đối với người học trong các cơ sở giáo dục mầm non, giáo dục phổ thông, giáo dục thường xuyên, giáo dục nghề nghiệp và giáo dục đại học thuộc hệ thống giáo dục quốc dân; các tổ chức, cá nhân có liên quan.
+
+Điều 3. Cấu trúc Khung Năng lực số
+Khung Năng lực số gồm 06 miền năng lực cốt lõi với 24 năng lực thành phần, chuẩn hóa theo 8 bậc trình độ năng lực số tương ứng với từng độ tuổi và cấp học:
+
+MIỀN 1: KHAI THÁC DỮ LIỆU VÀ THÔNG TIN
+- Năng lực 1.1: Duyệt, tìm kiếm và lọc dữ liệu, thông tin và nội dung số [NLS 1.1-a, NLS 1.1-b, NLS 1.1-c]
+- Năng lực 1.2: Đánh giá dữ liệu, thông tin và nội dung số [NLS 1.2-a, NLS 1.2-b]
+- Năng lực 1.3: Quản lý, lưu trữ và sắp xếp dữ liệu, thông tin [NLS 1.3-a, NLS 1.3-b]
+
+MIỀN 2: GIAO TIẾP VÀ HỢP TÁC TRONG MÔI TRƯỜNG SỐ
+- Năng lực 2.1: Tương tác thông qua các công nghệ số [NLS 2.1-a, NLS 2.1-b]
+- Năng lực 2.2: Chia sẻ thông tin và nội dung số [NLS 2.2-a]
+- Năng lực 2.3: Thực hành công dân số và tham gia xã hội trực tuyến [NLS 2.3-a]
+- Năng lực 2.4: Hợp tác thông qua các công nghệ số [NLS 2.4-a, NLS 2.4-b]
+- Năng lực 2.5: Quy tắc ứng xử trên mạng (Netiquette) [NLS 2.5-a, NLS 2.5-b, NLS 2.5-c]
+- Năng lực 2.6: Quản lý danh tính số và dữ liệu cá nhân [NLS 2.6-a]
+
+MIỀN 3: SÁNG TẠO NỘI DUNG SỐ
+- Năng lực 3.1: Phát triển và biên tập nội dung số [NLS 3.1-a, NLS 3.1-b]
+- Năng lực 3.2: Sửa đổi, tích hợp và tái tạo nội dung số [NLS 3.2-a]
+- Năng lực 3.3: Bản quyền và giấy phép trí tuệ số [NLS 3.3-a, NLS 3.3-b]
+- Năng lực 3.4: Lập trình và tư duy máy tính [NLS 3.4-a, NLS 3.4-b]
+
+MIỀN 4: AN TOÀN SỐ VÀ ĐẠO ĐỨC MÔI TRƯỜNG SỐ
+- Năng lực 4.1: Bảo vệ thiết bị và hạ tầng số [NLS 4.1-a]
+- Năng lực 4.2: Bảo vệ dữ liệu cá nhân và quyền riêng tư [NLS 4.2-a, NLS 4.2-b, NLS 4.2-c]
+- Năng lực 4.3: Bảo vệ sức khỏe và thể chất trong môi trường số [NLS 4.3-a]
+- Năng lực 4.4: Bảo vệ môi trường tự nhiên khỏi tác động của công nghệ [NLS 4.4-a]
+
+MIỀN 5: GIẢI QUYẾT VẤN ĐỀ VÀ TƯ DUY MÁY TÍNH
+- Năng lực 5.1: Giải quyết các vấn đề kỹ thuật [NLS 5.1-a, NLS 5.1-b]
+- Năng lực 5.2: Xác định nhu cầu và lựa chọn giải pháp công nghệ [NLS 5.2-a]
+- Năng lực 5.3: Sử dụng sáng tạo các công nghệ số & AI [NLS 5.3-a, NLS 5.3-b]
+- Năng lực 5.4: Nhận diện lỗ hổng năng lực số cá nhân [NLS 5.4-a]
+
+MIỀN 6: ĐỊNH HƯỚNG NGHỀ NGHIỆP SỐ
+- Năng lực 6.1: Nhận thức các xu hướng công nghệ số phát triển mới [NLS 6.1-a]
+
+Điều 4. Tổ chức thực hiện
+1. Các Sở Giáo dục và Đào tạo chỉ đạo các cơ sở giáo dục phổ thông căn cứ Khung Năng lực số này để tích hợp vào các môn học và hoạt động giáo dục trong Kế hoạch bài dạy (KHBD).
+2. Giáo viên chủ động đưa các chỉ báo năng lực số [NLS x.x] vào mục tiêu và tiến trình dạy học.
+
+Điều 5. Hiệu lực thi hành
+Thông tư này có hiệu lực thi hành kể từ ngày 10 tháng 03 năm 2025.
+
+BỘ TRƯỜNG
+(Đã ký)`,
     details: {
       scope: "Quy định Khung năng lực số áp dụng cho người học trong hệ thống giáo dục quốc dân Việt Nam.",
       targetAudience: "Học sinh Tiểu học, THCS, THPT, Giáo dục thường xuyên và Sinh viên các cấp.",
@@ -153,6 +221,58 @@ export const LEGAL_DOCUMENTS: LegalDocument[] = [
     ],
     icon: "Sparkles",
     badgeColor: "bg-amber-100 text-amber-800",
+    fullText: `CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
+Độc lập - Tự do - Hạnh phúc
+------------------
+BỘ GIÁO DỤC VÀ ĐÀO TẠO
+
+Số: 3439/QĐ-BGDĐT                           Hà Nội, ngày 15 tháng 12 năm 2025
+
+QUYẾT ĐỊNH
+BAN HÀNH KHUNG THÍ ĐIỂM GIÁO DỤC TRÍ TUỆ NHÂN TẠO (AI) TRONG GIÁO DỤC PHỔ THÔNG
+
+BỘ TRƯỜNG BỘ GIÁO DỤC VÀ ĐÀO TẠO
+
+Căn cứ Luật Giáo dục ngày 14 tháng 6 năm 2019;
+Căn cứ Quyết định số 127/QĐ-TTg ngày 26 tháng 01 năm 2021 của Thủ tướng Chính phủ ban hành Chiến lược quốc gia về nghiên cứu, phát triển và ứng dụng Trí tuệ nhân tạo đến năm 2030;
+Xét đề nghị của Vụ trưởng Vụ Giáo dục Trung học;
+
+QUYẾT ĐỊNH:
+
+Điều 1. Ban hành kèm theo Quyết định này "Khung Thí điểm Giáo dục Trí tuệ Nhân tạo (AI) trong Giáo dục Phổ thông".
+
+Điều 2. Mục tiêu của Khung thí điểm Giáo dục AI
+1. Trang bị cho học sinh phổ thông những hiểu biết cơ bản, đúng đắn về Trí tuệ nhân tạo (AI), tạo dựng năng lực ứng dụng AI an toàn, hiệu quả và có trách nhiệm.
+2. Định hướng cho giáo viên phương pháp tích hợp AI (GenAI, Chatbot, Prompt Engineering) vào các môn học như Toán, Ngữ văn, Tiếng Anh, Khoa học tự nhiên, Tin học, Lịch sử và Địa lý.
+
+Điều 3. Bốn Mạch Năng lực Trí tuệ nhân tạo cốt lõi:
+
+1. MẠCH [AI-NLa]: TƯ DUY LẤY CON NGƯỜI LÀM TRUNG TÂM (Human-Centered AI)
+- Hiểu vai trò của AI là công cụ hỗ trợ, không thay thế tư duy phản biện và khả năng sáng tạo của con người.
+- Con người luôn giữ quyền quyết định cuối cùng và chịu trách nhiệm đối với các kết quả do AI tạo ra.
+
+2. MẠCH [AI-NLb]: ĐẠO ĐỨC AI VÀ TRÁCH NHIỆM XÃ HỘI (AI Ethics & Responsibility)
+- Nhận thức về tính minh bạch, thiên vị (bias), bản quyền tác giả và quyền riêng tư dữ liệu.
+- Trung thực trong học thuật, không sao chép nguyên văn sản phẩm của AI để nộp làm bài làm cá nhân.
+
+3. MẠCH [AI-NLc]: KĨ THUẬT VÀ ỨNG DỤNG AI (AI Prompting & Applications)
+- Kĩ năng kĩ thuật đặt câu lệnh (Prompt Engineering) chính xác, rõ ràng cho các mô hình AI ngôn ngữ lớn (LLM).
+- Sử dụng các công cụ AI thế hệ mới (ChatGPT, Gemini, Canva AI, Quizizz AI) để hỗ trợ tìm kiếm, sáng tạo nội dung và luyện tập.
+
+4. MẠCH [AI-NLd]: THIẾT KẾ VÀ HỆ THỐNG AI (AI System & Design)
+- Hiểu nguyên lý vận hành cơ bản của Học máy (Machine Learning), Xử lý ngôn ngữ tự nhiên (NLP) và Thị giác máy tính (Computer Vision).
+- Tham gia thiết kế mô hình AI đơn giản (như Teachable Machine, Scratch AI).
+
+Điều 4. Hướng dẫn tích hợp cho Giáo viên
+- Giáo viên chủ động đưa mã mạch năng lực [AI-NLa], [AI-NLb], [AI-NLc], [AI-NLd] vào Kế hoạch bài dạy.
+- Xây dựng câu lệnh Prompt mẫu cho học sinh thực hành trong tiết học.
+
+Điều 5. Hiệu lực thi hành
+Quyết định này có hiệu lực kể từ ngày ký.
+
+KT. BỘ TRƯỜNG
+THỨ TRƯỜNG
+(Đã ký)`,
     details: {
       scope: "Khung thí điểm Giáo dục Trí tuệ Nhân tạo (AI) trong giáo dục phổ thông toàn quốc.",
       targetAudience: "Cán bộ quản lý, Giáo viên và Học sinh các trường Phổ thông (Cấp 1, Cấp 2, Cấp 3).",
@@ -183,6 +303,64 @@ export const LEGAL_DOCUMENTS: LegalDocument[] = [
     ],
     icon: "BookOpen",
     badgeColor: "bg-emerald-100 text-emerald-800",
+    fullText: `BỘ GIÁO DỤC VÀ ĐÀO TẠO                 CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
+-------                                    Độc lập - Tự do - Hạnh phúc
+                                                ------------------
+Số: 5512/BGDĐT-GDTrH                       Hà Nội, ngày 18 tháng 12 năm 2020
+
+V/v Xây dựng và thực hiện kế hoạch giáo dục của nhà trường
+
+Kính gửi: Các Sở Giáo dục và Đào tạo
+
+Thực hiện Chương trình giáo dục phổ thông ban hành kèm theo Thông tư số 32/2018/TT-BGDĐT, Bộ Giáo dục và Đào tạo hướng dẫn xây dựng và thực hiện kế hoạch giáo dục của nhà trường như sau:
+
+PHỤ LỤC IV: KHUNG KẾ HOẠCH BÀI DẠY (GIÁO ÁN)
+(Kèm theo Công văn số 5512/BGDĐT-GDTrH ngày 18 tháng 12 năm 2020 của Bộ GDĐT)
+
+Trường: ............................................   Họ và tên giáo viên: ............................................
+Tổ chuyên môn: ...............................   Tên bài dạy: .....................................................
+Môn học/Hoạt động giáo dục: .............   Lớp: .......... Thời lượng thực hiện: (Số tiết)
+
+I. MỤC TIÊU BÀI HỌC
+1. Về Kiến thức: Nêu cụ thể kiến thức học sinh cần học trong bài.
+2. Về Năng lực: 
+- Năng lực đặc thù môn học.
+- Năng lực chung và Năng lực số (Ghi rõ mã chỉ báo [NLS x.x], [AI-NLx]).
+3. Về Phẩm chất: Nêu cụ thể phẩm chất học sinh được rèn luyện.
+
+II. THIẾT BỊ DẠY HỌC VÀ HỌC LIỆU SỐ
+- Thiết bị của Giáo viên: Máy tính, máy chiếu, bài trình chiếu, phần mềm tương tác, công cụ AI.
+- Thiết bị/học liệu của Học sinh: Sách giáo khoa, vở ghi, thiết bị thông minh, tài khoản học trực tuyến.
+
+III. TIẾN TRÌNH DẠY HỌC
+
+1. Hoạt động 1: Mở đầu / Khởi động (Xác định vấn đề / Nhiệm vụ học tập)
+a) Mục tiêu: Tạo tâm thế, kết nối kiến thức cũ hoặc đặt vấn đề cần giải quyết.
+b) Nội dung: GV giao nhiệm vụ, câu hỏi hoặc trò chơi tương tác số (Quizizz/Kahoot).
+c) Sản phẩm: Câu trả lời của học sinh hoặc kết quả tương tác ban đầu.
+d) Tổ chức thực hiện: GV chuyển giao nhiệm vụ -> HS thực hiện -> Báo cáo thảo luận -> GV kết luận.
+
+2. Hoạt động 2: Hình thành kiến thức mới (Giải quyết vấn đề)
+a) Mục tiêu: Học sinh chiếm lĩnh kiến thức cốt lõi.
+b) Nội dung: Đọc tài liệu, xem video mô phỏng, thực hành khai thác dữ liệu số.
+c) Sản phẩm: Bảng nhóm, câu trả lời, sơ đồ tư duy Infographic.
+d) Tổ chức thực hiện: Tổ chức làm việc cá nhân / thảo luận nhóm / hướng dẫn sử dụng phần mềm.
+
+3. Hoạt động 3: Luyện tập
+a) Mục tiêu: Củng cố, khắc sâu kiến thức vừa học.
+b) Nội dung: Bài tập SGK, câu hỏi trắc nghiệm số, thực hành Prompt AI giải bài tập.
+c) Sản phẩm: Lời giải bài tập, kết quả điểm số tự động từ hệ thống.
+d) Tổ chức thực hiện: GV giao bài -> HS độc lập làm bài -> Nhận xét, sửa lỗi.
+
+4. Hoạt động 4: Vận dụng
+a) Mục tiêu: Vận dụng kiến thức vào thực tiễn cuộc sống.
+b) Nội dung: Nhiệm vụ dự án sáng tạo sản phẩm số, thiết kế poster Canva, quay video ngắn.
+c) Sản phẩm: Sản phẩm vận dụng thực tế của học sinh.
+d) Tổ chức thực hiện: GV giao nhiệm vụ về nhà -> HS nộp bài qua sản phẩm số.
+
+TL. BỘ TRƯỜNG
+VỤ TRƯỜNG VỤ GIÁO DỤC TRUNG HỌC
+(Đã ký)`,
     details: {
       scope: "Hướng dẫn khung chuẩn xây dựng Kế hoạch bài dạy (Giáo án) áp dụng chung cho khối phổ thông.",
       targetAudience: "Tất cả Giáo viên THCS và THPT thuộc hệ thống giáo dục quốc dân.",
