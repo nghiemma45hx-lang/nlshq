@@ -106,7 +106,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const cleanId = identifier.trim().toLowerCase();
 
     // Check if user is entering admin credentials
-    if ((cleanId === 'admin' || cleanId === 'admin@edunls.vn') && pass === 'admin') {
+    if ((cleanId === 'admin' || cleanId === 'admin@edunls.vn') && pass === 'Bomyvn78@') {
       const adminUser: UserProfile = {
         uid: 'admin-001',
         email: 'admin@edunls.vn',
@@ -154,7 +154,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const adminLogin = (user: string, pass: string): boolean => {
-    if (user.trim().toLowerCase() === 'admin' && pass === 'admin') {
+    if (user.trim().toLowerCase() === 'admin' && pass === 'Bomyvn78@') {
       const adminUser: UserProfile = {
         uid: 'admin-001',
         email: 'admin@edunls.vn',

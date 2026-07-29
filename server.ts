@@ -125,7 +125,7 @@ app.delete('/api/lessons/:id', async (req, res) => {
 // API: Admin Login
 app.post('/api/admin/login', (req, res) => {
   const { username, password } = req.body;
-  if ((username === 'admin' || username === 'admin@edunls.vn') && password === 'admin') {
+  if ((username === 'admin' || username === 'admin@edunls.vn') && password === 'Bomyvn78@') {
     return res.json({
       success: true,
       token: 'admin-jwt-token-edunls-' + Date.now(),
