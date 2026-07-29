@@ -120,7 +120,24 @@ export const LEGAL_DOCUMENTS: LegalDocument[] = [
       "Căn cứ bắt buộc để giáo viên tích hợp mã chỉ báo vào Kế hoạch bài dạy."
     ],
     icon: "FileCheck",
-    badgeColor: "bg-indigo-100 text-indigo-800"
+    badgeColor: "bg-indigo-100 text-indigo-800",
+    details: {
+      scope: "Quy định Khung năng lực số áp dụng cho người học trong hệ thống giáo dục quốc dân Việt Nam.",
+      targetAudience: "Học sinh Tiểu học, THCS, THPT, Giáo dục thường xuyên và Sinh viên các cấp.",
+      structure: [
+        { name: "Miền 1: Khai thác dữ liệu và thông tin", desc: "Tra cứu, đánh giá độ tin cậy và lưu trữ dữ liệu số thông minh.", tags: ["[NLS 1.1-a]", "[NLS 1.2-b]", "[NLS 1.3-a]"] },
+        { name: "Miền 2: Giao tiếp và hợp tác trong môi trường số", desc: "Chia sẻ thông tin, tương tác chuẩn mực và thảo luận nhóm trực tuyến.", tags: ["[NLS 2.1-b]", "[NLS 2.4-a]", "[NLS 2.5-c]"] },
+        { name: "Miền 3: Sáng tạo nội dung số", desc: "Biên tập Infographic, Video, sơ đồ tư duy và lập trình giải quyết bài toán.", tags: ["[NLS 3.1-a]", "[NLS 3.3-a]", "[NLS 3.4-a]"] },
+        { name: "Miền 4: An toàn số và Đạo đức môi trường số", desc: "Bảo vệ thông tin cá nhân, bản quyền tác giả và sức khỏe khi dùng thiết bị số.", tags: ["[NLS 4.1-a]", "[NLS 4.2-c]"] },
+        { name: "Miền 5: Giải quyết vấn đề & Tư duy máy tính", desc: "Ứng dụng phần mềm mô phỏng, thuật toán và công cụ AI vào nhiệm vụ học tập.", tags: ["[NLS 5.1-a]", "[NLS 5.3-a]"] },
+        { name: "Miền 6: Định hướng nghề nghiệp số", desc: "Tìm hiểu xu hướng nghề nghiệp công nghệ cao và hội nhập quốc tế.", tags: ["[NLS 6.1-a]"] }
+      ],
+      implementationGuide: [
+        "1. Xác định Yêu cầu cần đạt về Năng lực số tương ứng với môn học và độ tuổi học sinh.",
+        "2. Chèn thẻ chỉ báo [NLS x.x] trực tiếp vào phần Mục tiêu Năng lực trong Kế hoạch bài dạy.",
+        "3. Lựa chọn công cụ số (Padlet, Quizizz, GeoGebra, Canva) tương ứng từng hoạt động 5512."
+      ]
+    }
   },
   {
     id: "qd-3439",
@@ -135,7 +152,22 @@ export const LEGAL_DOCUMENTS: LegalDocument[] = [
       "Nhấn mạnh Đạo đức AI và tính chịu trách nhiệm của người học."
     ],
     icon: "Sparkles",
-    badgeColor: "bg-amber-100 text-amber-800"
+    badgeColor: "bg-amber-100 text-amber-800",
+    details: {
+      scope: "Khung thí điểm Giáo dục Trí tuệ Nhân tạo (AI) trong giáo dục phổ thông toàn quốc.",
+      targetAudience: "Cán bộ quản lý, Giáo viên và Học sinh các trường Phổ thông (Cấp 1, Cấp 2, Cấp 3).",
+      structure: [
+        { name: "Mạch NLa: Tư duy lấy con người làm trung tâm", desc: "Coi AI là trợ lý hỗ trợ con người, con người làm chủ và chịu trách nhiệm quyết định.", tags: ["[AI-NLa]"] },
+        { name: "Mạch NLb: Đạo đức AI & Trách nhiệm xã hội", desc: "Tôn trọng bản quyền, không tạo thông tin sai lệch, bảo mật dữ liệu riêng tư.", tags: ["[AI-NLb]"] },
+        { name: "Mạch NLc: Kĩ thuật & Ứng dụng AI", desc: "Kĩ năng viết câu lệnh Prompt Engineering, sử dụng ChatGPT, Gemini, Claude, Quizizz AI.", tags: ["[AI-NLc]"] },
+        { name: "Mạch NLd: Thiết kế & Hệ thống AI", desc: "Hiểu nguyên lý cơ bản của Machine Learning, Computer Vision và xử lý ngôn ngữ tự nhiên.", tags: ["[AI-NLd]"] }
+      ],
+      implementationGuide: [
+        "1. Lựa chọn 1 trong 4 Mạch AI phù hợp với nội dung bài dạy môn học.",
+        "2. Đưa yêu cầu học sinh thực hành giao tiếp với AI trợ lý (Prompting) trong Hoạt động Luyện tập.",
+        "3. Nhắc nhở và kiểm soát nguyên tắc Đạo đức AI khi học sinh nộp sản phẩm số."
+      ]
+    }
   },
   {
     id: "cv-5512",
@@ -150,7 +182,21 @@ export const LEGAL_DOCUMENTS: LegalDocument[] = [
       "Quy định rõ mục tiêu Kiến thức, Năng lực, Phẩm chất."
     ],
     icon: "BookOpen",
-    badgeColor: "bg-emerald-100 text-emerald-800"
+    badgeColor: "bg-emerald-100 text-emerald-800",
+    details: {
+      scope: "Hướng dẫn khung chuẩn xây dựng Kế hoạch bài dạy (Giáo án) áp dụng chung cho khối phổ thông.",
+      targetAudience: "Tất cả Giáo viên THCS và THPT thuộc hệ thống giáo dục quốc dân.",
+      structure: [
+        { name: "I. Mục tiêu Bài học", desc: "Mô tả Kiến thức, Năng lực đặc thù, Năng lực chung (kèm mã [NLS x.x]) và Phẩm chất." },
+        { name: "II. Thiết bị Dạy học & Học liệu Số", desc: "Ghi rõ thiết bị công nghệ của GV (máy tính, slide, AI tool) và HS (sách, điện thoại, tài khoản số)." },
+        { name: "III. Tiến trình Dạy học (4 Hoạt động)", desc: "Mô tả 4 bước: 1. Mở đầu/Khởi động -> 2. Hình thành kiến thức -> 3. Luyện tập -> 4. Vận dụng." }
+      ],
+      implementationGuide: [
+        "1. Trình bày mỗi hoạt động đủ 4 thành tố: a) Mục tiêu; b) Nội dung; c) Sản phẩm; d) Tổ chức thực hiện.",
+        "2. Trình bày bảng 2 cột rõ ràng giữa Hoạt động của GV và Sản phẩm kỳ vọng của HS.",
+        "3. Xuất file Word (.docx) đúng chuẩn font chữ Times New Roman 13pt."
+      ]
+    }
   }
 ];
 

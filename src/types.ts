@@ -61,4 +61,11 @@ export interface LegalDocument {
   keyPoints: string[];
   icon: string;
   badgeColor: string;
+  details?: {
+    scope: string;
+    targetAudience: string;
+    structure: { name: string; desc: string; tags?: string[] }[];
+    implementationGuide: string[];
+    legalReferenceUrl?: string;
+  };
 }
