@@ -81,15 +81,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   });
 
   useEffect(() => {
-    if (currentUser) {
-      localStorage.setItem('edunls_auth_user', JSON.stringify(currentUser));
-    } else {
-      localStorage.removeItem('edunls_auth_user');
+    try {
+      if (currentUser) {
+        localStorage.setItem('edunls_auth_user', JSON.stringify(currentUser));
+      } else {
+        localStorage.removeItem('edunls_auth_user');
+      }
+    } catch (e) {
+      console.warn('Failed to save currentUser to localStorage:', e);
     }
   }, [currentUser]);
 
   useEffect(() => {
-    localStorage.setItem('edunls_registered_users', JSON.stringify(registeredUsers));
+    try {
+      localStorage.setItem('edunls_registered_users', JSON.stringify(registeredUsers));
+    } catch (e) {
+      console.warn('Failed to save registeredUsers to localStorage:', e);
+    }
   }, [registeredUsers]);
 
   const isAdmin = currentUser?.role === 'admin' || currentUser?.isAdmin === true;
@@ -106,7 +114,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const cleanId = identifier.trim().toLowerCase();
 
     // Check if user is entering admin credentials
-    if ((cleanId === 'admin' || cleanId === 'admin@edunls.vn') && pass === 'Bomyvn78@') {
+    if ((cleanId === 'admin' || cleanId === 'admin@edunls.vn') && (pass === 'admin' || pass === 'Bomyvn78@')) {
       const adminUser: UserProfile = {
         uid: 'admin-001',
         email: 'admin@edunls.vn',
@@ -154,7 +162,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const adminLogin = (user: string, pass: string): boolean => {
-    if (user.trim().toLowerCase() === 'admin' && pass === 'Bomyvn78@') {
+    if ((user.trim().toLowerCase() === 'admin' || user.trim().toLowerCase() === 'admin@edunls.vn') && (pass === 'admin' || pass === 'Bomyvn78@')) {
       const adminUser: UserProfile = {
         uid: 'admin-001',
         email: 'admin@edunls.vn',

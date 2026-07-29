@@ -73,7 +73,24 @@ function AppContent() {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('edunls_lessons', JSON.stringify(lessons));
+    try {
+      localStorage.setItem('edunls_lessons', JSON.stringify(lessons));
+    } catch (e) {
+      console.warn('localStorage quota exceeded while saving lessons cache:', e);
+      // Attempt saving lightweight summaries if full quota is exceeded
+      try {
+        const lightweight = lessons.slice(0, 10).map(l => ({
+          ...l,
+          originalContent: l.originalContent ? l.originalContent.slice(0, 500) + '...' : '',
+          integratedContent: l.integratedContent ? l.integratedContent.slice(0, 1000) + '...' : '',
+        }));
+        localStorage.setItem('edunls_lessons', JSON.stringify(lightweight));
+      } catch {
+        try {
+          localStorage.removeItem('edunls_lessons');
+        } catch {}
+      }
+    }
   }, [lessons]);
 
   // Selected sample or saved lesson plan for studio

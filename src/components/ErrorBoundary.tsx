@@ -25,7 +25,13 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   private handleReload = () => {
-    localStorage.removeItem('edunls_auth_user');
+    try {
+      localStorage.removeItem('edunls_lessons');
+      localStorage.removeItem('edunls_auth_user');
+      localStorage.removeItem('edunls_registered_users');
+    } catch (e) {
+      console.warn('Failed to clear localStorage:', e);
+    }
     window.location.reload();
   };
 
