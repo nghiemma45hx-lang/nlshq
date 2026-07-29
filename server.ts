@@ -228,8 +228,8 @@ Phân tích Kế hoạch bài dạy gốc được cung cấp, đối chiếu v�
 
 QUY TẮC BẮT BUỘC KHI TÍCH HỢP NLS VÀO KẾ HOẠCH BÀI DẠY (KHBD):
 1. BỎ HOÀN TOÀN BẢNG/HỘP CĂN CỨ PHÁP LÝ TÍCH HỢP: TUYỆT ĐỐI KHÔNG xuất hiện bất kỳ khung hay tiêu đề "CĂN CỨ PHÁP LÝ TÍCH HỢP NĂNG LỰC SỐ & AI" ở đầu tệp bài dạy. Tích hợp NLS thẳng và trực tiếp vào khung giáo án gốc.
-2. NẾU BÀI DẠY LÀ TIẾT KIỂM TRA / ĐÁNH GIÁ: Nếu giáo án gốc là tiết kiểm tra (kiểm tra 1 tiết, kiểm tra giữa kỳ, kiểm tra cuối kỳ, bài kiểm tra định kỳ, kiểm tra thường xuyên), KHÔNG tích hợp NLS hay AI vào bài dạy. Giữ nguyên nội dung kiểm tra đánh giá độc lập của bài dạy gốc và ghi thông báo ngắn gọn: "Tiết kiểm tra/đánh giá - Giữ nguyên hình thức độc lập, không tích hợp NLS".
-3. VỚI TẤT CẢ CÁC TIẾT HỌC / BÀI HỌC CÒN LẠI (TRỪ TIẾT KIỂM TRA): Bắt buộc tích hợp toàn bộ và đầy đủ Năng lực số (NLS) và AI vào tất cả các phần của bài dạy (Mục tiêu, Thiết bị & Học liệu số, Tiến trình 4 Hoạt động).
+2. NGOẠI TRỪ TIẾT KIỂM TRA CHÍNH THỨC: Chỉ ngoại trừ không tích hợp NLS/AI khi tệp bài dạy là Tiết kiểm tra chính thức (bao gồm: Kiểm tra thường xuyên, Kiểm tra giữa học kỳ I, Kiểm tra giữa học kỳ II, Kiểm tra cuối học kỳ I, Kiểm tra cuối học kỳ II). Những tiết này giữ nguyên giáo án kiểm tra gốc và hiển thị thông báo: "Tiết kiểm tra/đánh giá độc lập - Giữ nguyên hình thức kiểm tra, không tích hợp NLS".
+3. VỚI TẤT CẢ CÁC BÀI HỌC / TIẾT HỌC DẠY HỌC THÔNG THƯỜNG (kể cả các bài dài nhiều tiết như 12 tiết, các bài đọc hiểu, thực hành, luyện tập, viết, nói và nghe, ôn tập): BẮT BUỘC TÍCH HỢP ĐẦY ĐỦ NĂNG LỰC SỐ (NLS) VÀ AI vào trực tiếp tất cả các mục (Mục tiêu, Thiết bị & Học liệu số, Tiến trình 4 Hoạt động CV 5512). KHÔNG ĐƯỢC nhầm lẫn bài học thông thường có chứa các cụm từ như "kiểm tra bài cũ" hay "đánh giá học sinh" thành tiết kiểm tra định kỳ.
 
 Quy tắc xuất bản định dạng HTML trả về:
 - Trả về mã HTML đẹp mắt, rõ ràng với các thẻ <div>, <ul>, <li>, <span>, <code>.

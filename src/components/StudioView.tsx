@@ -197,18 +197,37 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
 
   // Fallback intelligent HTML NLS injector
   const generateFallbackIntegrated = (inputHtml: string, sub: string, fw: string) => {
-    // Check if the lesson plan is a test/exam period
-    const isExamPeriod = /kiểm tra|bài kiểm tra|đánh giá giữa kỳ|đánh giá cuối kỳ|định kỳ|1 tiết|tiết kiểm tra/i.test(inputHtml);
+    // Check if the lesson plan is explicitly a formal exam period (Kiểm tra thường xuyên, giữa kỳ I/II, cuối kỳ I/II)
+    const checkIsFormalExamPeriod = (text: string) => {
+      const cleanHead = text.slice(0, 800).toLowerCase();
+      const formalExamKeywords = [
+        'kiểm tra thường xuyên',
+        'kiểm tra giữa học kỳ',
+        'kiểm tra giữa kỳ',
+        'kiểm tra cuối học kỳ',
+        'kiểm tra cuối kỳ',
+        'đề kiểm tra giữa học kỳ',
+        'đề kiểm tra cuối học kỳ',
+        'bài kiểm tra giữa học kỳ',
+        'bài kiểm tra cuối học kỳ',
+        'tiết kiểm tra giữa học kỳ',
+        'tiết kiểm tra cuối học kỳ',
+        'tiết kiểm tra thường xuyên'
+      ];
+      return formalExamKeywords.some(kw => cleanHead.includes(kw));
+    };
+
+    const isExamPeriod = checkIsFormalExamPeriod(inputHtml);
 
     if (isExamPeriod) {
       return `
         <div class="space-y-4 text-xs text-slate-800 leading-relaxed">
           <div class="bg-amber-50 border-l-4 border-amber-500 p-3.5 rounded-r-lg shadow-xs">
             <span class="font-bold text-amber-900 block text-xs uppercase mb-1">
-              TIẾT KIỂM TRA / ĐÁNH GIÁ ĐỊNH KỲ
+              TIẾT KIỂM TRA / ĐÁNH GIÁ ĐỊNH KỲ (ĐỘC LẬP)
             </span>
             <p class="text-amber-800">
-              Giáo án này thuộc <b>Tiết kiểm tra / Đánh giá</b>. Theo quy định, không thực hiện tích hợp Năng lực số & AI vào các tiết kiểm tra để đảm bảo tính độc lập, công bằng và nghiêm túc trong quá trình kiểm tra đánh giá độc lập của học sinh.
+              Giáo án này thuộc <b>Tiết kiểm tra (Kiểm tra thường xuyên / Giữa học kỳ / Cuối học kỳ)</b>. Theo quy định, giữ nguyên hình thức kiểm tra đánh giá độc lập của học sinh, không thực hiện tích hợp Năng lực số & AI.
             </p>
           </div>
 
