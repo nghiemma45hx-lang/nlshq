@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Header } from './components/Header';
+import { NavigationCards } from './components/NavigationCards';
 import { AuthModal } from './components/AuthModal';
 import { LandingView } from './components/LandingView';
 import { StudioView } from './components/StudioView';
@@ -153,6 +154,12 @@ function AppContent() {
         currentView={currentView}
         onSwitchView={setCurrentView}
         onOpenAuth={() => setIsAuthOpen(true)}
+      />
+
+      {/* Persistent System Function Navigation Cards Banner */}
+      <NavigationCards
+        currentView={currentView}
+        onSwitchView={setCurrentView}
       />
 
       {/* Main Views Container */}
