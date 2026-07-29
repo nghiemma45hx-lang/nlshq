@@ -25,16 +25,16 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSwitchView, onLoadSa
   return (
     <div className="space-y-12 pb-12">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-900 text-white py-20 px-4 sm:px-6 lg:px-8 rounded-b-3xl shadow-xl">
+      <section className="relative overflow-hidden bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-900 text-white py-10 sm:py-12 px-4 sm:px-6 lg:px-8 rounded-b-2xl shadow-lg">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-500/20 via-transparent to-transparent pointer-events-none"></div>
         
-        <div className="max-w-5xl mx-auto text-center relative z-10 space-y-6">
-          <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 shadow-inner">
-            <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
+        <div className="max-w-4xl mx-auto text-center relative z-10 space-y-4">
+          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full text-[11px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 shadow-inner">
+            <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
             <span>Chuẩn Khung Năng Lực Số TT 02/2025/TT-BGDĐT & QĐ 3439/QĐ-BGDĐT</span>
           </div>
 
-          <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight leading-tight max-w-4xl mx-auto uppercase">
+          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight leading-snug max-w-3xl mx-auto uppercase">
             TÍCH HỢP <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-purple-300 to-amber-300">NĂNG LỰC SỐ</span> VÀO DẠY HỌC
           </h1>
 
