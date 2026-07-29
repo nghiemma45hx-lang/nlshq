@@ -54,26 +54,6 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSwitchView, onLoadSa
               <span>Nạp Giáo Án Mẫu (Toán 10 CV 5512)</span>
             </button>
           </div>
-
-          {/* Key Indicators Bar */}
-          <div className="pt-10 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto border-t border-slate-800/80 text-left">
-            <div className="bg-slate-800/40 p-3.5 rounded-xl border border-slate-700/50">
-              <div className="text-xl font-black text-amber-400">TT 02/2025</div>
-              <div className="text-xs text-slate-300 mt-0.5">6 Miền - 24 Năng lực số</div>
-            </div>
-            <div className="bg-slate-800/40 p-3.5 rounded-xl border border-slate-700/50">
-              <div className="text-xl font-black text-indigo-400">QĐ 3439</div>
-              <div className="text-xs text-slate-300 mt-0.5">4 Mạch Năng lực AI 2025</div>
-            </div>
-            <div className="bg-slate-800/40 p-3.5 rounded-xl border border-slate-700/50">
-              <div className="text-xl font-black text-purple-400">CV 5512</div>
-              <div className="text-xs text-slate-300 mt-0.5">Chuẩn 4 Hoạt động bài dạy</div>
-            </div>
-            <div className="bg-slate-800/40 p-3.5 rounded-xl border border-slate-700/50">
-              <div className="text-xl font-black text-emerald-400">100% Word</div>
-              <div className="text-xs text-slate-300 mt-0.5">Xuất file .docx chỉnh sửa</div>
-            </div>
-          </div>
         </div>
       </section>
 

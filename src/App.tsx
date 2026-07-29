@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { TopBar } from './components/TopBar';
 import { Header } from './components/Header';
 import { AuthModal } from './components/AuthModal';
 import { LandingView } from './components/LandingView';
@@ -116,6 +117,9 @@ function AppContent() {
 
   return (
     <div className="bg-slate-50 font-sans text-slate-800 antialiased min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
+      {/* Top Ticker Bar with Clock and Running Text */}
+      <TopBar />
+
       {/* Header */}
       <Header
         currentView={currentView}
