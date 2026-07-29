@@ -226,12 +226,17 @@ app.post('/api/gemini/analyze', async (req, res) => {
 Nhiệm vụ của bạn:
 Phân tích Kế hoạch bài dạy gốc được cung cấp, đối chiếu và bổ sung trực tiếp các MÃ CHỈ BÁO NĂNG LỰC SỐ ([NLS x.x]), MÃ MẠCH AI ([AI-NLx]), CÔNG CỤ CÔNG NGHỆ, PROMPT AI MẪU và HƯỚNG DẪN GIÁO VIÊN cụ thể cho môn ${subject || 'Tổng hợp'}, ${grade || 'THPT'}.
 
+QUY TẮC BẮT BUỘC KHI TÍCH HỢP NLS VÀO KẾ HOẠCH BÀI DẠY (KHBD):
+1. BỎ HOÀN TOÀN BẢNG/HỘP CĂN CỨ PHÁP LÝ TÍCH HỢP: TUYỆT ĐỐI KHÔNG xuất hiện bất kỳ khung hay tiêu đề "CĂN CỨ PHÁP LÝ TÍCH HỢP NĂNG LỰC SỐ & AI" ở đầu tệp bài dạy. Tích hợp NLS thẳng và trực tiếp vào khung giáo án gốc.
+2. NẾU BÀI DẠY LÀ TIẾT KIỂM TRA / ĐÁNH GIÁ: Nếu giáo án gốc là tiết kiểm tra (kiểm tra 1 tiết, kiểm tra giữa kỳ, kiểm tra cuối kỳ, bài kiểm tra định kỳ, kiểm tra thường xuyên), KHÔNG tích hợp NLS hay AI vào bài dạy. Giữ nguyên nội dung kiểm tra đánh giá độc lập của bài dạy gốc và ghi thông báo ngắn gọn: "Tiết kiểm tra/đánh giá - Giữ nguyên hình thức độc lập, không tích hợp NLS".
+3. VỚI TẤT CẢ CÁC TIẾT HỌC / BÀI HỌC CÒN LẠI (TRỪ TIẾT KIỂM TRA): Bắt buộc tích hợp toàn bộ và đầy đủ Năng lực số (NLS) và AI vào tất cả các phần của bài dạy (Mục tiêu, Thiết bị & Học liệu số, Tiến trình 4 Hoạt động).
+
 Quy tắc xuất bản định dạng HTML trả về:
 - Trả về mã HTML đẹp mắt, rõ ràng với các thẻ <div>, <ul>, <li>, <span>, <code>.
-- Đầu file bao gồm hộp banner "CĂN CỨ PHÁP LÝ TÍCH HỢP" (Căn cứ TT 02/2025/TT-BGDĐT, QĐ 3439/QĐ-BGDĐT & CV 5512).
+- TUYỆT ĐỐI KHÔNG tạo hộp banner "CĂN CỨ PHÁP LÝ TÍCH HỢP" ở đầu bài dạy.
 - Các thẻ mã NLS/AI phải được đóng gói trong các span nổi bật (ví dụ: <span class="bg-indigo-100 text-indigo-800 font-bold px-1.5 py-0.5 rounded font-mono">[NLS 1.1-a]</span>).
 - Bổ sung cụ thể ví dụ Prompt AI và tên công cụ công nghệ thực tế (như Quizizz AI, GeoGebra, ChatGPT, Canva AI, Padlet, Teachable Machine).
-- Giữ nguyên nội dung sư phạm gốc của bài dạy, đồng thời chèn các khối TÍCH HỢP NLS & AI tương ứng vào từng phần Mục tiêu, Thiết bị học liệu và 4 Hoạt động tiến trình.`;
+- Giữ nguyên nội dung khung sư phạm gốc của bài dạy, chèn trực tiếp các chỉ báo TÍCH HỢP NLS & AI tương ứng vào từng phần Mục tiêu, Thiết bị học liệu và các Hoạt động tiến trình.`;
 
     const userPrompt = `Môn học: ${subject}
 Cấp/Khối: ${grade}
@@ -257,6 +262,9 @@ ${lessonText}
       });
 
       resultHtml = response.text || '';
+      // Clean up any unwanted Legal Basis banner if outputted
+      resultHtml = resultHtml.replace(/<div[^>]*class="[^"]*bg-rose-50[^"]*"[\s\S]*?CĂN CỨ PHÁP LÝ[\s\S]*?<\/div>/gi, '');
+      resultHtml = resultHtml.replace(/<div[^>]*>[\s\S]*?CĂN CỨ PHÁP LÝ TÍCH HỢP[\s\S]*?<\/div>/gi, '');
     } else {
       source = 'local-engine';
     }

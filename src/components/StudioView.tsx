@@ -197,21 +197,35 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
 
   // Fallback intelligent HTML NLS injector
   const generateFallbackIntegrated = (inputHtml: string, sub: string, fw: string) => {
+    // Check if the lesson plan is a test/exam period
+    const isExamPeriod = /kiểm tra|bài kiểm tra|đánh giá giữa kỳ|đánh giá cuối kỳ|định kỳ|1 tiết|tiết kiểm tra/i.test(inputHtml);
+
+    if (isExamPeriod) {
+      return `
+        <div class="space-y-4 text-xs text-slate-800 leading-relaxed">
+          <div class="bg-amber-50 border-l-4 border-amber-500 p-3.5 rounded-r-lg shadow-xs">
+            <span class="font-bold text-amber-900 block text-xs uppercase mb-1">
+              TIẾT KIỂM TRA / ĐÁNH GIÁ ĐỊNH KỲ
+            </span>
+            <p class="text-amber-800">
+              Giáo án này thuộc <b>Tiết kiểm tra / Đánh giá</b>. Theo quy định, không thực hiện tích hợp Năng lực số & AI vào các tiết kiểm tra để đảm bảo tính độc lập, công bằng và nghiêm túc trong quá trình kiểm tra đánh giá độc lập của học sinh.
+            </p>
+          </div>
+
+          <div class="border-t border-slate-200 pt-3">
+            <div class="font-bold text-slate-800 uppercase mb-2">NỘI DUNG GIÁO ÁN GỐC:</div>
+            <div class="bg-white p-3.5 rounded-lg border border-slate-200 leading-relaxed">
+              ${inputHtml}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
     return `
       <div class="space-y-4 text-xs text-slate-800 leading-relaxed">
-        <div class="bg-rose-50 border-l-4 border-rose-500 p-3 rounded-r-lg shadow-2xs">
-          <span class="font-bold text-rose-900 block uppercase text-[11px] mb-1">
-            CĂN CỨ PHÁP LÝ TÍCH HỢP NĂNG LỰC SỐ & AI
-          </span>
-          <p class="text-[11px] text-rose-800">
-            • Cấu trúc Kế hoạch bài dạy tuân thủ <b>${template}</b>.<br>
-            • Khung Chỉ báo Năng lực số áp dụng <b>${fw}</b>.<br>
-            • Khung Mạch Năng lực AI áp dụng <b>Quyết định 3439/QĐ-BGDĐT (2025)</b>.
-          </p>
-        </div>
-
-        <div class="bg-indigo-50 border-l-4 border-indigo-500 p-3 rounded-r-lg">
-          <span class="font-bold text-indigo-900 block text-xs uppercase mb-1">I. MỤC TIÊU BÀI HỌC (TÍCH HỢP NLS & AI)</span>
+        <div class="bg-indigo-50 border-l-4 border-indigo-500 p-3.5 rounded-r-lg">
+          <span class="font-bold text-indigo-900 block text-xs uppercase mb-1">I. MỤC TIÊU BÀI HỌC (TÍCH HỢP NLS & AI CHUẨN BỘ)</span>
           <p class="text-slate-700"><b>1. Kiến thức & Năng lực đặc thù:</b> Đảm bảo chuẩn kiến thức môn ${sub}.</p>
           <p class="text-indigo-800 font-bold mt-1.5">2. Năng lực Số & AI bổ sung:</p>
           <ul class="list-none space-y-1.5 mt-1 pl-1">
@@ -230,13 +244,13 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
           </ul>
         </div>
 
-        <div class="bg-emerald-50 border-l-4 border-emerald-500 p-3 rounded-r-lg">
+        <div class="bg-emerald-50 border-l-4 border-emerald-500 p-3.5 rounded-r-lg">
           <span class="font-bold text-emerald-900 block text-xs uppercase mb-1">II. THIẾT BỊ DẠY HỌC & HỌC LIỆU SỐ</span>
           <p><b>1. Thiết bị:</b> Máy tính giáo viên, màn hình tương tác, thiết bị di động cá nhân/nhóm học sinh.</p>
           <p className="mt-1"><b>2. Nền tảng AI & Ứng dụng:</b> Quizizz AI, GeoGebra, Canva AI, ChatGPT / Gemini.</p>
         </div>
 
-        <div class="bg-amber-50 border-l-4 border-amber-500 p-3 rounded-r-lg">
+        <div class="bg-amber-50 border-l-4 border-amber-500 p-3.5 rounded-r-lg">
           <span class="font-bold text-amber-900 block text-xs uppercase mb-1.5">III. TIẾN TRÌNH DẠY HỌC TÍCH HỢP NLS (4 HOẠT ĐỘNG CV 5512)</span>
           <div class="space-y-2">
             <div class="bg-white p-2.5 rounded border border-amber-200">
@@ -249,7 +263,7 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
             </div>
             <div class="bg-white p-2.5 rounded border border-amber-200">
               <span class="font-bold text-slate-900">Hoạt động 3: Luyện tập & Đánh giá số <span class="text-emerald-700 font-mono">[NLS 2.4-a]</span></span>
-              <p class="mt-1">HS thảo luận nhóm, tải sản phẩm bài tập lên Padlet/Azota đểGV và bạn bè đối sánh.</p>
+              <p class="mt-1">HS thảo luận nhóm, tải sản phẩm bài tập lên Padlet/Azota để GV và bạn bè đối sánh.</p>
             </div>
             <div class="bg-white p-2.5 rounded border border-amber-200">
               <span class="font-bold text-slate-900">Hoạt động 4: Vận dụng & Sáng tạo nội dung số <span class="text-amber-700 font-mono">[NLS 5.3-a]</span></span>
@@ -259,8 +273,8 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
         </div>
 
         <div class="border-t border-slate-200 pt-3">
-          <div class="font-bold text-slate-800 uppercase mb-2">NỘI DUNG NGUYÊN BẢN GIÁO ÁN:</div>
-          <div class="bg-white p-3 rounded border border-slate-200">
+          <div class="font-bold text-slate-800 uppercase mb-2">NỘI DUNG NGUYÊN BẢN GIÁO ÁN GỐC:</div>
+          <div class="bg-white p-3.5 rounded-lg border border-slate-200">
             ${inputHtml}
           </div>
         </div>

@@ -410,18 +410,7 @@ export const SAMPLE_LESSONS: LessonPlanItem[] = [
 <b>Hoạt động 4: Vận dụng</b><br>
 - GV giao bài tập thực tế tính chiều cao cổng Parabol tích hợp toán thực tiễn.`,
     integratedContent: `<div class="space-y-4">
-  <div class="bg-rose-50 border-l-4 border-rose-500 p-3 rounded-r-lg">
-    <span class="font-bold text-rose-900 block text-xs uppercase mb-1">
-      CĂN CỨ PHÁP LÝ TÍCH HỢP
-    </span>
-    <p class="text-[11px] text-rose-800">
-      • Cấu trúc Kế hoạch bài dạy tuân thủ <b>Công văn 5512/BGDĐT-GDTrH</b>.<br>
-      • Khung Chỉ báo Năng lực số áp dụng <b>Thông tư 02/2025/TT-BGDĐT</b>.<br>
-      • Khung Mạch Năng lực AI áp dụng <b>Quyết định 3439/QĐ-BGDĐT (2025)</b>.
-    </p>
-  </div>
-
-  <div class="bg-indigo-50 border-l-4 border-indigo-500 p-3 rounded-r-lg">
+  <div class="bg-indigo-50 border-l-4 border-indigo-500 p-3.5 rounded-r-lg">
     <span class="font-bold text-indigo-900 block text-xs uppercase mb-1">I. MỤC TIÊU BÀI HỌC (TÍCH HỢP NLS & AI CHUẨN BỘ)</span>
     <p class="text-xs text-indigo-800"><b>1. Kiến thức & Năng lực Toán học:</b> Giữ nguyên theo chuẩn chương trình 2018.</p>
     <p class="text-xs text-brand-700 font-semibold mt-1.5">
