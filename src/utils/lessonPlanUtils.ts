@@ -32,8 +32,19 @@ export function relocateNlsToLeftColumn(htmlStr: string): string {
       let leftCell = cells[0].content;
       let rightCell = cells[1].content;
 
+      // Check if this row is for 'Đọc - tìm hiểu chung' / 'Tìm hiểu chung' / 'Tác giả, tác phẩm' / 'Đọc văn bản'
+      const isReadingGeneralRow = /(?:đọc\s*-\s*tìm hiểu chung|i\.\s*đọc|i\.\s*tìm hiểu chung|1\.\s*tác giả|2\.\s*tác phẩm|b\.\s*đọc văn bản|tìm hiểu chung)/i.test(cells[0].content + cells[1].content);
+
       // Check if rightCell contains NLS badges or blocks
       const hasNlsInRight = /\[(?:NLS|AI-NL)[^\]]*\]|\[Ứng dụng NLS/i.test(rightCell);
+
+      // Auto-inject NLS Miền 1 into Left column if this is a 'Đọc - tìm hiểu chung' row and doesn't have NLS 1 yet
+      const hasNls1 = /\[NLS 1/i.test(cells[0].content + cells[1].content);
+      if (isReadingGeneralRow && !hasNls1) {
+        const domain1Block = `<div class="my-1.5 p-2 bg-indigo-50/90 border-l-3 border-indigo-600 rounded-r text-[11px] text-indigo-950 font-sans"><b>[Ứng dụng NLS Miền 1 - Khai thác dữ liệu & Tra cứu thông tin]:</b> <span class="bg-indigo-100 text-indigo-800 font-bold px-1.5 py-0.5 rounded font-mono text-xs mr-1">[NLS 1.1-a]</span> GV hướng dẫn HS sử dụng thiết bị số/Internet tra cứu thông tin tác giả, tác phẩm, bối cảnh và hoàn thành Phiếu học tập số (PHT).</div>`;
+        leftCell = domain1Block + '\n' + leftCell;
+        cells[0].content = leftCell;
+      }
 
       if (hasNlsInRight) {
         const nlsBlocksToMove: string[] = [];

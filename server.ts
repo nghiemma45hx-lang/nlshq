@@ -251,7 +251,11 @@ QUY TẮC PHÂN TÍCH VÀ TÍCH HỢP BẮT BUỘC (QUAN TRỌNG NHẤT):
    - Các mã chỉ báo NLS/AI phải được đóng gói trong thẻ span nổi bật font-mono:
      <span class="bg-indigo-100 text-indigo-800 font-bold px-1.5 py-0.5 rounded font-mono text-xs">[NLS 1.1-a]</span>
      <span class="bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded font-mono text-xs">[AI-NLc: Prompting]</span>
-   - Đảm bảo toàn bộ giáo án sau tích hợp là MỘT VĂN BẢN KHINHKHÍT, THỐNG NHẤT từ Mục tiêu -> Thiết bị -> Hoạt động 1 -> Hoạt động 2 -> Hoạt động 3 -> Hoạt động 4.`;
+   - Đảm bảo toàn bộ giáo án sau tích hợp là MỘT VĂN BẢN KHINHKHÍT, THỐNG NHẤT từ Mục tiêu -> Thiết bị -> Hoạt động 1 -> Hoạt động 2 -> Hoạt động 3 -> Hoạt động 4.
+
+5. ĐẶC TRƯNG MÔN NGỮ VĂN & PHẦN ĐỌC TÌM HIỂU CHUNG (TÍCH HỢP NLS MIỀN 1):
+   - Trong môn Ngữ văn (và phần đầu tiên của 1 tiết/bài/chủ đề như Khám phá/Tìm hiểu chung), phần "I. Đọc - tìm hiểu chung", "Tìm hiểu chung", "1. Tác giả", "2. Tác phẩm", "B. Đọc văn bản" BẮT BUỘC TÍCH HỢP NLS MIỀN 1: KHAI THÁC DỮ LIỆU VÀ THÔNG TIN ([NLS 1.1-a], [NLS 1.2-a], [NLS 1.3-a]).
+   - Hoạt động NLS Miền 1 BẮT BUỘC chèn vào CỘT BÊN TRÁI ('Tổ chức thực hiện'): Cho HS sử dụng thiết bị số (Internet, QR Code, tra cứu Google, thư viện số) tra cứu, thu thập và quản lý thông tin về tác giả, tác phẩm, bối cảnh ra đời, hoàn thành Phiếu học tập số (PHT) báo cáo.`;
 
     const userPrompt = `Môn học: ${subject}
 Cấp/Khối: ${grade}
