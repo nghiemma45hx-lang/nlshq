@@ -76,3 +76,28 @@ export interface LegalDocument {
     legalReferenceUrl?: string;
   };
 }
+
+export interface NavCardConfigItem {
+  id: string;
+  title: string;
+  sub: string;
+  badge: string;
+  badgeColor: string;
+  cardBgColor: string;
+  textColor: string;
+  isHot?: boolean;
+}
+
+export interface HeroBannerConfig {
+  badgeText: string;
+  badgeColor: string;
+  mainTitlePrefix: string;
+  mainTitleHighlight: string;
+  mainTitleSuffix: string;
+  highlightColor: string;
+  tickerBadge: string;
+  tickerText: string;
+  bannerBgTheme: string;
+  navCards: NavCardConfigItem[];
+}
+

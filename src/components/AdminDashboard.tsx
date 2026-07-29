@@ -29,11 +29,13 @@ import {
   Phone,
   Mail,
   UserCheck,
-  UserX
+  UserX,
+  Palette
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { LessonPlanItem, AdminStats, UserProfile } from '../types';
 import { formatDateTime } from '../utils/lessonPlanUtils';
+import { AdminHeroEditor } from './AdminHeroEditor';
 
 interface AdminDashboardProps {
   lessons: LessonPlanItem[];
@@ -56,7 +58,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     adminAddUser 
   } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'lessons' | 'competencies' | 'logs' | 'sql'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'lessons' | 'competencies' | 'hero' | 'logs' | 'sql'>('overview');
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(false);
   const [searchFilter, setSearchFilter] = useState('');
@@ -321,6 +323,18 @@ ON CONFLICT (id) DO NOTHING;`;
         >
           <Sliders className="w-4 h-4" />
           <span>Cấu Hình NLS</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('hero')}
+          className={`flex-1 min-w-[170px] py-2.5 text-xs font-bold rounded-xl transition flex items-center justify-center space-x-2 ${
+            activeTab === 'hero'
+              ? 'bg-rose-600 text-white shadow-2xs ring-2 ring-amber-400'
+              : 'text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200'
+          }`}
+        >
+          <Palette className="w-4 h-4 text-amber-500" />
+          <span>Quản Lý Hero Banner</span>
         </button>
 
         <button
@@ -740,6 +754,12 @@ ON CONFLICT (id) DO NOTHING;`;
           </div>
         </div>
       )}
+
+      {/* TAB 7: HERO BANNER & NAVIGATION CARDS EDITOR */}
+      {activeTab === 'hero' && (
+        <AdminHeroEditor onSuccessToast={onSuccessToast} />
+      )}
+
 
       {/* MODAL 1: ADMIN RESET USER PASSWORD */}
       {resetModalUser && (

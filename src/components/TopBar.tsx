@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, Calendar, Sparkles } from 'lucide-react';
+import { useHeroConfig } from '../context/HeroConfigContext';
 
 export const TopBar: React.FC = () => {
+  const { heroConfig } = useHeroConfig();
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
@@ -42,11 +44,11 @@ export const TopBar: React.FC = () => {
       <div className="flex-1 w-full md:w-auto overflow-hidden flex items-center space-x-2 bg-slate-950/80 border border-slate-800 rounded-lg px-2.5 py-1">
         <span className="shrink-0 flex items-center space-x-1 text-[10px] font-bold text-amber-400 uppercase tracking-wider bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/30">
           <Sparkles className="w-2.5 h-2.5 text-amber-400 animate-pulse" />
-          <span>THÔNG BÁO</span>
+          <span>{heroConfig.tickerBadge || 'THÔNG BÁO'}</span>
         </span>
         <div className="flex-1 overflow-hidden relative">
           <div className="whitespace-nowrap text-xs font-semibold text-indigo-100 tracking-wide inline-block animate-[marquee_20s_linear_infinite]">
-            Chào mừng quý thầy cô giáo đến với ứng dụng tích hợp năng lực số vào bài dạy.
+            {heroConfig.tickerText || 'Chào mừng quý thầy cô giáo đến với ứng dụng tích hợp năng lực số vào bài dạy.'}
           </div>
         </div>
       </div>

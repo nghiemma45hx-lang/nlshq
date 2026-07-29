@@ -1,5 +1,6 @@
 import React from 'react';
 import { TopBar } from './TopBar';
+import { useHeroConfig } from '../context/HeroConfigContext';
 import { 
   Sparkles, 
   Upload, 
@@ -27,26 +28,33 @@ interface LandingViewProps {
 }
 
 export const LandingView: React.FC<LandingViewProps> = ({ onSwitchView, onLoadSample }) => {
+  const { heroConfig } = useHeroConfig();
+
   return (
     <div className="space-y-12 pb-12">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-900 text-white py-8 sm:py-10 px-4 sm:px-6 lg:px-8 rounded-b-3xl shadow-xl">
+      <section className={`relative overflow-hidden bg-gradient-to-b ${heroConfig.bannerBgTheme || 'from-slate-900 via-indigo-950 to-slate-900'} text-white py-8 sm:py-10 px-4 sm:px-6 lg:px-8 rounded-b-3xl shadow-xl transition-all duration-300`}>
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-500/20 via-transparent to-transparent pointer-events-none"></div>
         
         <div className="max-w-6xl mx-auto text-center relative z-10 space-y-4">
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full text-[11px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 shadow-inner">
+          <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-[11px] font-semibold ${heroConfig.badgeColor || 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'} shadow-inner`}>
             <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-            <span>Chuẩn Khung Năng Lực Số TT 02/2025/TT-BGDĐT & QĐ 3439/QĐ-BGDĐT</span>
+            <span>{heroConfig.badgeText}</span>
           </div>
 
           <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight leading-snug max-w-3xl mx-auto uppercase">
-            TÍCH HỢP <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-purple-300 to-amber-300">NĂNG LỰC SỐ</span> VÀO DẠY HỌC
+            {heroConfig.mainTitlePrefix}
+            <span className={`bg-clip-text text-transparent bg-gradient-to-r ${heroConfig.highlightColor || 'from-indigo-300 via-purple-300 to-amber-300'}`}>
+              {heroConfig.mainTitleHighlight}
+            </span>
+            {heroConfig.mainTitleSuffix}
           </h1>
 
           {/* Clock, Date, and Scrolling Text Bar */}
           <TopBar />
         </div>
       </section>
+
 
       {/* 4-Step Workflow Visual Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

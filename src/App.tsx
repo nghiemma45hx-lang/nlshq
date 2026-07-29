@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { HeroConfigProvider } from './context/HeroConfigContext';
 import { Header } from './components/Header';
 import { NavigationCards } from './components/NavigationCards';
 import { AuthModal } from './components/AuthModal';
@@ -251,7 +252,10 @@ function AppContent() {
 export default function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <HeroConfigProvider>
+        <AppContent />
+      </HeroConfigProvider>
     </AuthProvider>
   );
 }
+
