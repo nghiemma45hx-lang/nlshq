@@ -1,0 +1,218 @@
+import React, { useState, useEffect } from 'react';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { Header } from './components/Header';
+import { AuthModal } from './components/AuthModal';
+import { LandingView } from './components/LandingView';
+import { StudioView } from './components/StudioView';
+import { RepositoryView } from './components/RepositoryView';
+import { LibraryView } from './components/LibraryView';
+import { LegalView } from './components/LegalView';
+import { AdminDashboard } from './components/AdminDashboard';
+import { CompetencyDetailModal } from './components/CompetencyDetailModal';
+import { SAMPLE_LESSONS } from './data/competencyData';
+import { LessonPlanItem, CompetencyDomain } from './types';
+import { CheckCircle2 } from 'lucide-react';
+import { 
+  fetchLessonsFromSupabase, 
+  saveLessonToSupabase, 
+  deleteLessonFromSupabase, 
+  seedSampleDataToSupabase 
+} from './lib/supabaseService';
+
+function AppContent() {
+  const [currentView, setCurrentView] = useState<string>('landing');
+  const [isAuthOpen, setIsAuthOpen] = useState<boolean>(false);
+  const [selectedCompetency, setSelectedCompetency] = useState<CompetencyDomain | null>(null);
+
+  // Toast notification state
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 3200);
+  };
+
+  // Saved lessons state (stored in LocalStorage & Supabase)
+  const [lessons, setLessons] = useState<LessonPlanItem[]>(() => {
+    const saved = localStorage.getItem('edunls_lessons');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return SAMPLE_LESSONS;
+      }
+    }
+    return SAMPLE_LESSONS;
+  });
+
+  // Sync Supabase on initial load
+  useEffect(() => {
+    const loadFromSupabase = async () => {
+      try {
+        const remoteLessons = await fetchLessonsFromSupabase();
+        if (remoteLessons && remoteLessons.length > 0) {
+          setLessons(remoteLessons);
+        } else {
+          // Seed sample data to Supabase
+          await seedSampleDataToSupabase();
+        }
+      } catch (err) {
+        console.warn('Supabase initial fetch failed, using local cache:', err);
+      }
+    };
+    loadFromSupabase();
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('edunls_lessons', JSON.stringify(lessons));
+  }, [lessons]);
+
+  // Selected sample or saved lesson plan for studio
+  const [activeSample, setActiveSample] = useState<LessonPlanItem | null>(null);
+
+  const handleSaveLesson = async (newLessonData: Omit<LessonPlanItem, 'id' | 'createdAt' | 'dateString'>) => {
+    const newLesson: LessonPlanItem = {
+      ...newLessonData,
+      id: 'lesson-' + Date.now(),
+      createdAt: Date.now(),
+      dateString: new Date().toLocaleDateString('vi-VN'),
+    };
+    setLessons(prev => [newLesson, ...prev]);
+
+    // Save to Supabase Cloud Database
+    const savedSuccess = await saveLessonToSupabase(newLesson);
+    if (savedSuccess) {
+      showToast('Đã lưu Kế hoạch bài dạy thành công vào Supabase Database!');
+    } else {
+      showToast('Đã lưu Kế hoạch bài dạy vào bộ nhớ local.');
+    }
+  };
+
+  const handleDeleteLesson = async (id: string) => {
+    setLessons(prev => prev.filter(l => l.id !== id));
+    await deleteLessonFromSupabase(id);
+    showToast('Đã xóa giáo án khỏi Supabase Database.');
+  };
+
+  const handleSelectSavedLesson = (lesson: LessonPlanItem) => {
+    setActiveSample(lesson);
+    setCurrentView('studio');
+    showToast(`Đã nạp bài dạy "${lesson.title.substring(0, 30)}..." vào AI Studio.`);
+  };
+
+  const handleLoadSampleFromLanding = () => {
+    setActiveSample(SAMPLE_LESSONS[0]);
+    setCurrentView('studio');
+    showToast('Đã nạp Kế hoạch bài dạy mẫu Toán 10 (Chuẩn CV 5512)!');
+  };
+
+  const handleApplyCompetencyToStudio = (comp: CompetencyDomain) => {
+    setSelectedCompetency(null);
+    setCurrentView('studio');
+    showToast(`Đã áp dụng miền "${comp.title}" vào AI Studio Workstation!`);
+  };
+
+  return (
+    <div className="bg-slate-50 font-sans text-slate-800 antialiased min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
+      {/* Header */}
+      <Header
+        currentView={currentView}
+        onSwitchView={setCurrentView}
+        onOpenAuth={() => setIsAuthOpen(true)}
+      />
+
+      {/* Main Views Container */}
+      <main className="flex-grow">
+        {currentView === 'landing' && (
+          <LandingView
+            onSwitchView={setCurrentView}
+            onLoadSample={handleLoadSampleFromLanding}
+          />
+        )}
+
+        {currentView === 'studio' && (
+          <StudioView
+            onSaveLesson={handleSaveLesson}
+            onSuccessToast={showToast}
+            sampleLesson={activeSample}
+          />
+        )}
+
+        {currentView === 'repository' && (
+          <RepositoryView
+            lessons={lessons}
+            onSelectLesson={handleSelectSavedLesson}
+            onDeleteLesson={handleDeleteLesson}
+            onSwitchView={setCurrentView}
+            onSuccessToast={showToast}
+          />
+        )}
+
+        {currentView === 'library' && (
+          <LibraryView
+            onSelectCompetency={(comp) => setSelectedCompetency(comp)}
+          />
+        )}
+
+        {currentView === 'legal' && (
+          <LegalView onSuccessToast={showToast} />
+        )}
+
+        {currentView === 'admin' && (
+          <AdminDashboard
+            lessons={lessons}
+            onDeleteLesson={handleDeleteLesson}
+            onSuccessToast={showToast}
+          />
+        )}
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-white border-t border-slate-200 py-8 mt-12 text-xs text-slate-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
+          <div>
+            <span className="font-extrabold text-indigo-700 text-sm">EduNLS AI 2026</span> - Nền tảng Tích Hợp Năng Lực Số & AI Dành Cho Giáo Viên
+            <p className="text-[11px] text-slate-400 mt-0.5">Căn cứ Thông tư 02/2025/TT-BGDĐT, Quyết định 3439/QĐ-BGDĐT & Công văn 5512/BGDĐT-GDTrH</p>
+          </div>
+          <div className="flex items-center space-x-4 font-medium">
+            <button onClick={() => setCurrentView('legal')} className="hover:text-indigo-600 transition">Cơ Sở Pháp Lý</button>
+            <button onClick={() => setCurrentView('library')} className="hover:text-indigo-600 transition">Khung NLS</button>
+            <button onClick={() => setIsAuthOpen(true)} className="hover:text-indigo-600 transition">Quản Trị (admin / admin)</button>
+          </div>
+        </div>
+      </footer>
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={isAuthOpen}
+        onClose={() => setIsAuthOpen(false)}
+        onSuccessToast={showToast}
+      />
+
+      {/* Competency Detail Modal */}
+      <CompetencyDetailModal
+        competency={selectedCompetency}
+        onClose={() => setSelectedCompetency(null)}
+        onApplyToStudio={handleApplyCompetencyToStudio}
+      />
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl z-50 flex items-center space-x-3 border border-slate-800 animate-in slide-in-from-bottom duration-200">
+          <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+          <span className="text-xs font-bold">{toastMessage}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+}

@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index.ts"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "env": {
+    "VITE_SUPABASE_URL": "https://uqkhrynrdobxglnjguhb.supabase.co",
+    "VITE_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVxa2hyeW5yZG9ieGdsbmpndWhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzMjIyNjgsImV4cCI6MjEwMDg5ODI2OH0.BiIcNHY2tCtGtFKor5Dtpml4RfOKr6-xW8mlHUS4Y9c",
+    "SUPABASE_SERVICE_ROLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVxa2hyeW5yZG9ieGdsbmpndWhiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTMyMjI2OCwiZXhwIjoyMTAwODk4MjY4fQ.3_FzZWCFVWN5jjEce5eW14u6i_m8iLg6s75MH3p7m_E"
+  }
+}
