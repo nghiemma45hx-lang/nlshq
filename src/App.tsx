@@ -20,6 +20,7 @@ import {
 } from './lib/supabaseService';
 
 function AppContent() {
+  const { currentUser } = useAuth();
   const [currentView, setCurrentView] = useState<string>('landing');
   const [isAuthOpen, setIsAuthOpen] = useState<boolean>(false);
   const [selectedCompetency, setSelectedCompetency] = useState<CompetencyDomain | null>(null);
@@ -102,11 +103,13 @@ function AppContent() {
       id: 'lesson-' + Date.now(),
       createdAt: Date.now(),
       dateString: fullDateString,
+      userId: currentUser?.uid || 'guest-' + Date.now(),
+      ownerEmail: currentUser?.email || '',
     };
     setLessons(prev => [newLesson, ...prev]);
 
     // Save to Supabase Cloud Database
-    const savedSuccess = await saveLessonToSupabase(newLesson);
+    const savedSuccess = await saveLessonToSupabase(newLesson, currentUser?.uid || currentUser?.email);
     if (savedSuccess) {
       showToast('Đã lưu Kế hoạch bài dạy thành công vào Supabase Database!');
     } else {
@@ -177,6 +180,7 @@ function AppContent() {
             onUpdateLessonTitle={handleUpdateLessonTitle}
             onSwitchView={setCurrentView}
             onSuccessToast={showToast}
+            onOpenAuth={() => setIsAuthOpen(true)}
           />
         )}
 

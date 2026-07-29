@@ -18,6 +18,8 @@ export const mapDbToLesson = (row: any): LessonPlanItem => ({
   createdAt: typeof row.created_at === 'number' ? row.created_at : new Date(row.created_at || Date.now()).getTime(),
   dateString: row.date_string || row.dateString || new Date().toLocaleDateString('vi-VN'),
   isFeatured: row.is_featured || false,
+  userId: row.user_id || row.userId || '',
+  ownerEmail: row.owner_email || row.ownerEmail || '',
 });
 
 export const mapLessonToDb = (lesson: LessonPlanItem, userId?: string) => ({
@@ -33,7 +35,8 @@ export const mapLessonToDb = (lesson: LessonPlanItem, userId?: string) => ({
   created_at: lesson.createdAt || Date.now(),
   date_string: lesson.dateString || new Date().toLocaleDateString('vi-VN'),
   is_featured: lesson.isFeatured || false,
-  user_id: userId || 'anonymous-teacher',
+  user_id: userId || lesson.userId || 'anonymous-teacher',
+  owner_email: lesson.ownerEmail || '',
 });
 
 /**

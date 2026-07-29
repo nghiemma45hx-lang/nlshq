@@ -11,6 +11,8 @@ export interface LessonPlanItem {
   createdAt: number;
   dateString: string;
   isFeatured?: boolean;
+  userId?: string;
+  ownerEmail?: string;
 }
 
 export interface CompetencyComponent {
