@@ -253,18 +253,27 @@ QUY TẮC PHÂN TÍCH VÀ TÍCH HỢP BẮT BUỘC (QUAN TRỌNG NHẤT):
    - TUYỆT ĐỐI KHÔNG sử dụng màu nền tô đậm toàn bộ dòng chữ.
    - Mã NLS/AI sử dụng font-mono đậm, màu chữ Đỏ (text-red-600) và Tím Than (text-indigo-950) kèm khung viền mỏng đỏ (border-red-500) hoặc xám (border-slate-300).
 
-4. NGOẠI TRỪ TIẾT KIỂM TRA CHÍNH THỨC:
-   - Chỉ ngoại trừ KHÔNG tích hợp NLS/AI khi tệp bài dạy là Tiết kiểm tra chính thức (như: Kiểm tra thường xuyên, Kiểm tra giữa học kỳ I/II, Kiểm tra cuối học kỳ I/II).
-   - Với các tiết kiểm tra này, giữ nguyên đề/giáo án kiểm tra và chỉ ghi 1 thông báo ngắn gọn: "TIẾT KIỂM TRA / ĐÁNH GIÁ ĐỊNH KỲ (ĐỘC LẬP) - Giữ nguyên hình thức kiểm tra đánh giá độc lập của học sinh, không thực hiện tích hợp NLS & AI".
+4. NGOẠI TRỪ TIẾT KIỂM TRA CHÍNH THỨC (LỌC VÀ KHÔNG TÍCH HỢP NLS):
+   - Tuyệt đối KHÔNG tích hợp NLS/AI đối với các Tiết kiểm tra, Đánh giá định kỳ (như: Kiểm tra giữa kỳ I, Kiểm tra cuối kỳ I, Kiểm tra giữa kỳ 2, Kiểm tra cuối kỳ 2, Kiểm tra định kỳ, Đánh giá giữa kỳ, Đánh giá cuối kỳ, Đề kiểm tra 1 tiết...).
+   - Với các tiết này, giữ nguyên văn bản đề/giáo án gốc và hiển thị thông báo đầu văn bản: "TIẾT KIỂM TRA / ĐÁNH GIÁ ĐỊNH KỲ (ĐỘC LẬP) - Giữ nguyên hình thức kiểm tra đánh giá độc lập của học sinh, không thực hiện tích hợp NLS & AI".
 
-4. QUY TẮC ĐỊNH DẠNG HTML TRẢ VỀ:
+5. TÍCH HỢP ĐÚNG NLS CÓ TRÍCH DẪN NỘI DUNG VÀ HÀNH ĐỘNG CỤ THỂ DỰA TRÊN VĂN BẢN BÀI DẠY:
+   - Khi tích hợp bất kỳ miền NLS nào vào các nội dung/phần của bài dạy, BẮT BUỘC có trích dẫn nội dung hoạt động cụ thể đi kèm.
+   - Ví dụ:
+     + Tích hợp [NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số] (HS sử dụng công cụ tìm kiếm Google để tra cứu thông tin về tác giả, tác phẩm, cuộc đời, sự nghiệp văn chương từ các trang chính thống)
+     + Tích hợp [NLS 1.3-a: Quản lý & lưu trữ dữ liệu số] (HS gửi/nộp sản phẩm học tập, phiếu trả lời lên Padlet/Azota/Google Drive...)
+     + Tích hợp [NLS 2.4-a: Hợp tác qua công nghệ số] (HS làm việc nhóm, trao đổi và đồng sáng tạo ý kiến trên tài nguyên số Canva/Google Docs)
+     + Tích hợp [NLS 3.1-a: Phát triển & chỉnh sửa nội dung số] (HS sử dụng phần mềm MS Word/PowerPoint/Canva để soạn thảo văn bản, thiết kế bài trình chiếu slide)
+     + Tích hợp [AI-NLc: Giao tiếp với AI & Prompt Engineering] (HS thực hành giao tiếp với AI, đặt câu hỏi prompt để hỗ trợ tra cứu, phân tích và phản biện nội dung).
+
+6. QUY TẮC ĐỊNH DẠNG HTML TRẢ VỀ:
    - Trả về mã HTML chuẩn đẹp, rõ ràng, dễ đọc.
    - Các mã chỉ báo NLS/AI phải được đóng gói trong thẻ span nổi bật font-mono:
      <span class="bg-indigo-100 text-indigo-800 font-bold px-1.5 py-0.5 rounded font-mono text-xs">[NLS 1.1-a]</span>
      <span class="bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded font-mono text-xs">[AI-NLc: Prompting]</span>
    - Đảm bảo toàn bộ giáo án sau tích hợp là MỘT VĂN BẢN KHINHKHÍT, THỐNG NHẤT từ Mục tiêu -> Thiết bị -> Hoạt động 1 -> Hoạt động 2 -> Hoạt động 3 -> Hoạt động 4.
 
-5. ĐẶC TRƯNG MÔN NGỮ VĂN & PHẦN ĐỌC TÌM HIỂU CHUNG (TÍCH HỢP NLS MIỀN 1):
+7. ĐẶC TRƯNG MÔN NGỮ VĂN & PHẦN ĐỌC TÌM HIỂU CHUNG (TÍCH HỢP NLS MIỀN 1):
    - Trong môn Ngữ văn (và phần đầu tiên của 1 tiết/bài/chủ đề như Khám phá/Tìm hiểu chung), phần "I. Đọc - tìm hiểu chung", "Tìm hiểu chung", "1. Tác giả", "2. Tác phẩm", "B. Đọc văn bản" BẮT BUỘC TÍCH HỢP NLS MIỀN 1: KHAI THÁC DỮ LIỆU VÀ THÔNG TIN ([NLS 1.1-a], [NLS 1.2-a], [NLS 1.3-a]).
    - Hoạt động NLS Miền 1 BẮT BUỘC chèn vào CỘT BÊN TRÁI ('Tổ chức thực hiện'): Cho HS sử dụng thiết bị số (Internet, QR Code, tra cứu Google, thư viện số) tra cứu, thu thập và quản lý thông tin về tác giả, tác phẩm, bối cảnh ra đời, hoàn thành Phiếu học tập số (PHT) báo cáo.`;
 

@@ -487,12 +487,47 @@ export function deduplicateNlsBadges(htmlStr: string): string {
 }
 
 /**
+ * Detect if a lesson plan or section is an exam/assessment period.
+ * (Kiểm tra giữa kỳ I/II, Kiểm tra cuối kỳ I/II, Kiểm tra định kỳ, Đánh giá giữa kỳ...)
+ * Exam periods are exempt and MUST NOT have NLS integration added.
+ */
+export function isExamPeriod(textOrHtml: string): boolean {
+  if (!textOrHtml) return false;
+  const examKeywordsRegex = /(kiểm\s+tra\s+(giữa|cuối)\s+kỳ|kiểm\s+tra\s+(giữa|cuối)\s+kì|đánh\s+giá\s+(giữa|cuối)\s+kỳ|đánh\s+giá\s+(giữa|cuối)\s+kì|kiểm\s+tra\s+định\s+kỳ|bài\s+kiểm\s+tra|tiết\s+kiểm\s+tra|đề\s+kiểm\s+tra)/i;
+  return examKeywordsRegex.test(textOrHtml);
+}
+
+/**
+ * Remove any NLS/AI tags from exam periods and attach an exemption notice.
+ */
+export function processExamPeriodHtml(htmlStr: string): string {
+  if (!htmlStr) return htmlStr;
+  
+  // Strip all NLS or AI tags and red boxes
+  let clean = htmlStr.replace(/(?:Tích hợp\s*)?\[(?:NLS|AI-NL)[^\]]*\]/gi, '');
+  clean = clean.replace(/<div[^>]*border-red-500[^>]*>[\s\S]*?<\/div>/gi, '');
+  clean = clean.replace(/<span[^>]*border-slate-300[^>]*>\s*<\/span>/gi, '');
+
+  const noticeBanner = `<div class="my-3.5 p-3.5 bg-slate-100 border border-slate-300 rounded text-sm text-slate-800 font-bold text-center shadow-sm">TIẾT KIỂM TRA / ĐÁNH GIÁ ĐỊNH KỲ (ĐỘC LẬP) - Giữ nguyên hình thức kiểm tra đánh giá độc lập của học sinh, không thực hiện tích hợp NLS & AI</div>`;
+  
+  if (!clean.includes('TIẾT KIỂM TRA / ĐÁNH GIÁ ĐỊNH KỲ')) {
+    clean = noticeBanner + '\n' + clean;
+  }
+  return clean;
+}
+
+/**
  * Utility to process and re-align Lesson Plan HTML.
  * Moves NLS tags from Right Column to Left Column if needed,
- * injects NLS tags into group task questions, and removes unwanted synthetic activity banners.
+ * filters exam periods, injects NLS tags into group task questions, etc.
  */
 export function relocateNlsToLeftColumn(htmlStr: string): string {
   if (!htmlStr) return htmlStr;
+
+  // Check if the entire document is an Exam Period (Kiểm tra giữa kỳ I, Kiểm tra cuối kỳ I...)
+  if (isExamPeriod(htmlStr)) {
+    return processExamPeriodHtml(htmlStr);
+  }
 
   // Remove synthetic/duplicate banner blocks like [Tích hợp NLS & AI Khởi động...]
   let processed = htmlStr.replace(/<div\b[^>]*>[\s\S]*?\[Tích hợp NLS & AI[^\]]*\][\s\S]*?<\/div>/gi, '');
