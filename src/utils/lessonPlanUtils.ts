@@ -111,8 +111,8 @@ export function stripNlsBackgrounds(htmlStr: string): string {
 
 /**
  * Inject small red framed NLS domain badges (khung đỏ nhỏ)
- * into the objective ("Mục tiêu:") section of each activity (Hoạt động 1, 2, 3, 4)
- * and Part 4 (Hướng dẫn học bài & chuẩn bị bài cho tiết tiếp theo).
+ * into the objective ("Mục tiêu:") section of each activity (Hoạt động 1, 2, 3, 4).
+ * Single outer red frame (border border-red-500) wraps all NLS/AI domains for that activity.
  * Text colors: Red (text-red-600) and Navy Blue / Tím Than (text-indigo-950 / text-slate-900).
  */
 export function injectNlsActivityGoals(htmlStr: string): string {
@@ -120,15 +120,39 @@ export function injectNlsActivityGoals(htmlStr: string): string {
 
   let result = htmlStr;
 
-  const redFrameBadge = (redText: string, navyText?: string) => {
-    return `<div class="my-1.5 inline-flex flex-wrap items-center gap-1.5 border border-red-500 rounded px-2 py-0.5 text-xs font-mono font-bold bg-rose-50/20">
-      <span class="text-red-600 font-bold">${redText}</span>
-      ${navyText ? `<span class="text-indigo-950 font-bold">${navyText}</span>` : ''}
-    </div>`;
+  // Single outer red frame enclosing all NLS/AI domains for an activity goal
+  const redFrameContainer = (...tags: { text: string; colorClass: string }[]) => {
+    const tagSpans = tags
+      .map(t => `<span class="${t.colorClass} font-bold">${t.text}</span>`)
+      .join(' ');
+    return `<div class="my-1.5 inline-flex flex-wrap items-center gap-2 border border-red-500 rounded px-2.5 py-1 text-xs font-mono font-bold bg-rose-50/20">${tagSpans}</div>`;
   };
 
   // 1. Hoạt động 1: Khởi động / Mở đầu -> [NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số]
-  const act1Badge = redFrameBadge('[NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số]');
+  const act1Badge = redFrameContainer({
+    text: '[NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số]',
+    colorClass: 'text-red-600',
+  });
+
+  // 2. Hoạt động 2: Hình thành kiến thức mới -> [NLS 3.1-a] + [AI-NLc] in ONE single outer frame
+  const act2Badge = redFrameContainer(
+    { text: '[NLS 3.1-a: Phát triển & chỉnh sửa nội dung số]', colorClass: 'text-red-600' },
+    { text: '[AI-NLc: Giao tiếp với AI & Prompt Engineering]', colorClass: 'text-indigo-950' }
+  );
+
+  // 3. Hoạt động 3: Luyện tập -> [NLS 2.4-a]
+  const act3Badge = redFrameContainer({
+    text: '[NLS 2.4-a: Hợp tác qua công nghệ số]',
+    colorClass: 'text-red-600',
+  });
+
+  // 4. Hoạt động 4: Vận dụng -> [NLS 5.3-a]
+  const act4Badge = redFrameContainer({
+    text: '[NLS 5.3-a: Sử dụng sáng tạo công nghệ số & AI]',
+    colorClass: 'text-red-600',
+  });
+
+  // Match Mục tiêu: in Hoạt động 1
   result = result.replace(
     /((?:HOẠT ĐỘNG 1|KHỞI ĐỘNG|MỞ ĐẦU)[\s\S]{0,120}?<b>Mục tiêu:<\/b>|<b>Mục tiêu:<\/b>(?=[\s\S]{0,150}?(?:khởi động|mở đầu)))/gi,
     (match) => {
@@ -139,8 +163,7 @@ export function injectNlsActivityGoals(htmlStr: string): string {
     }
   );
 
-  // 2. Hoạt động 2: Hình thành kiến thức mới -> [NLS 3.1-a] + [AI-NLc]
-  const act2Badge = redFrameBadge('[NLS 3.1-a: Phát triển & chỉnh sửa nội dung số]', '[AI-NLc: Giao tiếp với AI & Prompt Engineering]');
+  // Match Mục tiêu: in Hoạt động 2
   result = result.replace(
     /((?:HOẠT ĐỘNG 2|HÌNH THÀNH KIẾN THỨC)[\s\S]{0,120}?<b>Mục tiêu:<\/b>|<b>Mục tiêu:<\/b>(?=[\s\S]{0,150}?hình thành kiến thức))/gi,
     (match) => {
@@ -151,8 +174,7 @@ export function injectNlsActivityGoals(htmlStr: string): string {
     }
   );
 
-  // 3. Hoạt động 3: Luyện tập -> [NLS 2.4-a]
-  const act3Badge = redFrameBadge('[NLS 2.4-a: Hợp tác qua công nghệ số]');
+  // Match Mục tiêu: in Hoạt động 3
   result = result.replace(
     /((?:HOẠT ĐỘNG 3|LUYỆN TẬP)[\s\S]{0,120}?<b>Mục tiêu:<\/b>|<b>Mục tiêu:<\/b>(?=[\s\S]{0,150}?luyện tập))/gi,
     (match) => {
@@ -163,8 +185,7 @@ export function injectNlsActivityGoals(htmlStr: string): string {
     }
   );
 
-  // 4. Hoạt động 4: Vận dụng -> [NLS 5.3-a]
-  const act4Badge = redFrameBadge('[NLS 5.3-a: Sử dụng sáng tạo công nghệ số & AI]');
+  // Match Mục tiêu: in Hoạt động 4
   result = result.replace(
     /((?:HOẠT ĐỘNG 4|VẬN DỤNG)[\s\S]{0,120}?<b>Mục tiêu:<\/b>|<b>Mục tiêu:<\/b>(?=[\s\S]{0,150}?vận dụng))/gi,
     (match) => {
@@ -175,21 +196,8 @@ export function injectNlsActivityGoals(htmlStr: string): string {
     }
   );
 
-  // 5. Phần 4 / Hướng dẫn về nhà / Hướng dẫn học bài & chuẩn bị bài tiết tiếp theo -> [NLS 1.3-a]
-  const part4Badge = redFrameBadge('[NLS 1.3-a: Quản lý, lưu trữ & chuẩn bị học liệu số cho bài học tiếp theo]');
-  result = result.replace(
-    /(PHẦN IV|PHẦN 4|HƯỚNG DẪN HỌC BÀI VÀ CHUẨN BỊ BÀI|HƯỚNG DẪN VỀ NHÀ|CHUẨN BỊ BÀI SAU|DẶN DÒ)(?!\s*<div[^>]*border-red-500)/gi,
-    (match) => {
-      if (!match.includes('border-red-500') && !match.includes('[NLS 1.3-a')) {
-        return `${match}<br/>${part4Badge}`;
-      }
-      return match;
-    }
-  );
-
   // Fallback: If "Mục tiêu:" exists under an activity title but hasn't received a badge, inject appropriate badge
   result = result.replace(/<b>Mục tiêu:<\/b>(?!\s*<br\/>\s*<div[^>]*border-red-500)/gi, (match, offset, string) => {
-    // Determine context window
     const beforeStr = string.slice(Math.max(0, offset - 200), offset);
     if (/hoạt động 1|khởi động|mở đầu/i.test(beforeStr)) {
       return `<b>Mục tiêu:</b><br/>${act1Badge}`;
@@ -202,6 +210,52 @@ export function injectNlsActivityGoals(htmlStr: string): string {
     }
     return match;
   });
+
+  return result;
+}
+
+/**
+  * Position NLS integration at the VERY BOTTOM of Part 4 (Hướng dẫn học bài và chuẩn bị bài).
+  * Removes duplicate top NLS badges right under heading "4. Hướng dẫn học bài..."
+  * and places a single clear NLS integration box at the bottom mapping the prep tasks.
+  */
+export function formatPart4NlsBottom(htmlStr: string): string {
+  if (!htmlStr) return htmlStr;
+
+  let result = htmlStr;
+
+  // 1. Remove top-injected standalone NLS 1.3-a badges directly under Part 4 headings
+  result = result.replace(
+    /((?:4\.\s*Hướng dẫn học bài|PHẦN IV|PHẦN 4|HƯỚNG DẪN HỌC BÀI VÀ CHUẨN BỊ BÀI|HƯỚNG DẪN VỀ NHÀ|CHUẨN BỊ BÀI SAU|DẶN DÒ)[^<\n]*)(?:\s*<br\s*\/?>)*(?:\s*<div[^>]*>[\s\S]*?\[NLS 1\.3-a[\s\S]*?<\/div>)+/gi,
+    '$1'
+  );
+
+  // Also clean up loose standalone [NLS 1.3-a...] badges directly following Part 4 headers
+  result = result.replace(
+    /((?:4\.\s*Hướng dẫn học bài|PHẦN IV|PHẦN 4|HƯỚNG DẪN HỌC BÀI|DẶN DÒ)[^<\n]*)(?:\s*<span[^>]*>\[NLS 1\.3-a[^\]]*\]<\/span>)+/gi,
+    '$1'
+  );
+
+  // 2. Build the bottom NLS integration box for Part 4
+  const part4NlsBox = `
+<div class="mt-3 p-2.5 border border-red-500 rounded text-xs font-mono leading-relaxed bg-rose-50/20">
+  <div class="text-red-600 font-bold mb-1">[TÍCH HỢP NLS & AI - CHUẨN BỊ BÀI HỌC TIẾP THEO]:</div>
+  <div class="text-slate-900 space-y-1 font-bold">
+    <div>• <span class="text-red-600">[NLS 1.3-a: Quản lý & lưu trữ dữ liệu số]</span>: <span class="text-indigo-950">Ôn tập, nắm vững kiến thức bài học và lưu trữ phiếu học tập/sản phẩm số;</span></div>
+    <div>• <span class="text-red-600">[NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số]</span>: <span class="text-indigo-950">Tra cứu thông tin, tư liệu tác giả/tác phẩm chuẩn bị cho bài học tiếp theo.</span></div>
+  </div>
+</div>`;
+
+  // Inject at bottom of Part 4 section if Part 4 heading exists and box not yet added
+  if (/4\.\s*Hướng dẫn học bài|PHẦN IV|PHẦN 4|HƯỚNG DẪN HỌC BÀI|DẶN DÒ|HƯỚNG DẪN VỀ NHÀ/i.test(result)) {
+    if (!result.includes('[TÍCH HỢP NLS & AI - CHUẨN BỊ BÀI HỌC TIẾP THEO]')) {
+      // Find insertion point before next section marker (<hr/>, Ngày soạn:, TIẾT ..., BÀI ..., or end of container/document)
+      const part4Regex = /((?:4\.\s*Hướng dẫn học bài|PHẦN IV|PHẦN 4|HƯỚNG DẪN HỌC BÀI VÀ CHUẨN BỊ BÀI|HƯỚNG DẪN VỀ NHÀ|CHUẨN BỊ BÀI SAU|DẶN DÒ)[\s\S]*?)(?=<hr|Ngày soạn:|TIẾT\s+\d+|BÀI\s+\d+|$)/i;
+      result = result.replace(part4Regex, (match, p4Body) => {
+        return `${p4Body.trim()}\n${part4NlsBox}\n`;
+      });
+    }
+  }
 
   return result;
 }
@@ -256,8 +310,11 @@ export function relocateNlsToLeftColumn(htmlStr: string): string {
   // First expand bare NLS codes to include titles (e.g. [NLS 2.4-a: Hợp tác qua công nghệ số])
   processed = expandNlsTagTitles(processed);
 
-  // Inject NLS domain tags into goals section (Mục tiêu) of each activity and Part 4
+  // Inject NLS domain tags into goals section (Mục tiêu) of each activity
   processed = injectNlsActivityGoals(processed);
+
+  // Position NLS integration at the bottom of Part 4 (Hướng dẫn học bài & chuẩn bị bài)
+  processed = formatPart4NlsBottom(processed);
 
   // Inject NLS tags into group assignments (Nhóm 1, 2..., Nhóm 3, 4...)
   processed = injectNlsIntoGroupTasks(processed);
