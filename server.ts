@@ -230,21 +230,14 @@ QUY TẮC PHÂN TÍCH VÀ TÍCH HỢP BẮT BUỘC (QUAN TRỌNG NHẤT):
      + TOÀN BỘ các mã chỉ báo NLS ([NLS 1.1-a], [NLS 2.4-a]...), các khối [Ứng dụng NLS & AI...] và hướng dẫn tổ chức hoạt động BẮT BUỘC CHÈN VÀO CỘT BÊN TRÁI ('Tổ chức thực hiện').
      + TUYỆT ĐỐI KHÔNG chèn hoặc để các khối tích hợp NLS/AI ở CỘT BÊN PHẢI ('Nội dung / Sản phẩm'). Cột bên phải chỉ để nội dung bài tập / sản phẩm đơn thuần của học sinh.
 
-2. TÍCH HỢP NLS TRỰC TIẾP VÀO MỤC TIÊU CÁC HOẠT ĐỘNG (ĐÓNG KHUNG CHUNG 1 KHUNG ĐỎ NHỎ), NHIỆM VỤ NHÓM & PHẦN VỀ NHÀ (ĐẶT Ở DƯỚI CÙNG MỤC 4):
+2. TÍCH HỢP NLS TRỰC TIẾP VÀO MỤC TIÊU CÁC HOẠT ĐỘNG (ĐÓNG KHUNG CHUNG 1 KHUNG ĐỎ NHỎ DƯỚI DÒNG MỤC TIÊU) & NHIỆM VỤ NHÓM:
    - TẠI MỤC I. MỤC TIÊU BÀI HỌC CHÍNH: Bổ sung trực tiếp chỉ báo NLS ([NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số], [NLS 2.4-a: Hợp tác qua công nghệ số]...) vào mục Năng lực số & Năng lực AI.
-   - TẠI MỤC TIÊU TỪNG HOẠT ĐỘNG (Hoạt động 1, 2, 3, 4): BẮT BUỘC đóng gói toàn bộ các mã NLS/AI của mục tiêu hoạt động đó vào MỘT KHUNG ĐỎ NHỎ DUY NHẤT (border border-red-500 rounded px-2.5 py-1 text-xs font-mono font-bold bg-rose-50/20). KHÔNG đóng khung riêng lẻ từng miền NLS! Chữ năng lực sử dụng màu Đỏ (text-red-600) và Tím Than (text-indigo-950) đậm:
+   - TẠI MỤC TIÊU TỪNG HOẠT ĐỘNG (Hoạt động 1, 2, 3, 4): BẮT BUỘC đóng gói toàn bộ các mã NLS/AI của mục tiêu hoạt động đó vào MỘT KHUNG ĐỎ NHỎ DUY NHẤT (border border-red-500 rounded px-2.5 py-1 text-xs font-mono font-bold bg-rose-50/20) nằm ngay dưới dòng "Mục tiêu:". KHÔNG đóng khung riêng lẻ từng miền NLS! Chữ năng lực sử dụng màu Đỏ (text-red-600) và Tím Than (text-indigo-950) đậm:
      + Hoạt động 1: <div class="my-1.5 inline-flex items-center gap-2 border border-red-500 rounded px-2.5 py-1 text-xs font-mono font-bold bg-rose-50/20"><span class="text-red-600 font-bold">[NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số]</span></div>
      + Hoạt động 2 (Chung 1 khung): <div class="my-1.5 inline-flex items-center gap-2 border border-red-500 rounded px-2.5 py-1 text-xs font-mono font-bold bg-rose-50/20"><span class="text-red-600 font-bold">[NLS 3.1-a: Phát triển & chỉnh sửa nội dung số]</span> <span class="text-indigo-950 font-bold">[AI-NLc: Giao tiếp với AI & Prompt Engineering]</span></div>
      + Hoạt động 3: <div class="my-1.5 inline-flex items-center gap-2 border border-red-500 rounded px-2.5 py-1 text-xs font-mono font-bold bg-rose-50/20"><span class="text-red-600 font-bold">[NLS 2.4-a: Hợp tác qua công nghệ số]</span></div>
      + Hoạt động 4: <div class="my-1.5 inline-flex items-center gap-2 border border-red-500 rounded px-2.5 py-1 text-xs font-mono font-bold bg-rose-50/20"><span class="text-red-600 font-bold">[NLS 5.3-a: Sử dụng sáng tạo công nghệ số & AI]</span></div>
-   - PHẦN 4 (HƯỚNG DẪN HỌC BÀI VÀ CHUẨN BỊ BÀI SAU): TUYỆT ĐỐI KHÔNG chèn thẻ NLS ở ngay dưới tiêu đề Mục 4. Toàn bộ nội dung tích hợp NLS chuyển xuống DƯỚI CÙNG MỤC 4 (sau các dòng bài tập về nhà) và đóng trong MỘT HỘP KHUNG ĐỎ DUY NHẤT ghi rõ nội dung ví dụ:
-     <div class="mt-3 p-2.5 border border-red-500 rounded text-xs font-mono leading-relaxed bg-rose-50/20">
-       <div class="text-red-600 font-bold mb-1">[TÍCH HỢP NLS & AI - CHUẨN BỊ BÀI HỌC TIẾP THEO]:</div>
-       <div class="text-slate-900 space-y-1 font-bold">
-         <div>• <span class="text-red-600">[NLS 1.3-a: Quản lý & lưu trữ dữ liệu số]</span>: <span class="text-indigo-950">Ôn tập, nắm vững đặc điểm đoạn văn và lưu trữ bài tập/phiếu học tập số;</span></div>
-         <div>• <span class="text-red-600">[NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số]</span>: <span class="text-indigo-950">Tra cứu thông tin về tác giả, tác phẩm số chuẩn bị cho tiết học tiếp theo.</span></div>
-       </div>
-     </div>
+   - PHẦN 4 (HƯỚNG DẪN HỌC BÀI VÀ CHUẨN BỊ BÀI SAU): TUYỆT ĐỐI KHÔNG CHÈN KHUNG ĐỎ HOẶC BẤT KỲ NỘI DUNG TÍCH HỢP NLS NÀO VÀO PHẦN 4. Xóa hoàn toàn các khung đỏ ở phần này! NLS CHỈ TÍCH HỢP Ở MỤC TIÊU CÁC HOẠT ĐỘNG 1, 2, 3, 4.
    - TÍCH HỢP TRONG CÁC PHẦN GIAO NHIỆM VỤ CHO NHÓM/TỔ: Khi giao nhiệm vụ cho các nhóm (như: "Nhóm 1, 2", "Nhóm 3, 4", "Câu hỏi cho từng nhóm"), tích hợp trực tiếp chỉ báo NLS phù hợp (như [NLS 2.4-a: Hợp tác qua công nghệ số]) ngay cạnh tên nhóm.
    - TUYỆT ĐỐI KHÔNG chèn thêm các hộp banner hồng/đỏ tổng hợp lớn ("Tích hợp NLS & AI Khởi động/Luyện tập...") che khuất văn bản.
 

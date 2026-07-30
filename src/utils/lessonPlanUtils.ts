@@ -215,47 +215,25 @@ export function injectNlsActivityGoals(htmlStr: string): string {
 }
 
 /**
-  * Position NLS integration at the VERY BOTTOM of Part 4 (Hướng dẫn học bài và chuẩn bị bài).
-  * Removes duplicate top NLS badges right under heading "4. Hướng dẫn học bài..."
-  * and places a single clear NLS integration box at the bottom mapping the prep tasks.
-  */
+ * Clean up any NLS integration boxes or red frames from Part 4 (Hướng dẫn học bài và chuẩn bị bài).
+ * As requested, Part 4 has no red box / NLS integration; NLS is ONLY integrated under activity goals.
+ */
 export function formatPart4NlsBottom(htmlStr: string): string {
   if (!htmlStr) return htmlStr;
 
   let result = htmlStr;
 
-  // 1. Remove top-injected standalone NLS 1.3-a badges directly under Part 4 headings
+  // 1. Remove top or bottom red boxes containing [TÍCH HỢP NLS & AI...], [NLS 1.3-a...] in Part 4
   result = result.replace(
-    /((?:4\.\s*Hướng dẫn học bài|PHẦN IV|PHẦN 4|HƯỚNG DẪN HỌC BÀI VÀ CHUẨN BỊ BÀI|HƯỚNG DẪN VỀ NHÀ|CHUẨN BỊ BÀI SAU|DẶN DÒ)[^<\n]*)(?:\s*<br\s*\/?>)*(?:\s*<div[^>]*>[\s\S]*?\[NLS 1\.3-a[\s\S]*?<\/div>)+/gi,
-    '$1'
+    /<div\b[^>]*class="[^"]*border-red-500[^"]*"[^>]*>[\s\S]*?\[(?:TÍCH HỢP NLS|NLS 1\.3-a)[\s\S]*?<\/div>/gi,
+    ''
   );
 
-  // Also clean up loose standalone [NLS 1.3-a...] badges directly following Part 4 headers
+  // 2. Remove loose standalone [NLS 1.3-a...] badges directly following Part 4 headers
   result = result.replace(
-    /((?:4\.\s*Hướng dẫn học bài|PHẦN IV|PHẦN 4|HƯỚNG DẪN HỌC BÀI|DẶN DÒ)[^<\n]*)(?:\s*<span[^>]*>\[NLS 1\.3-a[^\]]*\]<\/span>)+/gi,
+    /((?:4\.\s*Hướng dẫn học bài|PHẦN IV|PHẦN 4|HƯỚNG DẪN HỌC BÀI|DẶN DÒ)[^<\n]*)(?:\s*<br\s*\/?>)*(?:\s*<span[^>]*>\[NLS 1\.3-a[^\]]*\]<\/span>)+/gi,
     '$1'
   );
-
-  // 2. Build the bottom NLS integration box for Part 4
-  const part4NlsBox = `
-<div class="mt-3 p-2.5 border border-red-500 rounded text-xs font-mono leading-relaxed bg-rose-50/20">
-  <div class="text-red-600 font-bold mb-1">[TÍCH HỢP NLS & AI - CHUẨN BỊ BÀI HỌC TIẾP THEO]:</div>
-  <div class="text-slate-900 space-y-1 font-bold">
-    <div>• <span class="text-red-600">[NLS 1.3-a: Quản lý & lưu trữ dữ liệu số]</span>: <span class="text-indigo-950">Ôn tập, nắm vững kiến thức bài học và lưu trữ phiếu học tập/sản phẩm số;</span></div>
-    <div>• <span class="text-red-600">[NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số]</span>: <span class="text-indigo-950">Tra cứu thông tin, tư liệu tác giả/tác phẩm chuẩn bị cho bài học tiếp theo.</span></div>
-  </div>
-</div>`;
-
-  // Inject at bottom of Part 4 section if Part 4 heading exists and box not yet added
-  if (/4\.\s*Hướng dẫn học bài|PHẦN IV|PHẦN 4|HƯỚNG DẪN HỌC BÀI|DẶN DÒ|HƯỚNG DẪN VỀ NHÀ/i.test(result)) {
-    if (!result.includes('[TÍCH HỢP NLS & AI - CHUẨN BỊ BÀI HỌC TIẾP THEO]')) {
-      // Find insertion point before next section marker (<hr/>, Ngày soạn:, TIẾT ..., BÀI ..., or end of container/document)
-      const part4Regex = /((?:4\.\s*Hướng dẫn học bài|PHẦN IV|PHẦN 4|HƯỚNG DẪN HỌC BÀI VÀ CHUẨN BỊ BÀI|HƯỚNG DẪN VỀ NHÀ|CHUẨN BỊ BÀI SAU|DẶN DÒ)[\s\S]*?)(?=<hr|Ngày soạn:|TIẾT\s+\d+|BÀI\s+\d+|$)/i;
-      result = result.replace(part4Regex, (match, p4Body) => {
-        return `${p4Body.trim()}\n${part4NlsBox}\n`;
-      });
-    }
-  }
 
   return result;
 }
