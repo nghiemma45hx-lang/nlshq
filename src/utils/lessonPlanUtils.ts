@@ -36,12 +36,12 @@ export function relocateNlsToLeftColumn(htmlStr: string): string {
       const isReadingGeneralRow = /(?:đọc\s*-\s*tìm hiểu chung|i\.\s*đọc|i\.\s*tìm hiểu chung|1\.\s*tác giả|2\.\s*tác phẩm|b\.\s*đọc văn bản|tìm hiểu chung)/i.test(cells[0].content + cells[1].content);
 
       // Check if rightCell contains NLS badges or blocks
-      const hasNlsInRight = /\[(?:NLS|AI-NL)[^\]]*\]|\[Ứng dụng NLS/i.test(rightCell);
+      const hasNlsInRight = /\[(?:NLS|AI-NL)[^\]]*\]|\[(?:Ứng dụng|Tích hợp) NLS/i.test(rightCell);
 
       // Auto-inject NLS Miền 1 into Left column if this is a 'Đọc - tìm hiểu chung' row and doesn't have NLS 1 yet
       const hasNls1 = /\[NLS 1/i.test(cells[0].content + cells[1].content);
       if (isReadingGeneralRow && !hasNls1) {
-        const domain1Block = `<div class="my-1.5 p-2 bg-indigo-50/90 border-l-3 border-indigo-600 rounded-r text-[11px] text-indigo-950 font-sans"><b>[Ứng dụng NLS Miền 1 - Khai thác dữ liệu & Tra cứu thông tin]:</b> <span class="bg-indigo-100 text-indigo-800 font-bold px-1.5 py-0.5 rounded font-mono text-xs mr-1">[NLS 1.1-a]</span> GV hướng dẫn HS sử dụng thiết bị số/Internet tra cứu thông tin tác giả, tác phẩm, bối cảnh và hoàn thành Phiếu học tập số (PHT).</div>`;
+        const domain1Block = `<div class="my-1.5 p-2 bg-rose-50/90 border-l-3 border-rose-500 rounded-r text-[11px] text-rose-950 font-sans flex items-start flex-wrap gap-1.5"><span class="bg-rose-100 text-rose-800 border border-rose-300 font-bold px-1.5 py-0.5 rounded font-mono text-xs shrink-0">[NLS 1.1-a]</span> <div><b>[Tích hợp NLS Miền 1 - Khai thác dữ liệu & Tra cứu thông tin]:</b> GV hướng dẫn HS sử dụng thiết bị số/Internet tra cứu thông tin tác giả, tác phẩm, bối cảnh và hoàn thành Phiếu học tập số (PHT).</div></div>`;
         leftCell = domain1Block + '\n' + leftCell;
         cells[0].content = leftCell;
       }
@@ -49,15 +49,17 @@ export function relocateNlsToLeftColumn(htmlStr: string): string {
       if (hasNlsInRight) {
         const nlsBlocksToMove: string[] = [];
 
-        // Extract <div> blocks containing [Ứng dụng NLS...] or [NLS...]
-        rightCell = rightCell.replace(/<div\b[^>]*>[\s\S]*?(?:\[Ứng dụng NLS|\[NLS|\[AI-NL)[\s\S]*?<\/div>/gi, (block) => {
-          nlsBlocksToMove.push(block);
+        // Extract <div> blocks containing [Ứng dụng NLS...] or [Tích hợp NLS...] or [NLS...]
+        rightCell = rightCell.replace(/<div\b[^>]*>[\s\S]*?(?:\[(?:Ứng dụng|Tích hợp) NLS|\[NLS|\[AI-NL)[\s\S]*?<\/div>/gi, (block) => {
+          const updatedBlock = block.replace(/\[Ứng dụng/g, '[Tích hợp').replace(/Ứng dụng NLS/g, 'Tích hợp NLS');
+          nlsBlocksToMove.push(updatedBlock);
           return '';
         });
 
-        // Extract <p> blocks containing [Ứng dụng NLS...] or [NLS...]
-        rightCell = rightCell.replace(/<p\b[^>]*>[\s\S]*?(?:\[Ứng dụng NLS|\[NLS|\[AI-NL)[\s\S]*?<\/p>/gi, (block) => {
-          nlsBlocksToMove.push(block);
+        // Extract <p> blocks containing [Ứng dụng NLS...] or [Tích hợp NLS...] or [NLS...]
+        rightCell = rightCell.replace(/<p\b[^>]*>[\s\S]*?(?:\[(?:Ứng dụng|Tích hợp) NLS|\[NLS|\[AI-NL)[\s\S]*?<\/p>/gi, (block) => {
+          const updatedBlock = block.replace(/\[Ứng dụng/g, '[Tích hợp').replace(/Ứng dụng NLS/g, 'Tích hợp NLS');
+          nlsBlocksToMove.push(updatedBlock);
           return '';
         });
 
@@ -67,9 +69,10 @@ export function relocateNlsToLeftColumn(htmlStr: string): string {
           return '';
         });
 
-        // Extract inline [Ứng dụng NLS & AI...]: ... up to <br> or end
-        rightCell = rightCell.replace(/\[Ứng dụng NLS[^\]]*\]:[^\n<]*/gi, (inlineText) => {
-          nlsBlocksToMove.push(`<div class="my-1.5 p-2 bg-emerald-50/80 border-l-3 border-emerald-500 rounded-r text-[11px] text-emerald-900 font-sans"><b>${inlineText}</b></div>`);
+        // Extract inline [Ứng dụng NLS & AI...] or [Tích hợp NLS & AI...]: ... up to <br> or end
+        rightCell = rightCell.replace(/\[(?:Ứng dụng|Tích hợp) NLS[^\]]*\]:[^\n<]*/gi, (inlineText) => {
+          const cleanText = inlineText.replace(/^\[Ứng dụng/i, '[Tích hợp');
+          nlsBlocksToMove.push(`<div class="my-1.5 p-2 bg-rose-50/90 border-l-3 border-rose-500 rounded-r text-[11px] text-rose-950 font-sans"><b>${cleanText}</b></div>`);
           return '';
         });
 

@@ -9,7 +9,7 @@ export const DEFAULT_HERO_CONFIG: HeroBannerConfig = {
   mainTitleSuffix: ' VÀO DẠY HỌC',
   highlightColor: 'from-amber-300 via-amber-200 to-amber-400',
   tickerBadge: 'THÔNG BÁO',
-  tickerText: 'Chào mừng quý thầy cô giáo đến với ứng dụng tích hợp năng lực số vào bài dạy.',
+  tickerText: 'Chào mừng quý thầy cô giáo đến với tích hợp năng lực số vào bài dạy.',
   bannerBgTheme: 'from-slate-950 via-indigo-950 to-slate-950',
   navCards: [
     {

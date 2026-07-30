@@ -328,33 +328,38 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
                 // Direct regex replacement into original HTML
                 modified = modified.replace(
                   /(hoạt động 1[^:\n<]*|khởi động[^:\n<]*|mở đầu[^:\n<]*)/gi,
-                  `$1 <span class="bg-indigo-100 text-indigo-800 font-bold px-1.5 py-0.5 rounded font-mono text-[11px] ml-1">[NLS 1.1-a]</span>
-                  <div class="my-1.5 p-2 bg-indigo-50/80 border-l-3 border-indigo-500 rounded-r text-[11px] text-indigo-900">
-                    <b>[Ứng dụng NLS & AI Khởi động]:</b> GV quét mã QR cho HS sử dụng <i>Quizizz AI</i> làm 3 câu hỏi tương tác trắc nghiệm số khởi động.
+                  `$1
+                  <div class="my-1.5 p-2 bg-rose-50/90 border-l-3 border-rose-500 rounded-r text-[11px] text-rose-950 font-sans flex items-start flex-wrap gap-1.5">
+                    <span class="bg-rose-100 text-rose-800 border border-rose-300 font-bold px-1.5 py-0.5 rounded font-mono text-[11px] shrink-0">[NLS 1.1-a]</span>
+                    <div><b>[Tích hợp NLS & AI Khởi động]:</b> GV quét mã QR cho HS sử dụng <i>Quizizz AI</i> làm 3 câu hỏi tương tác trắc nghiệm số khởi động.</div>
                   </div>`
                 );
 
                 modified = modified.replace(
                   /(hoạt động 2[^:\n<]*|hình thành kiến thức[^:\n<]*)/gi,
-                  `$1 <span class="bg-purple-100 text-purple-800 font-bold px-1.5 py-0.5 rounded font-mono text-[11px] ml-1">[NLS 3.1-a]</span> <span class="bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded font-mono text-[11px]">[AI-NLc: Prompting]</span>
-                  <div class="my-1.5 p-2 bg-purple-50/80 border-l-3 border-purple-500 rounded-r text-[11px] text-purple-900">
-                    <b>[Ứng dụng NLS & AI Hình thành kiến thức]:</b> HS thao tác trên mô phỏng trực quan <i>GeoGebra / Chatbot AI</i>, thực hành nhập Prompt tương tác để mở rộng và làm rõ khái niệm.
+                  `$1
+                  <div class="my-1.5 p-2 bg-rose-50/90 border-l-3 border-rose-500 rounded-r text-[11px] text-rose-950 font-sans flex items-start flex-wrap gap-1.5">
+                    <span class="bg-rose-100 text-rose-800 border border-rose-300 font-bold px-1.5 py-0.5 rounded font-mono text-[11px] shrink-0">[NLS 3.1-a]</span>
+                    <span class="bg-amber-100 text-amber-800 border border-amber-300 font-bold px-1.5 py-0.5 rounded font-mono text-[11px] shrink-0">[AI-NLc: Prompting]</span>
+                    <div><b>[Tích hợp NLS & AI Hình thành kiến thức]:</b> HS thao tác trên mô phỏng trực quan <i>GeoGebra / Chatbot AI</i>, thực hành nhập Prompt tương tác để mở rộng và làm rõ khái niệm.</div>
                   </div>`
                 );
 
                 modified = modified.replace(
                   /(hoạt động 3[^:\n<]*|luyện tập[^:\n<]*)/gi,
-                  `$1 <span class="bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded font-mono text-[11px] ml-1">[NLS 2.4-a]</span>
-                  <div class="my-1.5 p-2 bg-emerald-50/80 border-l-3 border-emerald-500 rounded-r text-[11px] text-emerald-900">
-                    <b>[Ứng dụng NLS & AI Luyện tập]:</b> HS thảo luận nhóm, nộp bài tập số lên <i>Padlet / Azota</i> để GV và các nhóm học sinh đối sánh, chấm chéo trực tuyến.
+                  `$1
+                  <div class="my-1.5 p-2 bg-rose-50/90 border-l-3 border-rose-500 rounded-r text-[11px] text-rose-950 font-sans flex items-start flex-wrap gap-1.5">
+                    <span class="bg-rose-100 text-rose-800 border border-rose-300 font-bold px-1.5 py-0.5 rounded font-mono text-[11px] shrink-0">[NLS 2.4-a]</span>
+                    <div><b>[Tích hợp NLS & AI Luyện tập]:</b> HS thảo luận nhóm, nộp bài tập số lên <i>Padlet / Azota</i> để GV và các nhóm học sinh đối sánh, chấm chéo trực tuyến.</div>
                   </div>`
                 );
 
                 modified = modified.replace(
                   /(hoạt động 4[^:\n<]*|vận dụng[^:\n<]*)/gi,
-                  `$1 <span class="bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded font-mono text-[11px] ml-1">[NLS 5.3-a]</span>
-                  <div class="my-1.5 p-2 bg-amber-50/80 border-l-3 border-amber-500 rounded-r text-[11px] text-amber-900">
-                    <b>[Ứng dụng NLS & AI Vận dụng]:</b> HS sử dụng <i>Canva AI / CapCut</i> thiết kế Infographic hoặc video ngắn chia sẻ kết quả vận dụng bài học vào thực tiễn.
+                  `$1
+                  <div class="my-1.5 p-2 bg-rose-50/90 border-l-3 border-rose-500 rounded-r text-[11px] text-rose-950 font-sans flex items-start flex-wrap gap-1.5">
+                    <span class="bg-rose-100 text-rose-800 border border-rose-300 font-bold px-1.5 py-0.5 rounded font-mono text-[11px] shrink-0">[NLS 5.3-a]</span>
+                    <div><b>[Tích hợp NLS & AI Vận dụng]:</b> HS sử dụng <i>Canva AI / CapCut</i> thiết kế Infographic hoặc video ngắn chia sẻ kết quả vận dụng bài học vào thực tiễn.</div>
                   </div>`
                 );
 
@@ -381,36 +386,37 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
                   <div>
                     <h3 class="font-bold text-slate-900 text-xs border-l-3 border-indigo-600 pl-2 uppercase mb-2">III. TIẾN TRÌNH DẠY HỌC (TÍCH HỢP NLS CẢ 4 HOẠT ĐỘNG)</h3>
                     <div class="space-y-2.5 pl-2">
-                      <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
-                        <div class="font-bold text-indigo-900 flex items-center justify-between">
+                      <div class="p-2.5 bg-rose-50/90 border-l-3 border-rose-500 rounded-lg">
+                        <div class="font-bold text-rose-950 flex items-center justify-start space-x-2">
+                          <span class="bg-rose-100 text-rose-800 border border-rose-300 font-bold px-1.5 py-0.5 rounded font-mono text-[11px] shrink-0">[NLS 1.1-a]</span>
                           <span>Hoạt động 1: Khởi động / Mở đầu</span>
-                          <span class="bg-indigo-100 text-indigo-800 font-bold px-1.5 py-0.5 rounded font-mono text-[11px]">[NLS 1.1-a]</span>
                         </div>
-                        <p class="mt-1 text-slate-700">GV tổ chức trắc nghiệm số trên Quizizz AI quét QR code để khảo sát kiến thức nền của học sinh.</p>
+                        <p class="mt-1 text-rose-900 text-xs">GV tổ chức trắc nghiệm số trên Quizizz AI quét QR code để khảo sát kiến thức nền của học sinh.</p>
                       </div>
 
-                      <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
-                        <div class="font-bold text-purple-900 flex items-center justify-between">
+                      <div class="p-2.5 bg-rose-50/90 border-l-3 border-rose-500 rounded-lg">
+                        <div class="font-bold text-rose-950 flex items-center justify-start space-x-2">
+                          <span class="bg-rose-100 text-rose-800 border border-rose-300 font-bold px-1.5 py-0.5 rounded font-mono text-[11px] shrink-0">[NLS 3.1-a]</span>
+                          <span class="bg-amber-100 text-amber-800 border border-amber-300 font-bold px-1.5 py-0.5 rounded font-mono text-[11px] shrink-0">[AI-NLc]</span>
                           <span>Hoạt động 2: Hình thành kiến thức mới</span>
-                          <span class="bg-purple-100 text-purple-800 font-bold px-1.5 py-0.5 rounded font-mono text-[11px]">[NLS 3.1-a] [AI-NLc]</span>
                         </div>
-                        <p class="mt-1 text-slate-700">HS nghiên cứu bài học kết hợp thao tác trên phần mềm mô phỏng số và thực hành tương tác câu hỏi Prompt với trợ lý AI.</p>
+                        <p class="mt-1 text-rose-900 text-xs">HS nghiên cứu bài học kết hợp thao tác trên phần mềm mô phỏng số và thực hành tương tác câu hỏi Prompt với trợ lý AI.</p>
                       </div>
 
-                      <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
-                        <div class="font-bold text-emerald-900 flex items-center justify-between">
+                      <div class="p-2.5 bg-rose-50/90 border-l-3 border-rose-500 rounded-lg">
+                        <div class="font-bold text-rose-950 flex items-center justify-start space-x-2">
+                          <span class="bg-rose-100 text-rose-800 border border-rose-300 font-bold px-1.5 py-0.5 rounded font-mono text-[11px] shrink-0">[NLS 2.4-a]</span>
                           <span>Hoạt động 3: Luyện tập</span>
-                          <span class="bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded font-mono text-[11px]">[NLS 2.4-a]</span>
                         </div>
-                        <p class="mt-1 text-slate-700">HS giải bài tập nhóm và tải sản phẩm học tập lên Padlet/Azota để lớp và giáo viên đối sánh, nhận xét trực tuyến.</p>
+                        <p class="mt-1 text-rose-900 text-xs">HS giải bài tập nhóm và tải sản phẩm học tập lên Padlet/Azota để lớp và giáo viên đối sánh, nhận xét trực tuyến.</p>
                       </div>
 
-                      <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
-                        <div class="font-bold text-amber-900 flex items-center justify-between">
+                      <div class="p-2.5 bg-rose-50/90 border-l-3 border-rose-500 rounded-lg">
+                        <div class="font-bold text-rose-950 flex items-center justify-start space-x-2">
+                          <span class="bg-rose-100 text-rose-800 border border-rose-300 font-bold px-1.5 py-0.5 rounded font-mono text-[11px] shrink-0">[NLS 5.3-a]</span>
                           <span>Hoạt động 4: Vận dụng</span>
-                          <span class="bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded font-mono text-[11px]">[NLS 5.3-a]</span>
                         </div>
-                        <p class="mt-1 text-slate-700">HS thiết kế Infographic hoặc video ngắn bằng Canva AI/CapCut để giải quyết tình huống thực tiễn liên quan đến bài học.</p>
+                        <p class="mt-1 text-rose-900 text-xs">HS thiết kế Infographic hoặc video ngắn bằng Canva AI/CapCut để giải quyết tình huống thực tiễn liên quan đến bài học.</p>
                       </div>
                     </div>
                   </div>
