@@ -215,25 +215,35 @@ export function injectNlsActivityGoals(htmlStr: string): string {
 }
 
 /**
- * Clean up any NLS integration boxes or red frames from Part 4 (Hướng dẫn học bài và chuẩn bị bài).
- * As requested, Part 4 has no red box / NLS integration; NLS is ONLY integrated under activity goals.
+ * Bổ sung miền NLS cần thiết vào cuối mỗi tiết học tại Mục 4 (Hướng dẫn học bài và chuẩn bị bài),
+ * đặt ở vị trí khung đỏ chữ nhật ở cuối mỗi tiết học (trước vạch phân cách ------------------- hoặc tiết tiếp theo).
  */
 export function formatPart4NlsBottom(htmlStr: string): string {
   if (!htmlStr) return htmlStr;
 
   let result = htmlStr;
 
-  // 1. Remove top or bottom red boxes containing [TÍCH HỢP NLS & AI...], [NLS 1.3-a...] in Part 4
-  result = result.replace(
-    /<div\b[^>]*class="[^"]*border-red-500[^"]*"[^>]*>[\s\S]*?\[(?:TÍCH HỢP NLS|NLS 1\.3-a)[\s\S]*?<\/div>/gi,
-    ''
-  );
+  // Red rectangle badge for Part 4 at the end of each lesson
+  const part4Badge = `<div class="my-2 inline-flex flex-wrap items-center gap-2 border border-red-500 rounded px-2.5 py-1 text-xs font-mono font-bold bg-rose-50/20"><span class="text-red-600 font-bold">[NLS 1.3-a: Quản lý, lưu trữ & chuẩn bị học liệu số cho bài học tiếp theo]</span></div>`;
 
-  // 2. Remove loose standalone [NLS 1.3-a...] badges directly following Part 4 headers
+  // 1. Remove any loose NLS badges right next to/under the heading 4. Hướng dẫn học bài...
   result = result.replace(
-    /((?:4\.\s*Hướng dẫn học bài|PHẦN IV|PHẦN 4|HƯỚNG DẪN HỌC BÀI|DẶN DÒ)[^<\n]*)(?:\s*<br\s*\/?>)*(?:\s*<span[^>]*>\[NLS 1\.3-a[^\]]*\]<\/span>)+/gi,
+    /((?:4\.\s*Hướng dẫn học bài|PHẦN IV|PHẦN 4|HƯỚNG DẪN HỌC BÀI VÀ CHUẨN BỊ BÀI|HƯỚNG DẪN VỀ NHÀ|CHUẨN BỊ BÀI SAU|DẶN DÒ)[^<\n]*)(?:\s*<br\s*\/?>)*(?:\s*<div[^>]*border-red-500[^>]*>[\s\S]*?\[NLS 1\.3-a[\s\S]*?<\/div>|\s*<span[^>]*>\[NLS 1\.3-a[^\]]*\]<\/span>)+/gi,
     '$1'
   );
+
+  // 2. Identify sections of Part 4 and append the red rectangular badge at the end of each lesson (before <hr/>, -------------------, Ngày soạn:, TIẾT..., BÀI..., or end of block)
+  const part4Pattern = /((?:4\.\s*Hướng dẫn học bài|PHẦN IV|PHẦN 4|HƯỚNG DẪN HỌC BÀI VÀ CHUẨN BỊ BÀI|HƯỚNG DẪN VỀ NHÀ|CHUẨN BỊ BÀI SAU|DẶN DÒ)[\s\S]*?)(?=<hr|-------------------|Ngày soạn:|TIẾT\s+\d+|BÀI\s+\d+|<h[1-4]|$)/gi;
+
+  result = result.replace(part4Pattern, (match) => {
+    // If this Part 4 section already contains the red rectangle badge for NLS 1.3-a at the end, keep it
+    if (match.includes('border-red-500') && match.includes('NLS 1.3-a')) {
+      return match;
+    }
+    // Trim whitespace and append the red rectangular badge
+    const trimmed = match.trimEnd();
+    return `${trimmed}\n<br/>${part4Badge}\n`;
+  });
 
   return result;
 }
