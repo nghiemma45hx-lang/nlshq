@@ -230,17 +230,20 @@ QUY TẮC PHÂN TÍCH VÀ TÍCH HỢP BẮT BUỘC (QUAN TRỌNG NHẤT):
      + TOÀN BỘ các mã chỉ báo NLS ([NLS 1.1-a], [NLS 2.4-a]...), các khối [Ứng dụng NLS & AI...] và hướng dẫn tổ chức hoạt động BẮT BUỘC CHÈN VÀO CỘT BÊN TRÁI ('Tổ chức thực hiện').
      + TUYỆT ĐỐI KHÔNG chèn hoặc để các khối tích hợp NLS/AI ở CỘT BÊN PHẢI ('Nội dung / Sản phẩm'). Cột bên phải chỉ để nội dung bài tập / sản phẩm đơn thuần của học sinh.
 
-2. TÍCH HỢP NLS TRỰC TIẾP VÀO MỤC TIÊU VÀ NHIỆM VỤ NHÓM:
-   - TÍCH HỢP TRONG MỤC I. MỤC TIÊU BÀI HỌC: Bổ sung trực tiếp chỉ báo NLS ([NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số], [NLS 2.4-a: Hợp tác qua công nghệ số]...) vào mục Năng lực số & Năng lực AI.
-   - TÍCH HỢP TRONG CÁC PHẦN GIAO NHIỆM VỤ CHO NHÓM/TỔ: Khi giao nhiệm vụ cho các nhóm (như: "Nhóm 1, 2", "Nhóm 3, 4", "Câu hỏi cho từng nhóm", "Nhiệm vụ các nhóm"), tích hợp trực tiếp chỉ báo NLS phù hợp (như [NLS 2.4-a: Hợp tác qua công nghệ số] hoặc [NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số]) ngay cạnh tên nhóm hoặc câu hỏi giao nhiệm vụ.
-   - TUYỆT ĐỐI KHÔNG chèn thêm các hộp banner hồng/đỏ tổng hợp ("Tích hợp NLS & AI Khởi động/Luyện tập...") ở bên dưới tiêu đề từng Hoạt động.
+2. TÍCH HỢP NLS TRỰC TIẾP VÀO MỤC TIÊU CÁC HOẠT ĐỘNG (KHUNG ĐỎ NHỎ), NHIỆM VỤ NHÓM & PHẦN VỀ NHÀ:
+   - TẠI MỤC I. MỤC TIÊU BÀI HỌC CHÍNH: Bổ sung trực tiếp chỉ báo NLS ([NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số], [NLS 2.4-a: Hợp tác qua công nghệ số]...) vào mục Năng lực số & Năng lực AI.
+   - TẠI MỤC TIÊU TỪNG HOẠT ĐỘNG (Hoạt động 1 Khởi động, Hoạt động 2 Hình thành kiến thức, Hoạt động 3 Luyện tập, Hoạt động 4 Vận dụng, Phần 4 Hướng dẫn về nhà / Chuẩn bị bài tiết tiếp theo): BẮT BUỘC chèn 1 Khung đỏ nhỏ (thẻ div/span viền đỏ border-red-500 rounded px-2 py-0.5 text-xs font-mono font-bold) chứa mã NLS/AI tương ứng ngay ở dưới/trên dòng 'Mục tiêu:'. Chữ năng lực sử dụng màu Đỏ (text-red-600) và Tím Than (text-indigo-950 / text-slate-900) đậm.
+     + Hoạt động 1: <div class="my-1 inline-flex items-center gap-1.5 border border-red-500 rounded px-2 py-0.5 text-xs font-mono font-bold bg-rose-50/20"><span class="text-red-600 font-bold">[NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số]</span></div>
+     + Hoạt động 2: <div class="my-1 inline-flex items-center gap-1.5 border border-red-500 rounded px-2 py-0.5 text-xs font-mono font-bold bg-rose-50/20"><span class="text-red-600 font-bold">[NLS 3.1-a: Phát triển & chỉnh sửa nội dung số]</span> <span class="text-indigo-950 font-bold">[AI-NLc: Giao tiếp với AI & Prompt Engineering]</span></div>
+     + Hoạt động 3: <div class="my-1 inline-flex items-center gap-1.5 border border-red-500 rounded px-2 py-0.5 text-xs font-mono font-bold bg-rose-50/20"><span class="text-red-600 font-bold">[NLS 2.4-a: Hợp tác qua công nghệ số]</span></div>
+     + Hoạt động 4: <div class="my-1 inline-flex items-center gap-1.5 border border-red-500 rounded px-2 py-0.5 text-xs font-mono font-bold bg-rose-50/20"><span class="text-red-600 font-bold">[NLS 5.3-a: Sử dụng sáng tạo công nghệ số & AI]</span></div>
+     + Phần 4 (Về nhà & Chuẩn bị bài tiếp theo): <div class="my-1 inline-flex items-center gap-1.5 border border-red-500 rounded px-2 py-0.5 text-xs font-mono font-bold bg-rose-50/20"><span class="text-red-600 font-bold">[NLS 1.3-a: Quản lý, lưu trữ & chuẩn bị học liệu số cho bài học tiếp theo]</span></div>
+   - TÍCH HỢP TRONG CÁC PHẦN GIAO NHIỆM VỤ CHO NHÓM/TỔ: Khi giao nhiệm vụ cho các nhóm (như: "Nhóm 1, 2", "Nhóm 3, 4", "Câu hỏi cho từng nhóm"), tích hợp trực tiếp chỉ báo NLS phù hợp (như [NLS 2.4-a: Hợp tác qua công nghệ số]) ngay cạnh tên nhóm.
+   - TUYỆT ĐỐI KHÔNG chèn thêm các hộp banner hồng/đỏ tổng hợp lớn ("Tích hợp NLS & AI Khởi động/Luyện tập...") che khuất văn bản.
 
 3. KHÔNG ĐỔ MẦU NỀN CHỮ CHO CÁC PHẦN TÍCH HỢP NLS & AI:
-   - TUYỆT ĐỐI KHÔNG sử dụng màu nền (không dùng bg-indigo-100, bg-rose-100, bg-purple-100, bg-amber-100... hay background highlight).
-   - Mã NLS/AI được trình bày dạng chữ font-mono đậm kèm viền mỏng border-slate-300 hoặc chữ nổi bật đơn thuần:
-     <span class="font-mono font-bold text-slate-900 border border-slate-300 px-1.5 py-0.5 rounded text-xs">[NLS 2.4-a: Hợp tác qua công nghệ số]</span>
-     <span class="font-mono font-bold text-slate-900 border border-slate-300 px-1.5 py-0.5 rounded text-xs">[AI-NLc: Giao tiếp với AI & Prompt Engineering]</span>
-   - Luôn kèm đầy đủ tên năng lực trong ngoặc vuông: [Mã: Tên năng lực].
+   - TUYỆT ĐỐI KHÔNG sử dụng màu nền tô đậm toàn bộ dòng chữ.
+   - Mã NLS/AI sử dụng font-mono đậm, màu chữ Đỏ (text-red-600) và Tím Than (text-indigo-950) kèm khung viền mỏng đỏ (border-red-500) hoặc xám (border-slate-300).
 
 4. NGOẠI TRỪ TIẾT KIỂM TRA CHÍNH THỨC:
    - Chỉ ngoại trừ KHÔNG tích hợp NLS/AI khi tệp bài dạy là Tiết kiểm tra chính thức (như: Kiểm tra thường xuyên, Kiểm tra giữa học kỳ I/II, Kiểm tra cuối học kỳ I/II).
