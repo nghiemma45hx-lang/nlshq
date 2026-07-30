@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import mammoth from 'mammoth';
 import { LessonPlanItem } from '../types';
-import { relocateNlsToLeftColumn, extractLessonTitle } from '../utils/lessonPlanUtils';
+import { relocateNlsToLeftColumn, extractLessonTitle, expandNlsTagTitles } from '../utils/lessonPlanUtils';
 
 interface StudioViewProps {
   onSaveLesson: (lesson: Omit<LessonPlanItem, 'id' | 'createdAt' | 'dateString'>) => void;
@@ -367,7 +367,7 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
               }
 
               // Fallback if inputHtml is unstructured raw text
-              return `
+              return expandNlsTagTitles(`
                 <div>
                   <div class="mb-3">
                     <h3 class="font-bold text-slate-900 text-xs border-l-3 border-indigo-600 pl-2 uppercase">I. MỤC TIÊU BÀI HỌC (TÍCH HỢP NLS & AI)</h3>
@@ -426,7 +426,7 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
                     <div class="text-slate-700 leading-relaxed">${inputHtml}</div>
                   </div>
                 </div>
-              `;
+              `);
             })()}
           </div>
         </div>

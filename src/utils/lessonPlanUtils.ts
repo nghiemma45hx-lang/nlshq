@@ -1,3 +1,103 @@
+export const NLS_CODE_TITLES: Record<string, string> = {
+  // Miền 1
+  'NLS 1.1-a': 'Duyệt, tìm kiếm & lọc dữ liệu số',
+  'NLS 1.1-b': 'Duyệt & lọc thông tin số',
+  'NLS 1.1-c': 'Khai thác nội dung số',
+  'NLS 1.1': 'Duyệt, tìm kiếm & lọc dữ liệu số',
+  'NLS 1.2-a': 'Đánh giá độ tin cậy dữ liệu số',
+  'NLS 1.2-b': 'Đánh giá tính xác thực thông tin số',
+  'NLS 1.2': 'Đánh giá dữ liệu & nội dung số',
+  'NLS 1.3-a': 'Quản lý & lưu trữ dữ liệu số',
+  'NLS 1.3-b': 'Tổ chức & sắp xếp nội dung số',
+  'NLS 1.3': 'Quản lý & lưu trữ dữ liệu số',
+
+  // Miền 2
+  'NLS 2.1-a': 'Tương tác qua công nghệ số',
+  'NLS 2.1-b': 'Giao tiếp trên môi trường số',
+  'NLS 2.1': 'Tương tác qua công nghệ số',
+  'NLS 2.2-a': 'Chia sẻ thông tin & nội dung số',
+  'NLS 2.2-b': 'Thực hành trích dẫn & ghi nguồn số',
+  'NLS 2.2': 'Chia sẻ thông tin & trích dẫn nguồn số',
+  'NLS 2.3-a': 'Thực hành công dân số',
+  'NLS 2.3': 'Thực hành công dân số',
+  'NLS 2.4-a': 'Hợp tác qua công nghệ số',
+  'NLS 2.4-b': 'Đồng sáng tạo dữ liệu/tài nguyên số',
+  'NLS 2.4': 'Hợp tác & đồng sáng tạo số',
+  'NLS 2.5-a': 'Quy tắc ứng xử trên mạng',
+  'NLS 2.5-b': 'Nghi thức giao tiếp số (Netiquette)',
+  'NLS 2.5-c': 'Nghi thức & văn hóa số',
+  'NLS 2.5': 'Quy tắc ứng xử trên mạng (Netiquette)',
+  'NLS 2.6-a': 'Quản lý & bảo vệ danh tính số',
+  'NLS 2.6': 'Quản lý & bảo vệ danh tính số',
+
+  // Miền 3
+  'NLS 3.1-a': 'Phát triển & chỉnh sửa nội dung số',
+  'NLS 3.1-b': 'Biên tập đa phương tiện số',
+  'NLS 3.1': 'Phát triển & chỉnh sửa nội dung số',
+  'NLS 3.2-a': 'Tích hợp & tái tạo nội dung số',
+  'NLS 3.2': 'Tích hợp & tái tạo nội dung số',
+  'NLS 3.3-a': 'Bản quyền số & sở hữu trí tuệ',
+  'NLS 3.3-b': 'Thực thi giấy phép trí tuệ số',
+  'NLS 3.3': 'Bản quyền & sở hữu trí tuệ số',
+  'NLS 3.4-a': 'Lập trình & tư duy máy tính',
+  'NLS 3.4-b': 'Phát triển chuỗi lệnh máy tính',
+  'NLS 3.4': 'Lập trình & tư duy máy tính',
+
+  // Miền 4
+  'NLS 4.1-a': 'Bảo vệ thiết bị & an ninh mạng',
+  'NLS 4.1': 'Bảo vệ thiết bị & an ninh mạng',
+  'NLS 4.2-a': 'Bảo vệ dữ liệu cá nhân số',
+  'NLS 4.2-b': 'Bảo vệ quyền riêng tư số',
+  'NLS 4.2-c': 'Bảo vệ dữ liệu cá nhân & quyền riêng tư',
+  'NLS 4.2': 'Bảo vệ dữ liệu cá nhân & quyền riêng tư',
+  'NLS 4.3-a': 'Bảo vệ sức khỏe & an sinh số',
+  'NLS 4.3': 'Bảo vệ sức khỏe & an sinh số',
+  'NLS 4.4-a': 'Nhận thức tác động công nghệ đến môi trường',
+  'NLS 4.4-b': 'Bảo vệ môi trường khỏi tác động số',
+  'NLS 4.4': 'Bảo vệ môi trường trong không gian số',
+
+  // Miền 5
+  'NLS 5.1-a': 'Xử lý sự cố kỹ thuật thông thường',
+  'NLS 5.1-b': 'Khắc phục lỗi phần cứng/phần mềm',
+  'NLS 5.1': 'Xử lý sự cố kỹ thuật thông thường',
+  'NLS 5.2-a': 'Xác định nhu cầu & chọn giải pháp công nghệ',
+  'NLS 5.2': 'Xác định nhu cầu & chọn giải pháp công nghệ',
+  'NLS 5.3-a': 'Sử dụng sáng tạo công nghệ số & AI',
+  'NLS 5.3-b': 'Đổi mới sản phẩm bằng công nghệ số',
+  'NLS 5.3': 'Sử dụng sáng tạo công nghệ số & AI',
+  'NLS 5.4-a': 'Đánh giá lỗ hổng năng lực số cá nhân',
+  'NLS 5.4-b': 'Tự nâng cấp năng lực số',
+  'NLS 5.4': 'Tự đánh giá & nâng cấp năng lực số',
+
+  // AI QĐ 3439
+  'AI-NLa': 'Tư duy lấy con người làm trung tâm',
+  'AI-NLb': 'Đạo đức AI & Sử dụng có trách nhiệm',
+  'AI-NLc': 'Giao tiếp với AI & Prompt Engineering',
+  'AI-NLd': 'Đánh giá & Kiểm chứng kết quả AI',
+};
+
+/**
+ * Expand bare NLS tags like [NLS 2.4-a] to include their full capability title: [NLS 2.4-a: Hợp tác qua công nghệ số]
+ */
+export function expandNlsTagTitles(htmlStr: string): string {
+  if (!htmlStr) return htmlStr;
+  return htmlStr.replace(/\[(NLS\s+[0-9\.\-a-z]+|AI-NL[a-z]+)(?:\s*:\s*([^\]]+))?\]/gi, (fullMatch, rawCode, existingTitle) => {
+    // Normalize code key (e.g. "NLS 2.4-a" or "AI-NLc")
+    const codeKey = rawCode.trim();
+    const fullTitle = NLS_CODE_TITLES[codeKey];
+
+    if (fullTitle) {
+      return `[${codeKey}: ${fullTitle}]`;
+    }
+
+    if (existingTitle && existingTitle.trim().length > 0) {
+      return `[${codeKey}: ${existingTitle.trim()}]`;
+    }
+
+    return fullMatch;
+  });
+}
+
 /**
  * Utility to process and re-align Lesson Plan HTML.
  * Moves all NLS and AI integration badges/blocks ([NLS ...], [AI-NL...], [Ứng dụng NLS & AI...])
@@ -6,8 +106,11 @@
 export function relocateNlsToLeftColumn(htmlStr: string): string {
   if (!htmlStr) return htmlStr;
 
+  // First expand bare NLS codes to include titles (e.g. [NLS 2.4-a: Hợp tác qua công nghệ số])
+  let processed = expandNlsTagTitles(htmlStr);
+
   // 1. Process HTML table rows <tr>...</tr> if table structure exists
-  let processed = htmlStr.replace(/<tr\b[^>]*>([\s\S]*?)<\/tr>/gi, (fullTrMatch, trContent) => {
+  processed = processed.replace(/<tr\b[^>]*>([\s\S]*?)<\/tr>/gi, (fullTrMatch, trContent) => {
     // Extract cells inside this row
     const cellRegex = /<(td|th)\b([^>]*)>([\s\S]*?)<\/\1>/gi;
     const cells: { tag: string; attrs: string; content: string }[] = [];
