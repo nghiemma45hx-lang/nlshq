@@ -230,19 +230,19 @@ QUY TẮC PHÂN TÍCH VÀ TÍCH HỢP BẮT BUỘC (QUAN TRỌNG NHẤT):
      + TOÀN BỘ các mã chỉ báo NLS ([NLS 1.1-a], [NLS 2.4-a]...), các khối [Ứng dụng NLS & AI...] và hướng dẫn tổ chức hoạt động BẮT BUỘC CHÈN VÀO CỘT BÊN TRÁI ('Tổ chức thực hiện').
      + TUYỆT ĐỐI KHÔNG chèn hoặc để các khối tích hợp NLS/AI ở CỘT BÊN PHẢI ('Nội dung / Sản phẩm'). Cột bên phải chỉ để nội dung bài tập / sản phẩm đơn thuần của học sinh.
 
-2. TÍCH HỢP TRỰC TIẾP VÀO NỘI DUNG BÀI HỌC (KHÔNG DÙNG HỘP TỔNG HỢP TÁCH BIỆT):
-   - TUYỆT ĐỐI KHÔNG tạo các hộp tổng hợp riêng biệt ở đầu trang (như "I. MỤC TIÊU BÀI HỌC (TÍCH HỢP...)", "II. THIẾT BỊ...", "III. TIẾN TRÌNH...") rồi xếp phần giáo án gốc ở dưới cùng.
-   - BẮT BUỘC viết lại/chỉnh sửa trực tiếp trên chính văn bản Giáo án gốc. Chèn trực tiếp các mã NLS/AI, công cụ số và hướng dẫn hoạt động vào từng mục:
-     + Mục I. MỤC TIÊU: Bổ sung trực tiếp dòng Năng lực Số & AI bổ sung.
-     + Mục II. THIẾT BỊ DẠY HỌC & HỌC LIỆU SỐ: Bổ sung trực tiếp danh mục thiết bị số và ứng dụng AI.
-     + Mục III. TIẾN TRÌNH DẠY HỌC: Tích hợp trực tiếp mã NLS, công cụ số, lệnh Prompt AI và hoạt động GV/HS vào CỘT BÊN TRÁI (Tổ chức thực hiện) cho MỌI HOẠT ĐỘNG:
-       * Hoạt động 1 (Mở đầu / Khởi động): Tích hợp NLS tìm kiếm/khởi động số ([NLS 1.1-a], Quizizz AI, Kahoot...) vào cột Tổ chức thực hiện.
-       * Hoạt động 2 (Hình thành kiến thức): Tích hợp NLS mô phỏng/hợp tác/trợ lý AI ([NLS 3.1-a], [AI-NLc], GeoGebra, ChatGPT, Padlet...) vào cột Tổ chức thực hiện.
-       * Hoạt động 3 (Luyện tập): Tích hợp NLS đánh giá/đối sánh số ([NLS 2.4-a], [NLS 4.1-a], Azota, Quizizz, Google Form...) vào cột Tổ chức thực hiện.
-       * Hoạt động 4 (Vận dụng): Tích hợp NLS sáng tạo sản phẩm số ([NLS 5.3-a], [AI-NLd], Canva AI, CapCut, Infographic...) vào cột Tổ chức thực hiện.
-   - Áp dụng quy tắc tích hợp trực tiếp này cho TẤT CẢ CÁC TIẾT HỌC / BÀI HỌC trong tệp giáo án gửi lên (dù là bài 1 tiết hay bài dài nhiều tiết).
+2. TÍCH HỢP NLS TRỰC TIẾP VÀO MỤC TIÊU VÀ NHIỆM VỤ NHÓM:
+   - TÍCH HỢP TRONG MỤC I. MỤC TIÊU BÀI HỌC: Bổ sung trực tiếp chỉ báo NLS ([NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số], [NLS 2.4-a: Hợp tác qua công nghệ số]...) vào mục Năng lực số & Năng lực AI.
+   - TÍCH HỢP TRONG CÁC PHẦN GIAO NHIỆM VỤ CHO NHÓM/TỔ: Khi giao nhiệm vụ cho các nhóm (như: "Nhóm 1, 2", "Nhóm 3, 4", "Câu hỏi cho từng nhóm", "Nhiệm vụ các nhóm"), tích hợp trực tiếp chỉ báo NLS phù hợp (như [NLS 2.4-a: Hợp tác qua công nghệ số] hoặc [NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số]) ngay cạnh tên nhóm hoặc câu hỏi giao nhiệm vụ.
+   - TUYỆT ĐỐI KHÔNG chèn thêm các hộp banner hồng/đỏ tổng hợp ("Tích hợp NLS & AI Khởi động/Luyện tập...") ở bên dưới tiêu đề từng Hoạt động.
 
-3. NGOẠI TRỪ TIẾT KIỂM TRA CHÍNH THỨC:
+3. KHÔNG ĐỔ MẦU NỀN CHỮ CHO CÁC PHẦN TÍCH HỢP NLS & AI:
+   - TUYỆT ĐỐI KHÔNG sử dụng màu nền (không dùng bg-indigo-100, bg-rose-100, bg-purple-100, bg-amber-100... hay background highlight).
+   - Mã NLS/AI được trình bày dạng chữ font-mono đậm kèm viền mỏng border-slate-300 hoặc chữ nổi bật đơn thuần:
+     <span class="font-mono font-bold text-slate-900 border border-slate-300 px-1.5 py-0.5 rounded text-xs">[NLS 2.4-a: Hợp tác qua công nghệ số]</span>
+     <span class="font-mono font-bold text-slate-900 border border-slate-300 px-1.5 py-0.5 rounded text-xs">[AI-NLc: Giao tiếp với AI & Prompt Engineering]</span>
+   - Luôn kèm đầy đủ tên năng lực trong ngoặc vuông: [Mã: Tên năng lực].
+
+4. NGOẠI TRỪ TIẾT KIỂM TRA CHÍNH THỨC:
    - Chỉ ngoại trừ KHÔNG tích hợp NLS/AI khi tệp bài dạy là Tiết kiểm tra chính thức (như: Kiểm tra thường xuyên, Kiểm tra giữa học kỳ I/II, Kiểm tra cuối học kỳ I/II).
    - Với các tiết kiểm tra này, giữ nguyên đề/giáo án kiểm tra và chỉ ghi 1 thông báo ngắn gọn: "TIẾT KIỂM TRA / ĐÁNH GIÁ ĐỊNH KỲ (ĐỘC LẬP) - Giữ nguyên hình thức kiểm tra đánh giá độc lập của học sinh, không thực hiện tích hợp NLS & AI".
 

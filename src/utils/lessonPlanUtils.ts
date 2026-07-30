@@ -99,17 +99,73 @@ export function expandNlsTagTitles(htmlStr: string): string {
 }
 
 /**
+ * Remove background color fills from all NLS & AI badges in HTML.
+ * Ensures "không đổ mầu nền chữ các phần tích hợp NLS".
+ */
+export function stripNlsBackgrounds(htmlStr: string): string {
+  if (!htmlStr) return htmlStr;
+  return htmlStr
+    .replace(/bg-(?:indigo|rose|purple|amber|emerald|slate)-(?:50|100|200|500|600|900)\/?[0-9]*/g, 'bg-transparent')
+    .replace(/background:\s*#[a-f0-9]{3,6};?/gi, 'background: transparent;');
+}
+
+/**
+ * Inject appropriate NLS tags directly into group assignment questions/headers (Nhóm 1, 2, Nhóm 3, 4, etc.)
+ * as requested (e.g., photo 28 / image 4).
+ */
+export function injectNlsIntoGroupTasks(htmlStr: string): string {
+  if (!htmlStr) return htmlStr;
+
+  let result = htmlStr;
+
+  // 1. Group 1, 2 (or Nhóm 1) assignment -> NLS 2.4-a (Hợp tác qua công nghệ số)
+  result = result.replace(
+    /(Nhóm\s+1\s*[,;&\+]\s*2|Nhóm\s+1(?!\s*[,;&\+\d]))\s*:(?!\s*<span[^>]*>)?(?!\s*\[(?:NLS|AI-NL))/gi,
+    `$1 <span class="font-mono font-bold text-slate-900 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block my-0.5 mx-1">[NLS 2.4-a: Hợp tác qua công nghệ số]</span>:`
+  );
+
+  // 2. Group 3, 4 (or Nhóm 2) assignment -> NLS 1.1-a (Duyệt, tìm kiếm & lọc dữ liệu số)
+  result = result.replace(
+    /(Nhóm\s+3\s*[,;&\+]\s*4|Nhóm\s+2(?!\s*[,;&\+\d]))\s*:(?!\s*<span[^>]*>)?(?!\s*\[(?:NLS|AI-NL))/gi,
+    `$1 <span class="font-mono font-bold text-slate-900 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block my-0.5 mx-1">[NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số]</span>:`
+  );
+
+  // 3. Any other Nhóm X: assignment if not yet tagged -> NLS 2.4-a
+  result = result.replace(
+    /(Nhóm\s+\d+(?:\s*[,;&\+]\s*\d+)*)\s*:(?!\s*<span[^>]*>)?(?!\s*\[(?:NLS|AI-NL))/gi,
+    `$1 <span class="font-mono font-bold text-slate-900 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block my-0.5 mx-1">[NLS 2.4-a: Hợp tác qua công nghệ số]</span>:`
+  );
+
+  // 4. "Câu hỏi cho từng nhóm:" or "Giao nhiệm vụ cho các nhóm:" -> NLS 2.4-a
+  result = result.replace(
+    /(câu hỏi cho từng nhóm|nhiệm vụ cho các nhóm|giao nhiệm vụ nhóm)\s*:(?!\s*<span[^>]*>)?(?!\s*\[(?:NLS|AI-NL))/gi,
+    `$1 <span class="font-mono font-bold text-slate-900 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block my-0.5 mx-1">[NLS 2.4-a: Hợp tác qua công nghệ số]</span>:`
+  );
+
+  return result;
+}
+
+/**
  * Utility to process and re-align Lesson Plan HTML.
- * Moves all NLS and AI integration badges/blocks ([NLS ...], [AI-NL...], [Ứng dụng NLS & AI...])
- * from the Right Column ("Nội dung / Sản phẩm") to the Left Column ("Tổ chức thực hiện").
+ * Moves NLS tags from Right Column to Left Column if needed,
+ * injects NLS tags into group task questions, and removes unwanted synthetic activity banners.
  */
 export function relocateNlsToLeftColumn(htmlStr: string): string {
   if (!htmlStr) return htmlStr;
 
-  // First expand bare NLS codes to include titles (e.g. [NLS 2.4-a: Hợp tác qua công nghệ số])
-  let processed = expandNlsTagTitles(htmlStr);
+  // Remove synthetic/duplicate banner blocks like [Tích hợp NLS & AI Khởi động...]
+  let processed = htmlStr.replace(/<div\b[^>]*>[\s\S]*?\[Tích hợp NLS & AI[^\]]*\][\s\S]*?<\/div>/gi, '');
 
-  // 1. Process HTML table rows <tr>...</tr> if table structure exists
+  // First expand bare NLS codes to include titles (e.g. [NLS 2.4-a: Hợp tác qua công nghệ số])
+  processed = expandNlsTagTitles(processed);
+
+  // Inject NLS tags into group assignments (Nhóm 1, 2..., Nhóm 3, 4...)
+  processed = injectNlsIntoGroupTasks(processed);
+
+  // Remove background color fills for NLS tags
+  processed = stripNlsBackgrounds(processed);
+
+  // Process HTML table rows <tr>...</tr> if table structure exists
   processed = processed.replace(/<tr\b[^>]*>([\s\S]*?)<\/tr>/gi, (fullTrMatch, trContent) => {
     // Extract cells inside this row
     const cellRegex = /<(td|th)\b([^>]*)>([\s\S]*?)<\/\1>/gi;
@@ -126,7 +182,6 @@ export function relocateNlsToLeftColumn(htmlStr: string): string {
 
     // If row has at least 2 cells (Left = index 0: Tổ chức thực hiện, Right = index 1: Nội dung/Sản phẩm)
     if (cells.length >= 2) {
-      // Check if this row is a header row (e.g. contains "Tổ chức thực hiện" or "Sản phẩm")
       const isHeaderRow = /tổ chức thực hiện|sản phẩm|nội dung/i.test(cells[0].content + cells[1].content);
       if (isHeaderRow && cells[0].tag.toLowerCase() === 'th') {
         return fullTrMatch;
@@ -135,79 +190,31 @@ export function relocateNlsToLeftColumn(htmlStr: string): string {
       let leftCell = cells[0].content;
       let rightCell = cells[1].content;
 
-      // Check if this row is for 'Đọc - tìm hiểu chung' / 'Tìm hiểu chung' / 'Tác giả, tác phẩm' / 'Đọc văn bản'
-      const isReadingGeneralRow = /(?:đọc\s*-\s*tìm hiểu chung|i\.\s*đọc|i\.\s*tìm hiểu chung|1\.\s*tác giả|2\.\s*tác phẩm|b\.\s*đọc văn bản|tìm hiểu chung)/i.test(cells[0].content + cells[1].content);
+      // Extract raw [NLS ...] or [AI-NL...] bracket tags from right cell and move to left cell if any exist
+      const nlsTagsToMove: string[] = [];
+      rightCell = rightCell.replace(/\[(?:NLS|AI-NL)[^\]]*\]/gi, (tag) => {
+        nlsTagsToMove.push(tag);
+        return '';
+      });
 
-      // Check if rightCell contains NLS badges or blocks
-      const hasNlsInRight = /\[(?:NLS|AI-NL)[^\]]*\]|\[(?:Ứng dụng|Tích hợp) NLS/i.test(rightCell);
+      if (nlsTagsToMove.length > 0) {
+        const movedTags = nlsTagsToMove
+          .map(t => `<span class="font-mono font-bold text-slate-900 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block mr-1">${t}</span>`)
+          .join(' ');
+        
+        leftCell = leftCell + `\n<div class="mt-1">${movedTags}</div>`;
 
-      // Auto-inject NLS Miền 1 into Left column if this is a 'Đọc - tìm hiểu chung' row and doesn't have NLS 1 yet
-      const hasNls1 = /\[NLS 1/i.test(cells[0].content + cells[1].content);
-      if (isReadingGeneralRow && !hasNls1) {
-        const domain1Block = `<div class="my-1.5 p-2 bg-rose-50/90 border-l-3 border-rose-500 rounded-r text-[11px] text-rose-950 font-sans flex items-start flex-wrap gap-1.5"><span class="bg-rose-100 text-rose-800 border border-rose-300 font-bold px-1.5 py-0.5 rounded font-mono text-xs shrink-0">[NLS 1.1-a]</span> <div><b>[Tích hợp NLS Miền 1 - Khai thác dữ liệu & Tra cứu thông tin]:</b> GV hướng dẫn HS sử dụng thiết bị số/Internet tra cứu thông tin tác giả, tác phẩm, bối cảnh và hoàn thành Phiếu học tập số (PHT).</div></div>`;
-        leftCell = domain1Block + '\n' + leftCell;
         cells[0].content = leftCell;
-      }
+        cells[1].content = rightCell;
 
-      if (hasNlsInRight) {
-        const nlsBlocksToMove: string[] = [];
-
-        // Extract <div> blocks containing [Ứng dụng NLS...] or [Tích hợp NLS...] or [NLS...]
-        rightCell = rightCell.replace(/<div\b[^>]*>[\s\S]*?(?:\[(?:Ứng dụng|Tích hợp) NLS|\[NLS|\[AI-NL)[\s\S]*?<\/div>/gi, (block) => {
-          const updatedBlock = block.replace(/\[Ứng dụng/g, '[Tích hợp').replace(/Ứng dụng NLS/g, 'Tích hợp NLS');
-          nlsBlocksToMove.push(updatedBlock);
-          return '';
-        });
-
-        // Extract <p> blocks containing [Ứng dụng NLS...] or [Tích hợp NLS...] or [NLS...]
-        rightCell = rightCell.replace(/<p\b[^>]*>[\s\S]*?(?:\[(?:Ứng dụng|Tích hợp) NLS|\[NLS|\[AI-NL)[\s\S]*?<\/p>/gi, (block) => {
-          const updatedBlock = block.replace(/\[Ứng dụng/g, '[Tích hợp').replace(/Ứng dụng NLS/g, 'Tích hợp NLS');
-          nlsBlocksToMove.push(updatedBlock);
-          return '';
-        });
-
-        // Extract <span> badges <span ...>[NLS ...]</span> or <span ...>[AI-NL...]</span>
-        rightCell = rightCell.replace(/<span\b[^>]*>[\s\S]*?\[(?:NLS|AI-NL)[^\]]*\][\s\S]*?<\/span>/gi, (badge) => {
-          nlsBlocksToMove.push(badge);
-          return '';
-        });
-
-        // Extract inline [Ứng dụng NLS & AI...] or [Tích hợp NLS & AI...]: ... up to <br> or end
-        rightCell = rightCell.replace(/\[(?:Ứng dụng|Tích hợp) NLS[^\]]*\]:[^\n<]*/gi, (inlineText) => {
-          const cleanText = inlineText.replace(/^\[Ứng dụng/i, '[Tích hợp');
-          nlsBlocksToMove.push(`<div class="my-1.5 p-2 bg-rose-50/90 border-l-3 border-rose-500 rounded-r text-[11px] text-rose-950 font-sans"><b>${cleanText}</b></div>`);
-          return '';
-        });
-
-        // Extract remaining raw [NLS ...] or [AI-NL...] bracket tags
-        rightCell = rightCell.replace(/\[(?:NLS|AI-NL)[^\]]*\]/gi, (tag) => {
-          nlsBlocksToMove.push(`<span class="bg-indigo-100 text-indigo-800 font-bold px-1.5 py-0.5 rounded font-mono text-xs ml-1">${tag}</span>`);
-          return '';
-        });
-
-        // Clean up empty lines or residual colons/break tags in right cell
-        rightCell = rightCell
-          .replace(/^(?:\s*<br\s*\/?>|\s*:\s*|\s*<\/p>|\s*<\/div>)+/gi, '')
-          .replace(/<p>\s*:\s*<\/p>/gi, '')
-          .trim();
-
-        if (nlsBlocksToMove.length > 0) {
-          const movedContent = nlsBlocksToMove.join('\n');
-          // Prepend moved NLS content to the top or bottom of left cell (Tổ chức thực hiện)
-          leftCell = `<div class="mb-2 p-1.5 bg-indigo-50/50 rounded border border-indigo-100">${movedContent}</div>\n` + leftCell;
-
-          cells[0].content = leftCell;
-          cells[1].content = rightCell;
-
-          const trTagMatch = fullTrMatch.match(/^<tr\b[^>]*>/i);
-          const trOpenTag = trTagMatch ? trTagMatch[0] : '<tr>';
-          
-          let rebuiltCells = '';
-          for (let i = 0; i < cells.length; i++) {
-            rebuiltCells += `<${cells[i].tag}${cells[i].attrs}>${cells[i].content}</${cells[i].tag}>`;
-          }
-          return trOpenTag + rebuiltCells + '</tr>';
+        const trTagMatch = fullTrMatch.match(/^<tr\b[^>]*>/i);
+        const trOpenTag = trTagMatch ? trTagMatch[0] : '<tr>';
+        
+        let rebuiltCells = '';
+        for (let i = 0; i < cells.length; i++) {
+          rebuiltCells += `<${cells[i].tag}${cells[i].attrs}>${cells[i].content}</${cells[i].tag}>`;
         }
+        return trOpenTag + rebuiltCells + '</tr>';
       }
     }
 
