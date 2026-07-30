@@ -94,29 +94,41 @@ function AppContent() {
   // Selected sample or saved lesson plan for studio
   const [activeSample, setActiveSample] = useState<LessonPlanItem | null>(null);
 
-  const handleSaveLesson = async (newLessonData: Omit<LessonPlanItem, 'id' | 'createdAt' | 'dateString'>) => {
+  const handleSaveLesson = async (lessonData: Partial<LessonPlanItem> & Omit<LessonPlanItem, 'createdAt' | 'dateString'>) => {
     const now = new Date();
     const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
     const dateStr = now.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
     const fullDateString = `${timeStr} - ${dateStr}`;
 
+    const lessonId = lessonData.id || 'lesson-' + Date.now();
+
     const newLesson: LessonPlanItem = {
-      ...newLessonData,
-      id: 'lesson-' + Date.now(),
-      createdAt: Date.now(),
+      title: lessonData.title || 'Bài dạy chưa đặt tên',
+      subject: lessonData.subject || 'Ngữ văn',
+      grade: lessonData.grade || 'Lớp 10',
+      framework: lessonData.framework || 'TT 02/2025/TT-BGDĐT',
+      template: lessonData.template || 'CV 5512/BGDĐT-GDTrH',
+      status: lessonData.status || 'Đã tích hợp NLS',
+      originalContent: lessonData.originalContent || '',
+      integratedContent: lessonData.integratedContent || '',
+      ...lessonData,
+      id: lessonId,
+      createdAt: lessonData.createdAt || Date.now(),
       dateString: fullDateString,
       userId: currentUser?.uid || 'guest-' + Date.now(),
       ownerEmail: currentUser?.email || '',
     };
-    setLessons(prev => [newLesson, ...prev]);
+
+    setLessons(prev => {
+      const exists = prev.some(l => l.id === lessonId);
+      if (exists) {
+        return prev.map(l => l.id === lessonId ? newLesson : l);
+      }
+      return [newLesson, ...prev];
+    });
 
     // Save to Supabase Cloud Database
-    const savedSuccess = await saveLessonToSupabase(newLesson, currentUser?.uid || currentUser?.email);
-    if (savedSuccess) {
-      showToast('Đã lưu Kế hoạch bài dạy thành công vào Supabase Database!');
-    } else {
-      showToast('Đã lưu Kế hoạch bài dạy vào bộ nhớ local.');
-    }
+    await saveLessonToSupabase(newLesson, currentUser?.uid || currentUser?.email);
   };
 
   const handleDeleteLesson = async (id: string) => {

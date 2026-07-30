@@ -23,7 +23,7 @@ import { LessonPlanItem } from '../types';
 import { relocateNlsToLeftColumn, extractLessonTitle, expandNlsTagTitles } from '../utils/lessonPlanUtils';
 
 interface StudioViewProps {
-  onSaveLesson: (lesson: Omit<LessonPlanItem, 'id' | 'createdAt' | 'dateString'>) => void;
+  onSaveLesson: (lesson: Partial<LessonPlanItem> & Omit<LessonPlanItem, 'createdAt' | 'dateString'>) => void;
   onSuccessToast: (msg: string) => void;
   sampleLesson: LessonPlanItem | null;
 }
@@ -45,11 +45,17 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
   const [isProcessed, setIsProcessed] = useState<boolean>(false);
   const [activeTabSide, setActiveTabSide] = useState<'both' | 'integrated'>('both');
 
+  // Auto-Save & Lesson Identification State
+  const [activeLessonId, setActiveLessonId] = useState<string>(() => 'lesson-' + Date.now());
+  const [autoSaveTime, setAutoSaveTime] = useState<string | null>(null);
+  const [isAutoSaving, setIsAutoSaving] = useState<boolean>(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Auto-load sampleLesson or viewed lesson when changed/selected
   useEffect(() => {
     if (sampleLesson) {
+      if (sampleLesson.id) setActiveLessonId(sampleLesson.id);
       setOriginalHtml(sampleLesson.originalContent || '');
       setIntegratedHtml(sampleLesson.integratedContent || '');
       if (sampleLesson.subject) {
@@ -64,8 +70,54 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
     }
   }, [sampleLesson]);
 
+  // Debounced Auto-Save Effect (Runs in parallel with manual saving)
+  useEffect(() => {
+    if (!isLoaded || !originalHtml) return;
+
+    setIsAutoSaving(true);
+    const timer = setTimeout(() => {
+      const currentIntegrated = integratedHtml || generateFallbackIntegrated(originalHtml, subject, framework);
+      const title = extractLessonTitle(originalHtml + '\n' + currentIntegrated, subject, grade);
+
+      onSaveLesson({
+        id: activeLessonId,
+        title,
+        subject: `${subject} - ${grade}`,
+        grade,
+        framework,
+        template,
+        status: isProcessed ? 'Đã tích hợp NLS' : 'Gốc',
+        originalContent: originalHtml,
+        integratedContent: currentIntegrated,
+      });
+
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      setAutoSaveTime(timeStr);
+      setIsAutoSaving(false);
+    }, 2500);
+
+    return () => clearTimeout(timer);
+  }, [originalHtml, integratedHtml, subject, grade, framework, template, isLoaded, isProcessed, activeLessonId]);
+
+  // Keyboard shortcut for manual save (Ctrl+S / Cmd+S)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        if (isLoaded && originalHtml) {
+          handleSaveToRepository();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isLoaded, originalHtml, integratedHtml, subject, grade, framework, template, activeLessonId]);
+
   // Load sample plan handler
   const handleLoadSample = () => {
+    const newId = 'lesson-' + Date.now();
+    setActiveLessonId(newId);
     if (sampleLesson) {
       setOriginalHtml(sampleLesson.originalContent);
       setIntegratedHtml(sampleLesson.integratedContent || '');
@@ -105,6 +157,8 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const newId = 'lesson-' + Date.now();
+    setActiveLessonId(newId);
     onSuccessToast(`Đang đọc tệp ${file.name}...`);
 
     try {
@@ -190,6 +244,7 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
 
         // Auto Save to Repository
         onSaveLesson({
+          id: activeLessonId,
           title: extractLessonTitle(originalHtml + '\n' + finalIntegrated, subject, grade),
           subject: `${subject} - ${grade}`,
           grade,
@@ -200,6 +255,9 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
           integratedContent: finalIntegrated,
         });
 
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        setAutoSaveTime(timeStr);
         onSuccessToast('Đã phân tích & tích hợp NLS thành công bằng AI!');
       }, 300);
 
@@ -212,6 +270,7 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
       setIsProcessed(true);
 
       onSaveLesson({
+        id: activeLessonId,
         title: extractLessonTitle(originalHtml + '\n' + fallback, subject, grade),
         subject: `${subject} - ${grade}`,
         grade,
@@ -222,6 +281,9 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
         integratedContent: fallback,
       });
 
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      setAutoSaveTime(timeStr);
       onSuccessToast('Đã tích hợp NLS và lưu thành công vào Kho giáo án!');
     }
   };
@@ -237,8 +299,10 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
       setIntegratedHtml(currentIntegrated);
       setIsProcessed(true);
     }
+    const title = extractLessonTitle(originalHtml + '\n' + currentIntegrated, subject, grade);
     onSaveLesson({
-      title: extractLessonTitle(originalHtml + '\n' + currentIntegrated, subject, grade),
+      id: activeLessonId,
+      title,
       subject: `${subject} - ${grade}`,
       grade,
       framework,
@@ -247,7 +311,10 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
       originalContent: originalHtml,
       integratedContent: currentIntegrated,
     });
-    onSuccessToast('Đã lưu Kế hoạch bài dạy vào Kho Giáo Án!');
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    setAutoSaveTime(timeStr);
+    onSuccessToast(`Đã lưu thủ công bài dạy vào Kho Giáo Án (Ctrl+S)!`);
   };
 
   // Fallback intelligent HTML NLS injector
@@ -438,13 +505,37 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
           </button>
 
           {isLoaded && (
-            <button
-              onClick={handleSaveToRepository}
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center"
-            >
-              <FolderOpen className="w-4 h-4 mr-1.5" />
-              Lưu Về Kho Giáo Án
-            </button>
+            <div className="flex items-center gap-2">
+              {/* Auto Save Status Badge */}
+              <div 
+                className="px-3 py-2 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-bold flex items-center shadow-2xs"
+                title="Hệ thống tự động lưu liên tục dữ liệu vào bộ nhớ song song với lưu thủ công"
+              >
+                {isAutoSaving ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 text-emerald-600 animate-spin mr-1.5 shrink-0" />
+                    <span className="text-emerald-700 font-semibold">Đang tự lưu...</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 mr-1.5 shrink-0" />
+                    <span className="text-emerald-800 font-bold">
+                      {autoSaveTime ? `Tự động lưu: ${autoSaveTime}` : 'Đã tự động lưu'}
+                    </span>
+                  </>
+                )}
+              </div>
+
+              {/* Manual Save Button */}
+              <button
+                onClick={handleSaveToRepository}
+                title="Lưu thủ công bài dạy vào Kho giáo án (Phím tắt: Ctrl + S)"
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-extrabold rounded-xl shadow-xs transition flex items-center"
+              >
+                <FolderOpen className="w-4 h-4 mr-1.5" />
+                <span>Lưu Thủ Công (Ctrl+S)</span>
+              </button>
+            </div>
           )}
 
           {isProcessed && (
