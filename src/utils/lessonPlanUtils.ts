@@ -517,6 +517,29 @@ export function processExamPeriodHtml(htmlStr: string): string {
 }
 
 /**
+ * Strip NLS/AI tags from internal/nested tables (Phiếu học tập, Bảng dữ liệu nội dung).
+ * NLS tags should only appear in the main "Tổ chức thực hiện" column 1 or main activity headings,
+ * NEVER inside nested worksheet tables or internal content data tables.
+ */
+export function stripNlsFromInternalTables(htmlStr: string): string {
+  if (!htmlStr) return htmlStr;
+
+  // Target any table that represents a worksheet or inner content table or is nested
+  return htmlStr.replace(/<table\b[^>]*>([\s\S]*?)<\/table>/gi, (tableMatch) => {
+    const isWorksheetOrInternal = /phiếu\s+học\s+tập|bảng\s+kết\s+quả|bảng\s+phân\s+tích|bảng\s+đối\s+chiếu|phiếu\s+số/i.test(tableMatch) ||
+      /<table\b/i.test(tableMatch.slice(6)); // nested table inside table
+
+    if (isWorksheetOrInternal) {
+      let cleanInner = tableMatch.replace(/(?:Tích hợp\s*)?\[(?:NLS|AI-NL)[^\]]*\]/gi, '');
+      cleanInner = cleanInner.replace(/<div[^>]*border-red-500[^>]*>[\s\S]*?<\/div>/gi, '');
+      cleanInner = cleanInner.replace(/<span[^>]*border-slate-300[^>]*>\s*<\/span>/gi, '');
+      return cleanInner;
+    }
+    return tableMatch;
+  });
+}
+
+/**
  * Utility to process and re-align Lesson Plan HTML.
  * Moves NLS tags from Right Column to Left Column if needed,
  * filters exam periods, injects NLS tags into group task questions, etc.
@@ -641,6 +664,9 @@ export function relocateNlsToLeftColumn(htmlStr: string): string {
 
   // Remove background color fills for NLS tags
   processed = stripNlsBackgrounds(processed);
+
+  // Strip NLS/AI tags from internal worksheet tables / content data tables
+  processed = stripNlsFromInternalTables(processed);
 
   return processed;
 }

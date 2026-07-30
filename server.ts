@@ -266,7 +266,11 @@ QUY TẮC PHÂN TÍCH VÀ TÍCH HỢP BẮT BUỘC (QUAN TRỌNG NHẤT):
      + Tích hợp [NLS 3.1-a: Phát triển & chỉnh sửa nội dung số] (HS sử dụng phần mềm MS Word/PowerPoint/Canva để soạn thảo văn bản, thiết kế bài trình chiếu slide)
      + Tích hợp [AI-NLc: Giao tiếp với AI & Prompt Engineering] (HS thực hành giao tiếp với AI, đặt câu hỏi prompt để hỗ trợ tra cứu, phân tích và phản biện nội dung).
 
-6. QUY TẮC ĐỊNH DẠNG HTML TRẢ VỀ:
+6. KHÔNG TÍCH HỢP NLS VÀO CÁC BẢNG BIỂU NỘI BỘ CỦA PHIẾU HỌC TẬP HOẶC BẢNG DỮ LIỆU NỘI DUNG:
+   - Tuyệt đối KHÔNG chèn mã hay thẻ NLS vào bên trong các bảng biểu con, bảng phiếu học tập (Phiếu học tập 1, 2, 3...) hoặc các bảng thống kê nội dung nằm bên trong các cột.
+   - NLS chỉ được tích hợp tại Cột 1 (Tổ chức thực hiện) của bảng chính hoặc tại phần Mục tiêu / Bước thực hiện chính của Hoạt động.
+
+7. QUY TẮC ĐỊNH DẠNG HTML TRẢ VỀ:
    - Trả về mã HTML chuẩn đẹp, rõ ràng, dễ đọc.
    - Các mã chỉ báo NLS/AI phải được đóng gói trong thẻ span nổi bật font-mono:
      <span class="bg-indigo-100 text-indigo-800 font-bold px-1.5 py-0.5 rounded font-mono text-xs">[NLS 1.1-a]</span>
