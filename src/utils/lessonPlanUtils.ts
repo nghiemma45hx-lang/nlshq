@@ -79,22 +79,37 @@ export const NLS_CODE_TITLES: Record<string, string> = {
 /**
  * Expand bare NLS tags like [NLS 2.4-a] to include their full capability title: [NLS 2.4-a: Hợp tác qua công nghệ số]
  */
+export function ensureTichHopPrefix(htmlStr: string): string {
+  if (!htmlStr) return htmlStr;
+  
+  // Prepend "Tích hợp " before any NLS or AI bracket code if not already present
+  return htmlStr.replace(/(Tích hợp\s*)?\[(NLS\s+[0-9\.\-a-z]+|AI-NL[a-z]+)(?:\s*:\s*([^\]]+))?\]/gi, (fullMatch, existingPrefix, rawCode, existingTitle) => {
+    const codeKey = rawCode.trim();
+    const fullTitle = NLS_CODE_TITLES[codeKey] || existingTitle?.trim();
+    const tagContent = fullTitle ? `[${codeKey}: ${fullTitle}]` : `[${codeKey}]`;
+    return `Tích hợp ${tagContent}`;
+  });
+}
+
+/**
+ * Expand bare NLS tags like [NLS 2.4-a] to include their full capability title: Tích hợp [NLS 2.4-a: Hợp tác qua công nghệ số]
+ */
 export function expandNlsTagTitles(htmlStr: string): string {
   if (!htmlStr) return htmlStr;
-  return htmlStr.replace(/\[(NLS\s+[0-9\.\-a-z]+|AI-NL[a-z]+)(?:\s*:\s*([^\]]+))?\]/gi, (fullMatch, rawCode, existingTitle) => {
+  return htmlStr.replace(/(Tích hợp\s*)?\[(NLS\s+[0-9\.\-a-z]+|AI-NL[a-z]+)(?:\s*:\s*([^\]]+))?\]/gi, (fullMatch, existingPrefix, rawCode, existingTitle) => {
     // Normalize code key (e.g. "NLS 2.4-a" or "AI-NLc")
     const codeKey = rawCode.trim();
     const fullTitle = NLS_CODE_TITLES[codeKey];
 
     if (fullTitle) {
-      return `[${codeKey}: ${fullTitle}]`;
+      return `Tích hợp [${codeKey}: ${fullTitle}]`;
     }
 
     if (existingTitle && existingTitle.trim().length > 0) {
-      return `[${codeKey}: ${existingTitle.trim()}]`;
+      return `Tích hợp [${codeKey}: ${existingTitle.trim()}]`;
     }
 
-    return fullMatch;
+    return `Tích hợp [${codeKey}]`;
   });
 }
 
@@ -123,32 +138,32 @@ export function injectNlsActivityGoals(htmlStr: string): string {
   // Single outer red frame enclosing all NLS/AI domains for an activity goal
   const redFrameContainer = (...tags: { text: string; colorClass: string }[]) => {
     const tagSpans = tags
-      .map(t => `<span class="${t.colorClass} font-bold">${t.text}</span>`)
+      .map(t => `<span class="${t.colorClass} font-bold">${t.text.startsWith('Tích hợp ') ? t.text : 'Tích hợp ' + t.text}</span>`)
       .join(' ');
     return `<div class="my-1.5 inline-flex flex-wrap items-center gap-2 border border-red-500 rounded px-2.5 py-1 text-xs font-mono font-bold bg-rose-50/20">${tagSpans}</div>`;
   };
 
-  // 1. Hoạt động 1: Khởi động / Mở đầu -> [NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số]
+  // 1. Hoạt động 1: Khởi động / Mở đầu -> Tích hợp [NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số]
   const act1Badge = redFrameContainer({
-    text: '[NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số]',
+    text: 'Tích hợp [NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số]',
     colorClass: 'text-red-600',
   });
 
-  // 2. Hoạt động 2: Hình thành kiến thức mới -> [NLS 3.1-a] + [AI-NLc] in ONE single outer frame
+  // 2. Hoạt động 2: Hình thành kiến thức mới -> Tích hợp [NLS 3.1-a] + Tích hợp [AI-NLc] in ONE single outer frame
   const act2Badge = redFrameContainer(
-    { text: '[NLS 3.1-a: Phát triển & chỉnh sửa nội dung số]', colorClass: 'text-red-600' },
-    { text: '[AI-NLc: Giao tiếp với AI & Prompt Engineering]', colorClass: 'text-indigo-950' }
+    { text: 'Tích hợp [NLS 3.1-a: Phát triển & chỉnh sửa nội dung số]', colorClass: 'text-red-600' },
+    { text: 'Tích hợp [AI-NLc: Giao tiếp với AI & Prompt Engineering]', colorClass: 'text-indigo-950' }
   );
 
-  // 3. Hoạt động 3: Luyện tập -> [NLS 2.4-a]
+  // 3. Hoạt động 3: Luyện tập -> Tích hợp [NLS 2.4-a]
   const act3Badge = redFrameContainer({
-    text: '[NLS 2.4-a: Hợp tác qua công nghệ số]',
+    text: 'Tích hợp [NLS 2.4-a: Hợp tác qua công nghệ số]',
     colorClass: 'text-red-600',
   });
 
-  // 4. Hoạt động 4: Vận dụng -> [NLS 5.3-a]
+  // 4. Hoạt động 4: Vận dụng -> Tích hợp [NLS 5.3-a]
   const act4Badge = redFrameContainer({
-    text: '[NLS 5.3-a: Sử dụng sáng tạo công nghệ số & AI]',
+    text: 'Tích hợp [NLS 5.3-a: Sử dụng sáng tạo công nghệ số & AI]',
     colorClass: 'text-red-600',
   });
 
@@ -224,7 +239,7 @@ export function formatPart4NlsBottom(htmlStr: string): string {
   let result = htmlStr;
 
   // Red rectangle badge for Part 4 at the end of each lesson
-  const part4Badge = `<div class="my-2 inline-flex flex-wrap items-center gap-2 border border-red-500 rounded px-2.5 py-1 text-xs font-mono font-bold bg-rose-50/20"><span class="text-red-600 font-bold">[NLS 1.3-a: Quản lý, lưu trữ & chuẩn bị học liệu số cho bài học tiếp theo]</span></div>`;
+  const part4Badge = `<div class="my-2 inline-flex flex-wrap items-center gap-2 border border-red-500 rounded px-2.5 py-1 text-xs font-mono font-bold bg-rose-50/20"><span class="text-red-600 font-bold">Tích hợp [NLS 1.3-a: Quản lý, lưu trữ & chuẩn bị học liệu số cho bài học tiếp theo]</span></div>`;
 
   // 1. Remove any loose NLS badges right next to/under the heading 4. Hướng dẫn học bài...
   result = result.replace(
@@ -257,28 +272,83 @@ export function injectNlsIntoGroupTasks(htmlStr: string): string {
 
   let result = htmlStr;
 
-  // 1. Group 1, 2 (or Nhóm 1) assignment -> NLS 2.4-a (Hợp tác qua công nghệ số) - Red + Navy bold text
+  // 1. Group 1, 2 (or Nhóm 1) assignment -> Tích hợp [NLS 2.4-a: Hợp tác qua công nghệ số]
   result = result.replace(
-    /(Nhóm\s+1\s*[,;&\+]\s*2|Nhóm\s+1(?!\s*[,;&\+\d]))\s*:(?!\s*<span[^>]*>)?(?!\s*\[(?:NLS|AI-NL))/gi,
-    `$1 <span class="font-mono font-bold text-red-600 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block my-0.5 mx-1">[NLS 2.4-a: Hợp tác qua công nghệ số]</span>:`
+    /(Nhóm\s+1\s*[,;&\+]\s*2|Nhóm\s+1(?!\s*[,;&\+\d]))\s*:(?!\s*<span[^>]*>)?(?!\s*(?:Tích hợp\s+)?\[(?:NLS|AI-NL))/gi,
+    `$1 <span class="font-mono font-bold text-red-600 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block my-0.5 mx-1">Tích hợp [NLS 2.4-a: Hợp tác qua công nghệ số]</span>:`
   );
 
-  // 2. Group 3, 4 (or Nhóm 2) assignment -> NLS 1.1-a (Duyệt, tìm kiếm & lọc dữ liệu số) - Red + Navy bold text
+  // 2. Group 3, 4 (or Nhóm 2) assignment -> Tích hợp [NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số]
   result = result.replace(
-    /(Nhóm\s+3\s*[,;&\+]\s*4|Nhóm\s+2(?!\s*[,;&\+\d]))\s*:(?!\s*<span[^>]*>)?(?!\s*\[(?:NLS|AI-NL))/gi,
-    `$1 <span class="font-mono font-bold text-red-600 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block my-0.5 mx-1">[NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số]</span>:`
+    /(Nhóm\s+3\s*[,;&\+]\s*4|Nhóm\s+2(?!\s*[,;&\+\d]))\s*:(?!\s*<span[^>]*>)?(?!\s*(?:Tích hợp\s+)?\[(?:NLS|AI-NL))/gi,
+    `$1 <span class="font-mono font-bold text-red-600 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block my-0.5 mx-1">Tích hợp [NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số]</span>:`
   );
 
-  // 3. Any other Nhóm X: assignment if not yet tagged -> NLS 2.4-a
+  // 3. Any other Nhóm X: assignment if not yet tagged -> Tích hợp [NLS 2.4-a]
   result = result.replace(
-    /(Nhóm\s+\d+(?:\s*[,;&\+]\s*\d+)*)\s*:(?!\s*<span[^>]*>)?(?!\s*\[(?:NLS|AI-NL))/gi,
-    `$1 <span class="font-mono font-bold text-red-600 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block my-0.5 mx-1">[NLS 2.4-a: Hợp tác qua công nghệ số]</span>:`
+    /(Nhóm\s+\d+(?:\s*[,;&\+]\s*\d+)*)\s*:(?!\s*<span[^>]*>)?(?!\s*(?:Tích hợp\s+)?\[(?:NLS|AI-NL))/gi,
+    `$1 <span class="font-mono font-bold text-red-600 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block my-0.5 mx-1">Tích hợp [NLS 2.4-a: Hợp tác qua công nghệ số]</span>:`
   );
 
-  // 4. "Câu hỏi cho từng nhóm:" or "Giao nhiệm vụ cho các nhóm:" -> NLS 2.4-a
+  // 4. "Câu hỏi cho từng nhóm:" or "Giao nhiệm vụ cho các nhóm:" -> Tích hợp [NLS 2.4-a]
   result = result.replace(
-    /(câu hỏi cho từng nhóm|nhiệm vụ cho các nhóm|giao nhiệm vụ nhóm)\s*:(?!\s*<span[^>]*>)?(?!\s*\[(?:NLS|AI-NL))/gi,
-    `$1 <span class="font-mono font-bold text-red-600 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block my-0.5 mx-1">[NLS 2.4-a: Hợp tác qua công nghệ số]</span>:`
+    /(câu hỏi cho từng nhóm|nhiệm vụ cho các nhóm|giao nhiệm vụ nhóm)\s*:(?!\s*<span[^>]*>)?(?!\s*(?:Tích hợp\s+)?\[(?:NLS|AI-NL))/gi,
+    `$1 <span class="font-mono font-bold text-red-600 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block my-0.5 mx-1">Tích hợp [NLS 2.4-a: Hợp tác qua công nghệ số]</span>:`
+  );
+
+  return result;
+}
+
+/**
+ * Inject NLS tags into activity organization/content steps (Bước 1, Bước 2...) if missing.
+ */
+export function injectNlsIntoActivitySteps(htmlStr: string): string {
+  if (!htmlStr) return htmlStr;
+
+  let result = htmlStr;
+
+  // 1. In Hoạt động 1 (Khởi động): Step 1 or Step 2 -> Tích hợp [NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số]
+  result = result.replace(
+    /((?:HOẠT ĐỘNG 1|KHỞI ĐỘNG|MỞ ĐẦU)[\s\S]{1,600}?)(Bước 1\s*:[^\n<]+|Chuyển giao nhiệm vụ[^\n<]*)(?!\s*\(?Tích hợp\s*\[NLS)/gi,
+    (match, p1, p2) => {
+      if (!match.includes('NLS 1.1-a')) {
+        return `${p1}${p2} <span class="font-mono font-bold text-red-600 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block my-0.5">Tích hợp [NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số]</span>`;
+      }
+      return match;
+    }
+  );
+
+  // 2. In Hoạt động 2 (Hình thành kiến thức): Step 1 or Step 2 -> Tích hợp [NLS 3.1-a] & Tích hợp [AI-NLc]
+  result = result.replace(
+    /((?:HOẠT ĐỘNG 2|HÌNH THÀNH KIẾN THỨC)[\s\S]{1,600}?)(Bước 2\s*:[^\n<]+|Thực hiện nhiệm vụ[^\n<]*)(?!\s*\(?Tích hợp\s*\[NLS)/gi,
+    (match, p1, p2) => {
+      if (!match.includes('NLS 3.1-a')) {
+        return `${p1}${p2} <span class="font-mono font-bold text-red-600 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block my-0.5">Tích hợp [NLS 3.1-a: Phát triển & chỉnh sửa nội dung số]</span> <span class="font-mono font-bold text-indigo-950 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block my-0.5">Tích hợp [AI-NLc: Giao tiếp với AI & Prompt Engineering]</span>`;
+      }
+      return match;
+    }
+  );
+
+  // 3. In Hoạt động 3 (Luyện tập): Step 1 or Step 2 -> Tích hợp [NLS 2.4-a]
+  result = result.replace(
+    /((?:HOẠT ĐỘNG 3|LUYỆN TẬP)[\s\S]{1,600}?)(Bước 2\s*:[^\n<]+|Thực hiện nhiệm vụ[^\n<]*)(?!\s*\(?Tích hợp\s*\[NLS)/gi,
+    (match, p1, p2) => {
+      if (!match.includes('NLS 2.4-a')) {
+        return `${p1}${p2} <span class="font-mono font-bold text-red-600 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block my-0.5">Tích hợp [NLS 2.4-a: Hợp tác qua công nghệ số]</span>`;
+      }
+      return match;
+    }
+  );
+
+  // 4. In Hoạt động 4 (Vận dụng): Step 1 or Step 2 -> Tích hợp [NLS 5.3-a]
+  result = result.replace(
+    /((?:HOẠT ĐỘNG 4|VẬN DỤNG)[\s\S]{1,600}?)(Bước 1\s*:[^\n<]+|Chuyển giao nhiệm vụ[^\n<]*)(?!\s*\(?Tích hợp\s*\[NLS)/gi,
+    (match, p1, p2) => {
+      if (!match.includes('NLS 5.3-a')) {
+        return `${p1}${p2} <span class="font-mono font-bold text-red-600 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block my-0.5">Tích hợp [NLS 5.3-a: Sử dụng sáng tạo công nghệ số & AI]</span>`;
+      }
+      return match;
+    }
   );
 
   return result;
@@ -295,7 +365,7 @@ export function relocateNlsToLeftColumn(htmlStr: string): string {
   // Remove synthetic/duplicate banner blocks like [Tích hợp NLS & AI Khởi động...]
   let processed = htmlStr.replace(/<div\b[^>]*>[\s\S]*?\[Tích hợp NLS & AI[^\]]*\][\s\S]*?<\/div>/gi, '');
 
-  // First expand bare NLS codes to include titles (e.g. [NLS 2.4-a: Hợp tác qua công nghệ số])
+  // First expand bare NLS codes to include titles (e.g. Tích hợp [NLS 2.4-a: Hợp tác qua công nghệ số])
   processed = expandNlsTagTitles(processed);
 
   // Inject NLS domain tags into goals section (Mục tiêu) of each activity
@@ -306,6 +376,12 @@ export function relocateNlsToLeftColumn(htmlStr: string): string {
 
   // Inject NLS tags into group assignments (Nhóm 1, 2..., Nhóm 3, 4...)
   processed = injectNlsIntoGroupTasks(processed);
+
+  // Inject NLS tags into activity steps (Bước 1, Bước 2...) if needed
+  processed = injectNlsIntoActivitySteps(processed);
+
+  // Ensure every [NLS ...] or [AI-NL...] tag has "Tích hợp " in front
+  processed = ensureTichHopPrefix(processed);
 
   // Remove background color fills for NLS tags
   processed = stripNlsBackgrounds(processed);
@@ -337,14 +413,17 @@ export function relocateNlsToLeftColumn(htmlStr: string): string {
 
       // Extract raw [NLS ...] or [AI-NL...] bracket tags from right cell and move to left cell if any exist
       const nlsTagsToMove: string[] = [];
-      rightCell = rightCell.replace(/\[(?:NLS|AI-NL)[^\]]*\]/gi, (tag) => {
+      rightCell = rightCell.replace(/(?:Tích hợp\s*)?\[(?:NLS|AI-NL)[^\]]*\]/gi, (tag) => {
         nlsTagsToMove.push(tag);
         return '';
       });
 
       if (nlsTagsToMove.length > 0) {
         const movedTags = nlsTagsToMove
-          .map(t => `<span class="font-mono font-bold text-slate-900 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block mr-1">${t}</span>`)
+          .map(t => {
+            const formattedTag = t.startsWith('Tích hợp ') ? t : `Tích hợp ${t}`;
+            return `<span class="font-mono font-bold text-slate-900 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block mr-1">${formattedTag}</span>`;
+          })
           .join(' ');
         
         leftCell = leftCell + `\n<div class="mt-1">${movedTags}</div>`;
