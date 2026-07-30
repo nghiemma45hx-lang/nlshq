@@ -235,33 +235,46 @@ export function injectNlsActivityGoals(htmlStr: string): string {
 
 /**
  * Bổ sung miền NLS cần thiết vào cuối mỗi tiết học tại Mục 4 (Hướng dẫn học bài và chuẩn bị bài),
- * đặt ở vị trí khung đỏ chữ nhật ở cuối mỗi tiết học (trước vạch phân cách ------------------- hoặc tiết tiếp theo).
+ * đặt ở vị trí khung đỏ chữ nhật ở cuối mỗi tiết học (trước vạch phân cách ------------------- hoặc tiết tiếp theo),
+ * tích hợp ít nhất 3 miền NLS và căn chỉnh không đè lên đường kẻ đứt đoạn.
  */
 export function formatPart4NlsBottom(htmlStr: string): string {
   if (!htmlStr) return htmlStr;
 
   let result = htmlStr;
 
-  // Red rectangle badge for Part 4 at the end of each lesson
-  const part4Badge = `<div class="my-2 inline-flex flex-wrap items-center gap-2 border border-red-500 rounded px-2.5 py-1 text-xs font-mono font-bold bg-rose-50/20"><span class="text-red-600 font-bold">Tích hợp [NLS 1.3-a: Quản lý, lưu trữ & chuẩn bị học liệu số cho bài học tiếp theo]</span></div>`;
+  // Red rectangle badge for Part 4 with at least 3 NLS domains
+  const part4Badge = `<div class="my-3.5 block border border-red-500 rounded px-2.5 py-1.5 text-xs font-mono font-bold bg-rose-50/20 max-w-full leading-relaxed"><div class="flex flex-wrap items-center gap-2"><span class="text-red-600 font-bold">Tích hợp [NLS 1.3-a: Quản lý, lưu trữ & chuẩn bị học liệu số cho bài học tiếp theo]</span><span class="text-red-600 font-bold">Tích hợp [NLS 2.4-a: Hợp tác qua công nghệ số]</span><span class="text-red-600 font-bold">Tích hợp [NLS 4.1-a: Bảo vệ dữ liệu & an toàn số]</span></div></div>`;
 
-  // 1. Remove any loose NLS badges right next to/under the heading 4. Hướng dẫn học bài...
+  // 1. Remove any loose/existing Part 4 NLS badges to prevent duplication
   result = result.replace(
-    /((?:4\.\s*Hướng dẫn học bài|PHẦN IV|PHẦN 4|HƯỚNG DẪN HỌC BÀI VÀ CHUẨN BỊ BÀI|HƯỚNG DẪN VỀ NHÀ|CHUẨN BỊ BÀI SAU|DẶN DÒ)[^<\n]*)(?:\s*<br\s*\/?>)*(?:\s*<div[^>]*border-red-500[^>]*>[\s\S]*?\[NLS 1\.3-a[\s\S]*?<\/div>|\s*<span[^>]*>\[NLS 1\.3-a[^\]]*\]<\/span>)+/gi,
+    /((?:4\.\s*Hướng dẫn học bài|PHẦN IV|PHẦN 4|HƯỚNG DẪN HỌC BÀI VÀ CHUẨN BỊ BÀI|HƯỚNG DẪN VỀ NHÀ|CHUẨN BỊ BÀI SAU|DẶN DÒ)[^<\n]*)(?:\s*<br\s*\/?>)*(?:\s*<div[^>]*border-red-500[^>]*>[\s\S]*?\[NLS 1\.3-a[\s\S]*?<\/div>)+/gi,
     '$1'
   );
 
-  // 2. Identify sections of Part 4 and append the red rectangular badge at the end of each lesson (before <hr/>, -------------------, Ngày soạn:, TIẾT..., BÀI..., or end of block)
-  const part4Pattern = /((?:4\.\s*Hướng dẫn học bài|PHẦN IV|PHẦN 4|HƯỚNG DẪN HỌC BÀI VÀ CHUẨN BỊ BÀI|HƯỚNG DẪN VỀ NHÀ|CHUẨN BỊ BÀI SAU|DẶN DÒ)[\s\S]*?)(?=<hr|-------------------|Ngày soạn:|TIẾT\s+\d+|BÀI\s+\d+|<h[1-4]|$)/gi;
+  // 2. Identify sections of Part 4 and append the 3 NLS domains badge cleanly ABOVE dashed lines / separators
+  const part4Pattern = /((?:4\.\s*Hướng dẫn học bài|PHẦN IV|PHẦN 4|HƯỚNG DẪN HỌC BÀI VÀ CHUẨN BỊ BÀI|HƯỚNG DẪN VỀ NHÀ|CHUẨN BỊ BÀI SAU|DẶN DÒ)[\s\S]*?)(?=<hr|-------------|Ngày soạn:|TIẾT\s+\d+|BÀI\s+\d+|<h[1-4]|$)/gi;
 
   result = result.replace(part4Pattern, (match) => {
-    // If this Part 4 section already contains the red rectangle badge for NLS 1.3-a at the end, keep it
-    if (match.includes('border-red-500') && match.includes('NLS 1.3-a')) {
-      return match;
+    let content = match;
+
+    // If badge with 3 NLS domains is already present, just ensure it's separated from dashed lines
+    if (content.includes('border-red-500') && content.includes('NLS 1.3-a') && content.includes('NLS 2.4-a') && content.includes('NLS 4.1-a')) {
+      return content;
     }
-    // Trim whitespace and append the red rectangular badge
-    const trimmed = match.trimEnd();
-    return `${trimmed}\n<br/>${part4Badge}\n`;
+
+    // Strip out any incomplete NLS badges
+    content = content.replace(/<div[^>]*border-red-500[^>]*>[\s\S]*?\[NLS 1\.3-a[\s\S]*?<\/div>/gi, '');
+
+    // Separate dashed lines if present at the end of content so the badge sits cleanly ABOVE the dashed line
+    const dashedMatch = content.match(/(\s*(?:<p[^>]*>)?\s*[-–—_]{5,}\s*(?:<\/p>)?\s*)+$/i);
+    if (dashedMatch) {
+      const mainText = content.slice(0, content.length - dashedMatch[0].length).trimEnd();
+      const dashes = dashedMatch[0];
+      return `${mainText}\n<br/>\n${part4Badge}\n<br/>\n${dashes}`;
+    }
+
+    return `${content.trimEnd()}\n<br/>\n${part4Badge}\n<br/>`;
   });
 
   return result;
@@ -530,22 +543,46 @@ export function relocateNlsToLeftColumn(htmlStr: string): string {
       let leftCell = cells[0].content;
       let rightCell = cells[1].content;
 
-      // Extract raw [NLS ...] or [AI-NL...] bracket tags from right cell and move to left cell if any exist
+      // Extract NLS / AI-NL tags from right cell and remove them entirely along with any wrapper elements
       const nlsTagsToMove: string[] = [];
+
+      // 1. First strip full outer HTML tags <span...> or <div...> containing NLS/AI tags in rightCell
+      rightCell = rightCell.replace(/<(span|div)\b[^>]*>(?:[^<]|<(?!\/\1>))*?\[(?:NLS|AI-NL)[^\]]*\][\s\S]*?<\/\1>/gi, (match) => {
+        const tagTextMatches = match.match(/(?:Tích hợp\s*)?\[(?:NLS|AI-NL)[^\]]*\]/gi);
+        if (tagTextMatches) {
+          nlsTagsToMove.push(...tagTextMatches);
+        }
+        return '';
+      });
+
+      // 2. Also strip any remaining bare bracket NLS tags in rightCell
       rightCell = rightCell.replace(/(?:Tích hợp\s*)?\[(?:NLS|AI-NL)[^\]]*\]/gi, (tag) => {
         nlsTagsToMove.push(tag);
         return '';
       });
 
+      // 3. Clean up any empty span/div wrappers left behind in rightCell
+      rightCell = rightCell.replace(/<(span|div)\b[^>]*>\s*<\/\1>/gi, '');
+
       if (nlsTagsToMove.length > 0) {
-        const movedTags = nlsTagsToMove
-          .map(t => {
-            const formattedTag = t.startsWith('Tích hợp ') ? t : `Tích hợp ${t}`;
-            return `<span class="font-mono font-bold text-slate-900 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block mr-1">${formattedTag}</span>`;
-          })
-          .join(' ');
-        
-        leftCell = leftCell + `\n<div class="mt-1">${movedTags}</div>`;
+        // Filter out duplicate NLS tags and tags already present in leftCell
+        const uniqueTagsToMove = Array.from(new Set(nlsTagsToMove));
+        const newTagsForLeft: string[] = [];
+
+        for (const rawTag of uniqueTagsToMove) {
+          const formattedTag = rawTag.startsWith('Tích hợp ') ? rawTag : `Tích hợp ${rawTag}`;
+          // Check if leftCell already has this tag
+          const codeMatch = rawTag.match(/(?:NLS|AI-NL)\s*[\d\.\w\-]+/i);
+          const tagCode = codeMatch ? codeMatch[0] : rawTag;
+
+          if (!leftCell.includes(tagCode)) {
+            newTagsForLeft.push(`<span class="font-mono font-bold text-red-600 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block my-0.5 mr-1.5">${formattedTag}</span>`);
+          }
+        }
+
+        if (newTagsForLeft.length > 0) {
+          leftCell = leftCell + `\n<div class="mt-2 flex flex-wrap gap-1">${newTagsForLeft.join(' ')}</div>`;
+        }
 
         cells[0].content = leftCell;
         cells[1].content = rightCell;
