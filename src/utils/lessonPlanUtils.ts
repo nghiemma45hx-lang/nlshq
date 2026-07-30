@@ -143,29 +143,33 @@ export function injectNlsActivityGoals(htmlStr: string): string {
     return `<div class="my-1.5 inline-flex flex-wrap items-center gap-2 border border-red-500 rounded px-2.5 py-1 text-xs font-mono font-bold bg-rose-50/20">${tagSpans}</div>`;
   };
 
-  // 1. Hoạt động 1: Khởi động / Mở đầu -> Tích hợp [NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số]
-  const act1Badge = redFrameContainer({
-    text: 'Tích hợp [NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số]',
-    colorClass: 'text-red-600',
-  });
-
-  // 2. Hoạt động 2: Hình thành kiến thức mới -> Tích hợp [NLS 3.1-a] + Tích hợp [AI-NLc] in ONE single outer frame
-  const act2Badge = redFrameContainer(
-    { text: 'Tích hợp [NLS 3.1-a: Phát triển & chỉnh sửa nội dung số]', colorClass: 'text-red-600' },
-    { text: 'Tích hợp [AI-NLc: Giao tiếp với AI & Prompt Engineering]', colorClass: 'text-indigo-950' }
+  // 1. Hoạt động 1: Khởi động / Mở đầu -> 3 miền NLS hợp lý
+  const act1Badge = redFrameContainer(
+    { text: 'Tích hợp [NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số]', colorClass: 'text-red-600' },
+    { text: 'Tích hợp [NLS 2.4-a: Hợp tác qua công nghệ số]', colorClass: 'text-red-600' },
+    { text: 'Tích hợp [NLS 1.3-a: Quản lý & lưu trữ dữ liệu số]', colorClass: 'text-red-600' }
   );
 
-  // 3. Hoạt động 3: Luyện tập -> Tích hợp [NLS 2.4-a]
-  const act3Badge = redFrameContainer({
-    text: 'Tích hợp [NLS 2.4-a: Hợp tác qua công nghệ số]',
-    colorClass: 'text-red-600',
-  });
+  // 2. Hoạt động 2: Hình thành kiến thức mới -> 3 miền NLS/AI hợp lý
+  const act2Badge = redFrameContainer(
+    { text: 'Tích hợp [NLS 3.1-a: Phát triển & chỉnh sửa nội dung số]', colorClass: 'text-red-600' },
+    { text: 'Tích hợp [AI-NLc: Giao tiếp với AI & Prompt Engineering]', colorClass: 'text-indigo-950' },
+    { text: 'Tích hợp [NLS 1.2-a: Đánh giá dữ liệu & thông tin số]', colorClass: 'text-red-600' }
+  );
 
-  // 4. Hoạt động 4: Vận dụng -> Tích hợp [NLS 5.3-a]
-  const act4Badge = redFrameContainer({
-    text: 'Tích hợp [NLS 5.3-a: Sử dụng sáng tạo công nghệ số & AI]',
-    colorClass: 'text-red-600',
-  });
+  // 3. Hoạt động 3: Luyện tập -> 3 miền NLS hợp lý
+  const act3Badge = redFrameContainer(
+    { text: 'Tích hợp [NLS 2.4-a: Hợp tác qua công nghệ số]', colorClass: 'text-red-600' },
+    { text: 'Tích hợp [NLS 3.1-a: Phát triển & chỉnh sửa nội dung số]', colorClass: 'text-red-600' },
+    { text: 'Tích hợp [NLS 4.1-a: Bảo vệ thiết bị & môi trường số]', colorClass: 'text-red-600' }
+  );
+
+  // 4. Hoạt động 4: Vận dụng -> 3 miền NLS hợp lý
+  const act4Badge = redFrameContainer(
+    { text: 'Tích hợp [NLS 5.3-a: Sử dụng sáng tạo công nghệ số & AI]', colorClass: 'text-red-600' },
+    { text: 'Tích hợp [NLS 3.2-a: Chia sẻ nội dung & dữ liệu số]', colorClass: 'text-red-600' },
+    { text: 'Tích hợp [NLS 1.3-a: Quản lý & lưu trữ dữ liệu số]', colorClass: 'text-red-600' }
+  );
 
   // Match Mục tiêu: in Hoạt động 1
   result = result.replace(
@@ -355,6 +359,121 @@ export function injectNlsIntoActivitySteps(htmlStr: string): string {
 }
 
 /**
+ * Automatically fill empty or missing left-column cells (Tổ chức thực hiện) in 2-column tables
+ * with structured 4 steps and 3+ integrated NLS domains (especially for Hoạt động 2: Hình thành kiến thức mới).
+ */
+export function fixEmptyLeftColumns(htmlStr: string): string {
+  if (!htmlStr) return htmlStr;
+
+  let result = htmlStr;
+
+  result = result.replace(/<tr\b[^>]*>([\s\S]*?)<\/tr>/gi, (fullTrMatch, trContent) => {
+    const cellRegex = /<(td|th)\b([^>]*)>([\s\S]*?)<\/\1>/gi;
+    const cells: { tag: string; attrs: string; content: string }[] = [];
+    let cellMatch;
+
+    while ((cellMatch = cellRegex.exec(trContent)) !== null) {
+      cells.push({
+        tag: cellMatch[1],
+        attrs: cellMatch[2],
+        content: cellMatch[3],
+      });
+    }
+
+    if (cells.length >= 2) {
+      const isHeaderRow = /tổ chức thực hiện|sản phẩm|nội dung/i.test(cells[0].content + cells[1].content);
+      if (isHeaderRow && cells[0].tag.toLowerCase() === 'th') {
+        return fullTrMatch;
+      }
+
+      const leftTextOnly = cells[0].content.replace(/<[^>]+>/g, '').trim();
+      const rightTextOnly = cells[1].content.replace(/<[^>]+>/g, '').trim();
+
+      // If left cell is empty or lacks organization steps (< 15 chars) while right cell has content
+      if (leftTextOnly.length < 15 && rightTextOnly.length > 10) {
+        const filledLeft = `
+<div class="space-y-2 text-slate-800 font-semibold text-xs leading-relaxed">
+  <p class="font-bold text-slate-900">• Bước 1: Chuyển giao nhiệm vụ:</p>
+  <p class="pl-2">GV giao nhiệm vụ cho HS đọc hiểu, tra cứu tài liệu và hoàn thành phiếu học tập.</p>
+  <div class="mt-1"><span class="font-mono font-bold text-red-600 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block">Tích hợp [NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số]</span></div>
+  
+  <p class="font-bold text-slate-900">• Bước 2: Thực hiện nhiệm vụ:</p>
+  <p class="pl-2">HS làm việc cá nhân/nhóm phân tích, biên tập nội dung số và ứng dụng AI hỗ trợ đặt câu hỏi.</p>
+  <div class="mt-1 space-x-1">
+    <span class="font-mono font-bold text-red-600 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block">Tích hợp [NLS 3.1-a: Phát triển & chỉnh sửa nội dung số]</span>
+    <span class="font-mono font-bold text-indigo-950 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block">Tích hợp [AI-NLc: Giao tiếp với AI & Prompt Engineering]</span>
+  </div>
+  
+  <p class="font-bold text-slate-900">• Bước 3: Báo cáo, thảo luận:</p>
+  <p class="pl-2">Đại diện nhóm trình bày kết quả, đối chiếu và phản biện thông tin dữ liệu số.</p>
+  <div class="mt-1"><span class="font-mono font-bold text-red-600 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block">Tích hợp [NLS 1.2-a: Đánh giá dữ liệu & thông tin số]</span></div>
+  
+  <p class="font-bold text-slate-900">• Bước 4: Đánh giá, kết luận:</p>
+  <p class="pl-2">GV nhận xét, chuẩn hóa kiến thức và hướng dẫn HS quản lý học liệu số.</p>
+</div>`;
+        cells[0].content = filledLeft;
+
+        const trTagMatch = fullTrMatch.match(/^<tr\b[^>]*>/i);
+        const trOpenTag = trTagMatch ? trTagMatch[0] : '<tr>';
+        let rebuiltCells = '';
+        for (let i = 0; i < cells.length; i++) {
+          rebuiltCells += `<${cells[i].tag}${cells[i].attrs}>${cells[i].content}</${cells[i].tag}>`;
+        }
+        return trOpenTag + rebuiltCells + '</tr>';
+      }
+    }
+
+    return fullTrMatch;
+  });
+
+  return result;
+}
+
+/**
+ * Remove duplicate stacked/repeated NLS badges in adjacent elements or within the same section/cell.
+ * Ensures "chỉ xuất hiện một miền NLS, không lặp lại một NLS ở cùng một vị trí".
+ */
+export function deduplicateNlsBadges(htmlStr: string): string {
+  if (!htmlStr) return htmlStr;
+
+  let result = htmlStr;
+
+  // 1. Remove duplicate adjacent "Tích hợp Tích hợp" strings
+  result = result.replace(/(?:Tích hợp\s+)+/gi, 'Tích hợp ');
+
+  // 2. Remove duplicate identical span/div badges inside table cells, paragraphs, or blocks
+  // e.g. If an NLS code like "NLS 1.1-a" occurs multiple times in the same <td> or <div> or <p>, keep only the 1st
+  const nlsCodeKeys = Object.keys(NLS_CODE_TITLES);
+
+  for (const code of nlsCodeKeys) {
+    const escapedCode = code.replace(/\./g, '\\.');
+    const badgePattern = new RegExp(
+      `(?:<span\\b[^>]*>(?:\\s*Tích hợp\\s*)?\\[${escapedCode}[^\\]]*\\]<\\/span>|<div\\b[^>]*>(?:\\s*Tích hợp\\s*)?\\[${escapedCode}[^\\]]*\\]<\\/div>|Tích hợp\\s*\\[${escapedCode}[^\\]]*\\]|\\[${escapedCode}[^\\]]*\\])`,
+      'gi'
+    );
+
+    // Filter within block tags <td>, <th>, <p>, <div>, <li>
+    result = result.replace(/<(td|th|p|div|li)\b([^>]*)>([\s\S]*?)<\/\1>/gi, (match, tag, attrs, innerContent) => {
+      let seen = false;
+      const cleanedInner = innerContent.replace(badgePattern, (badgeMatch) => {
+        if (!seen) {
+          seen = true;
+          return badgeMatch;
+        }
+        return ''; // Remove redundant duplicate badge
+      });
+      return `<${tag}${attrs}>${cleanedInner}</${tag}>`;
+    });
+  }
+
+  // 3. Clean up empty/whitespace-only tags left over from duplicate removals
+  result = result.replace(/<span\b[^>]*>\s*<\/span>/gi, '');
+  result = result.replace(/<div\b[^>]*>\s*<\/div>/gi, '');
+
+  return result;
+}
+
+/**
  * Utility to process and re-align Lesson Plan HTML.
  * Moves NLS tags from Right Column to Left Column if needed,
  * injects NLS tags into group task questions, and removes unwanted synthetic activity banners.
@@ -365,10 +484,13 @@ export function relocateNlsToLeftColumn(htmlStr: string): string {
   // Remove synthetic/duplicate banner blocks like [Tích hợp NLS & AI Khởi động...]
   let processed = htmlStr.replace(/<div\b[^>]*>[\s\S]*?\[Tích hợp NLS & AI[^\]]*\][\s\S]*?<\/div>/gi, '');
 
+  // Fill empty left columns (especially Hoạt động 2 in Image 5)
+  processed = fixEmptyLeftColumns(processed);
+
   // First expand bare NLS codes to include titles (e.g. Tích hợp [NLS 2.4-a: Hợp tác qua công nghệ số])
   processed = expandNlsTagTitles(processed);
 
-  // Inject NLS domain tags into goals section (Mục tiêu) of each activity
+  // Inject NLS domain tags into goals section (Mục tiêu) of each activity (3 distinct NLS domains per activity)
   processed = injectNlsActivityGoals(processed);
 
   // Position NLS integration at the bottom of Part 4 (Hướng dẫn học bài & chuẩn bị bài)
@@ -383,10 +505,7 @@ export function relocateNlsToLeftColumn(htmlStr: string): string {
   // Ensure every [NLS ...] or [AI-NL...] tag has "Tích hợp " in front
   processed = ensureTichHopPrefix(processed);
 
-  // Remove background color fills for NLS tags
-  processed = stripNlsBackgrounds(processed);
-
-  // Process HTML table rows <tr>...</tr> if table structure exists
+  // Process HTML table rows <tr>...</tr> to relocate right-column NLS tags to left column
   processed = processed.replace(/<tr\b[^>]*>([\s\S]*?)<\/tr>/gi, (fullTrMatch, trContent) => {
     // Extract cells inside this row
     const cellRegex = /<(td|th)\b([^>]*)>([\s\S]*?)<\/\1>/gi;
@@ -444,6 +563,12 @@ export function relocateNlsToLeftColumn(htmlStr: string): string {
 
     return fullTrMatch;
   });
+
+  // Deduplicate all repeated/stacked NLS badges so each NLS code appears ONLY ONCE at any spot
+  processed = deduplicateNlsBadges(processed);
+
+  // Remove background color fills for NLS tags
+  processed = stripNlsBackgrounds(processed);
 
   return processed;
 }
