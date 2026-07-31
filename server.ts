@@ -223,7 +223,11 @@ function buildDynamicLocalExam(opts: any): string {
     questionStructure
   } = opts;
 
-  const mcq = questionStructure?.mcqCount ?? 12;
+  const mcq = questionStructure?.mcqCount ?? 8;
+  const trueFalse = questionStructure?.trueFalseCount ?? 0;
+  const fillBlank = questionStructure?.fillBlankCount ?? 0;
+  const matching = questionStructure?.matchingCount ?? 0;
+  const shortAnswer = questionStructure?.shortAnswerCount ?? 0;
   const essay = questionStructure?.essayCount ?? 2;
 
   // Clean raw topicScope text
@@ -247,139 +251,132 @@ function buildDynamicLocalExam(opts: any): string {
   const textParagraphs = rawLines.filter(l => l.length > 25 && !/^(câu|cau|đáp án|đề số|thời gian|môn|lớp|họ và tên)/i.test(l));
   const mainPassage = textParagraphs.slice(0, 5).join('\n\n') || rawText.slice(0, 600) || `Tài liệu đính kèm cho môn ${subject} ${grade}`;
 
-  // Extract explicit questions if already present in uploaded text
-  const explicitQuestions: { q: string; options: string[] }[] = [];
-  let currentQ: { q: string; options: string[] } | null = null;
-
-  for (const line of rawLines) {
-    if (/^(câu|cau)\s*\d+/i.test(line) || /^\d+\./.test(line)) {
-      if (currentQ) explicitQuestions.push(currentQ);
-      currentQ = { q: line, options: [] };
-    } else if (currentQ && /^[A-D][\.\:\s]/i.test(line)) {
-      currentQ.options.push(line);
-    } else if (currentQ && currentQ.options.length < 4 && line.length > 3 && line.length < 150) {
-      if (currentQ.options.length === 0 && !/^[A-D]/i.test(line)) {
-        currentQ.q += ' ' + line;
-      } else {
-        const prefix = ['A. ', 'B. ', 'C. ', 'D. '][currentQ.options.length] || '';
-        currentQ.options.push(prefix + line);
-      }
-    }
-  }
-  if (currentQ) explicitQuestions.push(currentQ);
-
-  // Generate MCQ questions based strictly on source text
+  // 1. MCQ Questions
   const generatedMcqs: { q: string; options: string[]; answer: string }[] = [];
-  if (explicitQuestions.length >= 2) {
-    explicitQuestions.forEach((eq, idx) => {
-      let opts = eq.options;
-      if (opts.length < 4) {
-        const prefixes = ['A. ', 'B. ', 'C. ', 'D. '];
-        while (opts.length < 4) {
-          opts.push(`${prefixes[opts.length]}Phương án tham khảo ${opts.length + 1}`);
-        }
-      }
-      generatedMcqs.push({
-        q: `Câu ${idx + 1}. (0.25 điểm) ${eq.q.replace(/^(câu|cau)\s*\d+[\.\:\s]*/i, '')}`,
-        options: opts.slice(0, 4),
-        answer: ['A', 'B', 'C', 'D'][idx % 4]
-      });
-    });
-  } else {
-    for (let i = 1; i <= Math.max(mcq, 4); i++) {
-      const pChoice = textParagraphs[(i - 1) % textParagraphs.length] || primaryTopic;
+  if (mcq > 0) {
+    for (let i = 1; i <= mcq; i++) {
+      const pChoice = textParagraphs[(i - 1) % (textParagraphs.length || 1)] || primaryTopic;
       const cleanSnippet = pChoice.replace(/^"|"$/g, '').trim();
       const shortPhrase = cleanSnippet.split('.')[0] || cleanSnippet;
 
       let qText = '';
       let options: string[] = [];
       const correctAns = ['A', 'B', 'C', 'D'][(i - 1) % 4];
-      const qType = (i - 1) % 6;
+      const qType = (i - 1) % 5;
 
       if (qType === 0) {
         qText = `Câu ${i}. (0.25 điểm) Phương thức biểu đạt chính được sử dụng trong ngữ liệu/đoạn trích trên là gì?`;
-        options = [
-          'A. Miêu tả kết hợp tự sự và biểu cảm',
-          'B. Thuyết minh khoa học',
-          'C. Nghị luận xã hội',
-          'D. Hành chính - công vụ'
-        ];
+        options = ['A. Miêu tả kết hợp tự sự và biểu cảm', 'B. Thuyết minh khoa học', 'C. Nghị luận xã hội', 'D. Hành chính - công vụ'];
       } else if (qType === 1) {
-        qText = `Câu ${i}. (0.25 điểm) Dựa vào đoạn trích, thông tin nào sau đây miêu tả đúng nhất chi tiết: "${shortPhrase.slice(0, 75)}..."?`;
+        qText = `Câu ${i}. (0.25 điểm) Dựa vào đoạn trích, chi tiết "${shortPhrase.slice(0, 60)}..." thể hiện nội dung gì?`;
         options = [
-          `A. Tái hiện sinh động đặc điểm, hình ảnh: ${shortPhrase.slice(0, 45)}...`,
-          `B. Diễn tả sự việc trái ngược với ngữ liệu thực tế`,
-          `C. Phản ánh một sự kiện không có trong đoạn trích`,
-          `D. Đưa ra kết luận chung không có căn cứ trong văn bản`
+          `A. Tái hiện hình ảnh/nội dung: ${shortPhrase.slice(0, 40)}...`,
+          `B. Phủ định nhận định về thực tế văn bản`,
+          `C. Nội dung không xuất hiện trong ngữ liệu gốc`,
+          `D. Đánh giá mang tính giả thuyết`
         ];
       } else if (qType === 2) {
-        qText = `Câu ${i}. (0.25 điểm) Trong câu văn: "${shortPhrase.slice(0, 65)}...", cách sử dụng từ ngữ/biện pháp nghệ thuật nổi bật là gì?`;
+        qText = `Câu ${i}. (0.25 điểm) Cách sử dụng từ ngữ/biện pháp nghệ thuật nổi bật trong đoạn trích là gì?`;
         options = [
-          `A. Biện pháp so sánh/nhân hóa gợi hình ảnh giàu cảm xúc`,
-          `B. Sử dụng từ ngữ mượn tiếng nước ngoài`,
-          `C. Phép liệt kê mang tính kỹ thuật`,
-          `D. Biện pháp nói giảm nói tránh`
+          `A. Biện pháp so sánh/nhân hóa/ẩn dụ giàu giá trị biểu cảm`,
+          `B. Phép thuật ngữ kỹ thuật`,
+          `C. Liệt kê các số liệu hành chính`,
+          `D. Nói giảm nói tránh`
         ];
       } else if (qType === 3) {
-        qText = `Câu ${i}. (0.25 điểm) Chủ đề trọng tâm bao trùm toàn bộ ngữ liệu đính kèm là gì?`;
+        qText = `Câu ${i}. (0.25 điểm) Chủ đề trọng tâm bao trùm ngữ liệu đính kèm là gì?`;
         options = [
-          `A. ${primaryTopic.slice(0, 75)}`,
-          `B. Phân tích biến đổi khí hậu và môi trường sinh thái`,
-          `C. Giới thiệu xu hướng công nghệ hiện đại`,
-          `D. Tóm tắt lịch sử phát triển của các nền văn minh cổ đại`
-        ];
-      } else if (qType === 4) {
-        const words = cleanSnippet.split(' ').filter(w => w.length > 3).slice(0, 3);
-        const w1 = words[0] || 'mùa hè';
-        const w2 = words[1] || 'mưa rào';
-        qText = `Câu ${i}. (0.25 điểm) Các từ ngữ "${w1}", "${w2}" trong đoạn trích đóng vai trò như thế nào trong việc thể hiện cảm xúc/nội dung?`;
-        options = [
-          `A. Gợi mở không gian, không khí và vẻ đẹp chân thực của cảnh vật`,
-          `B. Bày tỏ sự phản đối của tác giả đối với hoàn cảnh`,
-          `C. Bổ sung các khái niệm lý thuyết hành chính`,
-          `D. Nhấn mạnh sự tranh luận giữa các nhân vật`
+          `A. ${primaryTopic.slice(0, 70)}`,
+          `B. Tìm hiểu sự thay đổi của khoa học công nghệ`,
+          `C. Tóm tắt các lý thuyết kinh tế`,
+          `D. Nghiên cứu địa lý tự nhiên`
         ];
       } else {
-        qText = `Câu ${i}. (0.25 điểm) Thông điệp hoặc ý nghĩa sâu sắc nhất rút ra từ ngữ liệu đính kèm là gì?`;
+        qText = `Câu ${i}. (0.25 điểm) Thông điệp/ý nghĩa sâu sắc nhất rút ra từ ngữ liệu là gì?`;
         options = [
-          `A. Yêu mến vẻ đẹp thiên nhiên, nuôi dưỡng tinh thần gắn bó với quê hương`,
-          `B. Không nên chú ý đến những đổi thay của thời tiết`,
-          `C. Phê bình nhận thức của mọi người về cuộc sống`,
-          `D. Tìm hiểu nguyên nhân gây ra các hiện tượng tự nhiên`
+          `A. Bồi dưỡng tình yêu thiên nhiên, quê hương và đạo lý cuộc sống`,
+          `B. Phản đối việc tiếp thu bài học văn hóa`,
+          `C. Tăng cường sử dụng phương tiện hiện đại`,
+          `D. Bỏ qua các giá trị truyền thống`
         ];
-      }
-
-      const targetIdx = ['A', 'B', 'C', 'D'].indexOf(correctAns);
-      if (targetIdx !== 0) {
-        const temp = options[0];
-        options[0] = options[targetIdx];
-        options[targetIdx] = temp;
       }
 
       const prefixes = ['A. ', 'B. ', 'C. ', 'D. '];
       const formattedOpts = options.map((opt, oIdx) => `${prefixes[oIdx]}${opt.replace(/^[A-D][\.\:\s]*/, '')}`);
+      generatedMcqs.push({ q: qText, options: formattedOpts, answer: correctAns });
+    }
+  }
 
-      generatedMcqs.push({
-        q: qText,
-        options: formattedOpts,
-        answer: correctAns
+  // 2. True/False Questions
+  const generatedTrueFalse: { num: number; title: string; items: { label: string; text: string; isTrue: boolean }[] }[] = [];
+  if (trueFalse > 0) {
+    for (let i = 1; i <= trueFalse; i++) {
+      generatedTrueFalse.push({
+        num: i,
+        title: `Câu ${i}. (1.0 điểm) Trong các phát biểu sau đây về ngữ liệu gốc, hãy xác định mỗi ý a), b), c), d) là Đúng hay Sai:`,
+        items: [
+          { label: 'a)', text: `Văn bản/ngữ liệu gốc tập trung thể hiện nội dung "${primaryTopic.slice(0, 60)}".`, isTrue: true },
+          { label: 'b)', text: `Tác giả sử dụng các từ ngữ và hình ảnh chân thực, giàu sức gợi tả.`, isTrue: true },
+          { label: 'c)', text: `Nội dung phản ánh sự việc trái ngược với tinh thần thực tế của ngữ liệu gốc.`, isTrue: false },
+          { label: 'd)', text: `Thông điệp bài học hướng tới việc bồi dưỡng nhận thức và giá trị sống tích cực.`, isTrue: true }
+        ]
       });
     }
   }
 
-  // Generate Essay questions based on source text
-  const essayQuestions = [
-    {
+  // 3. Fill-in-the-blank Questions
+  const generatedFillBlank: { num: number; title: string; excerpt: string }[] = [];
+  if (fillBlank > 0) {
+    for (let i = 1; i <= fillBlank; i++) {
+      const pSnippet = textParagraphs[i % (textParagraphs.length || 1)] || primaryTopic;
+      generatedFillBlank.push({
+        num: i,
+        title: `Câu ${i}. (0.5 điểm) Chọn từ/cụm từ thích hợp từ ngữ liệu gốc để điền vào chỗ trống (...):`,
+        excerpt: `"${pSnippet.slice(0, 80)} ... (1) ... ${pSnippet.slice(80, 160)} ... (2) ... "`
+      });
+    }
+  }
+
+  // 4. Matching Questions
+  const generatedMatching: { num: number; title: string; colA: string[]; colB: string[] }[] = [];
+  if (matching > 0) {
+    for (let i = 1; i <= matching; i++) {
+      generatedMatching.push({
+        num: i,
+        title: `Câu ${i}. (0.5 điểm) Ghép thông tin ở Cột A tương ứng với Cột B dựa trên ngữ liệu gốc:`,
+        colA: ['1. Chi tiết / Từ ngữ nổi bật', '2. Biện pháp / Phương thức', '3. Ý nghĩa / Thông điệp'],
+        colB: ['a. Bồi dưỡng tư tưởng và cảm xúc nhân văn', 'b. Tái hiện không gian và hình ảnh chân thực', 'c. Thể hiện tư tưởng chủ đạo của tác phẩm']
+      });
+    }
+  }
+
+  // 5. Short Answer Questions
+  const generatedShortAnswer: { num: number; title: string }[] = [];
+  if (shortAnswer > 0) {
+    for (let i = 1; i <= shortAnswer; i++) {
+      generatedShortAnswer.push({
+        num: i,
+        title: `Câu ${i}. (0.25 điểm) Dựa vào ngữ liệu gốc, hãy trả lời ngắn gọn (trong 1-2 câu) nội dung chính hoặc bài học cốt lõi.`
+      });
+    }
+  }
+
+  // 6. Essay Questions
+  const essayQuestions: { num: number; points: number; text: string }[] = [];
+  if (essay > 0) {
+    essayQuestions.push({
       num: 1,
       points: 3.0,
-      text: `Từ nội dung dữ liệu gốc trong tài liệu "${primaryTopic}", em hãy viết một đoạn văn (khoảng 10-12 câu) phân tích ý nghĩa cốt lõi và bài học thực tiễn rút ra cho bản thân trong môn ${subject} ${grade}.`
-    },
-    {
-      num: 2,
-      points: 4.0,
-      text: `Phân tích toàn diện ngữ liệu/đề bài trong tài liệu tải lên (${primaryTopic}). Chỉ rõ các giá trị nội dung, phương pháp/nghệ thuật được thể hiện và liên hệ thực tế.`
+      text: `Từ nội dung dữ liệu gốc trong tài liệu "${primaryTopic}", em hãy viết một đoạn văn (khoảng 10-12 câu) phân tích ý nghĩa cốt lõi và bài học thực tiễn rút ra cho bản thân.`
+    });
+    if (essay >= 2) {
+      essayQuestions.push({
+        num: 2,
+        points: 4.0,
+        text: `Phân tích toàn diện ngữ liệu/đề bài trong tài liệu tải lên (${primaryTopic}). Chỉ rõ các giá trị nội dung, nghệ thuật/phương pháp biểu đạt và liên hệ thực tế.`
+      });
     }
-  ];
+  }
 
   const isOption1 = outputOption === '1';
   const isOption2 = outputOption === '2';
@@ -611,10 +608,11 @@ function buildDynamicLocalExam(opts: any): string {
           <div class="whitespace-pre-wrap italic text-slate-900">${mainPassage}</div>
         </div>
 
-        <!-- PHẦN I: TRẮC NGHIỆM -->
+        <!-- PHẦN I: TRẮC NGHIỆM KHOANH ĐÁP ÁN ĐÚNG -->
+        ${generatedMcqs.length > 0 ? `
         <div>
           <div class="font-bold text-base uppercase text-indigo-950 border-b border-slate-300 pb-1 mb-3">
-            PHẦN I. TRẮC NGHIỆM KHÁCH QUAN (3.0 điểm)
+            PHẦN I. TRẮC NGHIỆM KHÁCH QUAN (${generatedMcqs.length} câu)
           </div>
           <p class="italic text-xs text-slate-600 mb-4">Khoanh tròn vào duy nhất một chữ cái A, B, C hoặc D đứng trước câu trả lời đúng nhất:</p>
 
@@ -629,11 +627,108 @@ function buildDynamicLocalExam(opts: any): string {
             `).join('')}
           </div>
         </div>
+        ` : ''}
 
-        <!-- PHẦN II: TỰ LUẬN -->
+        <!-- PHẦN II: TRẮC NGHIỆM ĐÚNG / SAI -->
+        ${generatedTrueFalse.length > 0 ? `
         <div class="pt-4">
           <div class="font-bold text-base uppercase text-indigo-950 border-b border-slate-300 pb-1 mb-3">
-            PHẦN II. TỰ LUẬN (7.0 điểm)
+            PHẦN II. TRẮC NGHIỆM LỰA CHỌN ĐÚNG / SAI (${generatedTrueFalse.length} câu)
+          </div>
+          <p class="italic text-xs text-slate-600 mb-4">Trong mỗi câu, chọn Đúng hoặc Sai cho mỗi ý a), b), c), d):</p>
+
+          <div class="space-y-4 text-xs">
+            ${generatedTrueFalse.map(tf => `
+              <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                <p class="font-bold text-slate-900">${tf.title}</p>
+                <div class="mt-2 pl-3 space-y-1">
+                  ${tf.items.map(it => `
+                    <div class="flex items-start justify-between border-b border-slate-100 py-1">
+                      <span><b>${it.label}</b> ${it.text}</span>
+                      <span class="font-bold text-indigo-900 ml-2 font-mono">[Đ/S]</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        ` : ''}
+
+        <!-- PHẦN III: TRẮC NGHIỆM ĐIỀN KHUYẾT -->
+        ${generatedFillBlank.length > 0 ? `
+        <div class="pt-4">
+          <div class="font-bold text-base uppercase text-indigo-950 border-b border-slate-300 pb-1 mb-3">
+            PHẦN III. TRẮC NGHIỆM ĐIỀN KHUYẾT (${generatedFillBlank.length} câu)
+          </div>
+
+          <div class="space-y-4 text-xs">
+            ${generatedFillBlank.map(fb => `
+              <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                <p class="font-bold text-slate-900">${fb.title}</p>
+                <p class="mt-2 italic pl-2 text-slate-800">${fb.excerpt}</p>
+                <p class="mt-2 pl-2 text-slate-600">(1): ........................................ | (2): ........................................</p>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        ` : ''}
+
+        <!-- PHẦN IV: TRẮC NGHIỆM NỐI CỘT -->
+        ${generatedMatching.length > 0 ? `
+        <div class="pt-4">
+          <div class="font-bold text-base uppercase text-indigo-950 border-b border-slate-300 pb-1 mb-3">
+            PHẦN IV. TRẮC NGHIỆM NỐI CỘT (${generatedMatching.length} câu)
+          </div>
+
+          <div class="space-y-4 text-xs">
+            ${generatedMatching.map(m => `
+              <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                <p class="font-bold text-slate-900">${m.title}</p>
+                <div class="grid grid-cols-2 gap-4 mt-2 border border-slate-200 p-2 rounded bg-white">
+                  <div>
+                    <p class="font-bold text-indigo-900 border-b pb-1">Cột A</p>
+                    <ul class="list-none space-y-1 mt-1">
+                      ${m.colA.map(a => `<li>${a}</li>`).join('')}
+                    </ul>
+                  </div>
+                  <div>
+                    <p class="font-bold text-indigo-900 border-b pb-1">Cột B</p>
+                    <ul class="list-none space-y-1 mt-1">
+                      ${m.colB.map(b => `<li>${b}</li>`).join('')}
+                    </ul>
+                  </div>
+                </div>
+                <p class="mt-2 font-semibold text-slate-700">Trả lời ghép nối: 1 - ..... ; 2 - ..... ; 3 - .....</p>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        ` : ''}
+
+        <!-- PHẦN V: TRẮC NGHIỆM TRẢ LỜI NGẮN -->
+        ${generatedShortAnswer.length > 0 ? `
+        <div class="pt-4">
+          <div class="font-bold text-base uppercase text-indigo-950 border-b border-slate-300 pb-1 mb-3">
+            PHẦN V. TRẮC NGHIỆM TRẢ LỜI NGẮN (${generatedShortAnswer.length} câu)
+          </div>
+
+          <div class="space-y-4 text-xs">
+            ${generatedShortAnswer.map(sa => `
+              <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                <p class="font-bold text-slate-900">${sa.title}</p>
+                <p class="mt-2 text-slate-500 italic">Trả lời: ................................................................................................................................................</p>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        ` : ''}
+
+        <!-- PHẦN VI: TỰ LUẬN -->
+        ${essayQuestions.length > 0 ? `
+        <div class="pt-4">
+          <div class="font-bold text-base uppercase text-indigo-950 border-b border-slate-300 pb-1 mb-3">
+            PHẦN VI. TỰ LUẬN (${essayQuestions.length} câu)
           </div>
 
           <div class="space-y-4 text-xs">
@@ -645,6 +740,7 @@ function buildDynamicLocalExam(opts: any): string {
             `).join('')}
           </div>
         </div>
+        ` : ''}
 
         <div class="text-center italic font-bold pt-6 text-slate-600 border-t border-slate-200 text-xs">
           ------------------- HẾT -------------------<br/>
@@ -858,12 +954,12 @@ ${topicScope || 'Nội dung kiểm tra'}
 Ghi chú / Yêu cầu bổ sung: ${additionalNotes || 'Thiết lập chuẩn cấu trúc đổi mới BGDĐT'}`;
 
     let resultHtml = '';
-    let source = 'gemini-2.5-flash';
+    let source = 'gemini-3.6-flash';
 
     if (ai) {
       try {
         const response = await ai.models.generateContent({
-          model: 'gemini-2.5-flash',
+          model: 'gemini-3.6-flash',
           contents: userPrompt,
           config: {
             systemInstruction: systemPrompt,
