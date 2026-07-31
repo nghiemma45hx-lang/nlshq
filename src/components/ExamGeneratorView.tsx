@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   FileCheck, 
   Sparkles, 
@@ -13,7 +13,13 @@ import {
   RotateCcw,
   ListOrdered,
   HelpCircle,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Paperclip,
+  Link,
+  Trash2,
+  Image,
+  ExternalLink,
+  Upload
 } from 'lucide-react';
 import { LessonPlanItem } from '../types';
 
@@ -57,6 +63,95 @@ Chủ đề 4: Viết bài văn nghị luận phân tích một tác phẩm văn
   const [additionalNotes, setAdditionalNotes] = useState<string>(
     'Cấu trúc đề tích hợp theo quy chuẩn GDPT 2018. Bố trí ma trận, đặc tả và đáp án thang điểm 10.'
   );
+
+  // Attachment & Google Drive Link States
+  interface AttachedFileItem {
+    id: string;
+    name: string;
+    size: string;
+    type: string;
+    content?: string;
+  }
+
+  interface AttachedDriveLink {
+    id: string;
+    url: string;
+    title: string;
+  }
+
+  const [attachedFiles, setAttachedFiles] = useState<AttachedFileItem[]>([]);
+  const [driveLinks, setDriveLinks] = useState<AttachedDriveLink[]>([]);
+  const [showDriveInput, setShowDriveInput] = useState<boolean>(false);
+  const [driveInputUrl, setDriveInputUrl] = useState<string>('');
+  const [driveInputTitle, setDriveInputTitle] = useState<string>('');
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    Array.from(files).forEach(file => {
+      const sizeKb = (file.size / 1024).toFixed(1);
+      const sizeStr = file.size > 1024 * 1024 ? `${(file.size / (1024 * 1024)).toFixed(1)} MB` : `${sizeKb} KB`;
+      
+      let fileType = 'other';
+      const ext = file.name.split('.').pop()?.toLowerCase() || '';
+      if (['doc', 'docx'].includes(ext)) fileType = 'word';
+      else if (ext === 'pdf') fileType = 'pdf';
+      else if (['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(ext)) fileType = 'image';
+      else if (['txt', 'md', 'json', 'csv'].includes(ext)) fileType = 'text';
+
+      const newItem: AttachedFileItem = {
+        id: Date.now() + Math.random().toString(),
+        name: file.name,
+        size: sizeStr,
+        type: fileType,
+      };
+
+      if (fileType === 'text') {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          newItem.content = event.target?.result as string;
+          setAttachedFiles(prev => [...prev, newItem]);
+        };
+        reader.readAsText(file);
+      } else {
+        setAttachedFiles(prev => [...prev, newItem]);
+      }
+    });
+
+    onSuccessToast(`Đã đính kèm ${files.length} tệp tài liệu đề cương/SGK!`);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleRemoveFile = (id: string) => {
+    setAttachedFiles(prev => prev.filter(f => f.id !== id));
+  };
+
+  const handleAddDriveLink = () => {
+    if (!driveInputUrl.trim()) return;
+    let url = driveInputUrl.trim();
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'https://' + url;
+    }
+
+    const newLink: AttachedDriveLink = {
+      id: Date.now().toString(),
+      url: url,
+      title: driveInputTitle.trim() || 'Tài liệu Google Drive / SGK Online',
+    };
+
+    setDriveLinks(prev => [...prev, newLink]);
+    setDriveInputUrl('');
+    setDriveInputTitle('');
+    setShowDriveInput(false);
+    onSuccessToast('Đã đính kèm Link Drive/SGK online thành công!');
+  };
+
+  const handleRemoveDriveLink = (id: string) => {
+    setDriveLinks(prev => prev.filter(l => l.id !== id));
+  };
 
   // Quick Question Structure Preset applier
   const handleApplyStructurePreset = (preset: 'standard' | 'diverse' | 'thpt' | 'essayOnly') => {
@@ -189,6 +284,18 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
     const titleStr = `Đề kiểm tra ${examType} ${subject} - ${grade} (${durationMinutes} phút)`;
     setGeneratedTitle(titleStr);
 
+    let fullTopicScopePayload = topicScope;
+
+    if (attachedFiles.length > 0) {
+      fullTopicScopePayload += `\n\n[CÁC TẬP TIN ĐỀ CƯƠNG / BÀI HỌC / SGK ĐÍNH KÈM]:\n` + 
+        attachedFiles.map(f => `- Tệp [${f.type.toUpperCase()}]: ${f.name} (${f.size})${f.content ? `\n  + Nội dung chi tiết:\n${f.content.slice(0, 2000)}...` : ''}`).join('\n');
+    }
+
+    if (driveLinks.length > 0) {
+      fullTopicScopePayload += `\n\n[LINK TÀI LIỆU GOOGLE DRIVE / SGK ONLINE TÍCH HỢP]:\n` + 
+        driveLinks.map(l => `- Tài liệu: ${l.title} (URL: ${l.url})`).join('\n');
+    }
+
     try {
       setTimeout(() => setProgressStep('Đang thiết lập Ma trận đề & Tỉ lệ phần trăm (40% NB - 30% TH - 30% VD)...'), 1200);
       setTimeout(() => setProgressStep('Đang biên soạn Bảng đặc tả chi tiết từng câu hỏi & Yêu cầu cần đạt...'), 2500);
@@ -203,7 +310,7 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
           outputOption,
           subject,
           grade,
-          topicScope,
+          topicScope: fullTopicScopePayload,
           schoolName,
           headerDept,
           durationMinutes,
@@ -1188,18 +1295,165 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
             </div>
           </div>
 
-          {/* Topic / Scope Text Input */}
-          <div>
-            <label className="block text-xs font-bold text-slate-800 mb-1">
-              Phạm vi bài học / Nội dung kiểm tra:
-            </label>
+          {/* Topic / Scope Text Input with File Upload & Drive Link Buttons */}
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <label className="block text-xs font-bold text-slate-800">
+                Phạm vi bài học / Nội dung kiểm tra: <span className="text-rose-600">*</span>
+              </label>
+
+              {/* Upload & Drive Link Action Buttons */}
+              <div className="flex items-center space-x-1.5">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileUpload}
+                  multiple
+                  accept=".doc,.docx,.pdf,.png,.jpg,.jpeg,.txt,.md"
+                  className="hidden"
+                />
+                
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-[11px] font-bold transition flex items-center space-x-1 cursor-pointer shadow-2xs"
+                  title="Tải lên tệp Đề cương/SGK (Word, PDF, Ảnh, Text...)"
+                >
+                  <Paperclip className="w-3.5 h-3.5 text-rose-600" />
+                  <span>Tải file Word/PDF/Ảnh</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowDriveInput(!showDriveInput)}
+                  className="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg text-[11px] font-bold transition flex items-center space-x-1 cursor-pointer shadow-2xs"
+                  title="Dán link Google Drive hoặc SGK Online"
+                >
+                  <Link className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>Link Drive/SGK</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Collapsible Drive Link Input Box */}
+            {showDriveInput && (
+              <div className="p-3 bg-indigo-50/90 border border-indigo-200 rounded-xl space-y-2 text-xs shadow-inner animate-fadeIn">
+                <div className="font-extrabold text-indigo-950 flex items-center justify-between">
+                  <span className="flex items-center space-x-1">
+                    <Link className="w-3.5 h-3.5 text-indigo-600" />
+                    <span>Thêm Link Google Drive / SGK / Bài học Online</span>
+                  </span>
+                  <button 
+                    type="button" 
+                    onClick={() => setShowDriveInput(false)}
+                    className="text-slate-400 hover:text-slate-600 font-bold text-xs cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <input
+                    type="text"
+                    value={driveInputTitle}
+                    onChange={e => setDriveInputTitle(e.target.value)}
+                    placeholder="Tên tài liệu (vd: SGK Toán 10 KNTT)"
+                    className="p-2 bg-white border border-indigo-200 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-hidden font-medium"
+                  />
+                  <input
+                    type="url"
+                    value={driveInputUrl}
+                    onChange={e => setDriveInputUrl(e.target.value)}
+                    placeholder="Dán URL: https://drive.google.com/..."
+                    className="p-2 bg-white border border-indigo-200 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-hidden font-medium"
+                  />
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowDriveInput(false)}
+                    className="px-3 py-1 bg-white hover:bg-slate-100 text-slate-600 font-bold rounded-lg border border-slate-200 text-xs cursor-pointer"
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleAddDriveLink}
+                    className="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-xs shadow-xs cursor-pointer"
+                  >
+                    Xác nhận Thêm Link
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Scope Textarea */}
             <textarea
               rows={4}
               value={topicScope}
               onChange={e => setTopicScope(e.target.value)}
-              placeholder="Nhập tên bài học, chủ đề, chương kiến thức cần ra đề..."
+              placeholder="Nhập tên bài học, chủ đề, chương kiến thức cần ra đề hoặc đính kèm tệp Word/PDF/Ảnh, link Drive ở nút bấm phía trên..."
               className="w-full p-3 text-xs leading-relaxed font-mono bg-slate-50 border border-slate-300 rounded-2xl focus:ring-2 focus:ring-rose-500 focus:outline-hidden"
             />
+
+            {/* Attached Items Badges Bar */}
+            {(attachedFiles.length > 0 || driveLinks.length > 0) && (
+              <div className="p-2.5 bg-slate-100/90 border border-slate-200 rounded-xl space-y-1.5">
+                <div className="text-[10px] font-black uppercase tracking-wider text-slate-500 flex items-center justify-between">
+                  <span>Tài liệu đính kèm tham chiếu ({attachedFiles.length + driveLinks.length})</span>
+                  <span className="text-[9px] text-slate-400 font-normal">AI sẽ tham chiếu dữ liệu này khi biên soạn đề</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {attachedFiles.map(file => (
+                    <div
+                      key={file.id}
+                      className="flex items-center space-x-1.5 px-2.5 py-1 bg-white border border-rose-200 text-rose-900 rounded-lg text-xs shadow-2xs"
+                    >
+                      {file.type === 'word' ? <FileText className="w-3.5 h-3.5 text-blue-600" /> :
+                       file.type === 'pdf' ? <FileText className="w-3.5 h-3.5 text-rose-600" /> :
+                       file.type === 'image' ? <Image className="w-3.5 h-3.5 text-emerald-600" /> :
+                       <Paperclip className="w-3.5 h-3.5 text-slate-600" />}
+                      <span className="font-bold max-w-[150px] truncate">{file.name}</span>
+                      <span className="text-[10px] text-slate-400">({file.size})</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveFile(file.id)}
+                        className="text-slate-400 hover:text-rose-600 font-bold ml-1 cursor-pointer"
+                        title="Xóa tệp đính kèm này"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+
+                  {driveLinks.map(link => (
+                    <div
+                      key={link.id}
+                      className="flex items-center space-x-1.5 px-2.5 py-1 bg-white border border-indigo-200 text-indigo-900 rounded-lg text-xs shadow-2xs"
+                    >
+                      <Link className="w-3.5 h-3.5 text-indigo-600" />
+                      <a
+                        href={link.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="font-bold max-w-[170px] truncate hover:underline flex items-center space-x-1 text-indigo-700"
+                        title={link.url}
+                      >
+                        <span>{link.title}</span>
+                        <ExternalLink className="w-2.5 h-2.5 text-indigo-400" />
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveDriveLink(link.id)}
+                        className="text-slate-400 hover:text-rose-600 font-bold ml-1 cursor-pointer"
+                        title="Xóa link drive này"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Additional Notes */}
