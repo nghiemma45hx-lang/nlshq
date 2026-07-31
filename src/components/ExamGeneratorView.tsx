@@ -32,6 +32,14 @@ export const ExamGeneratorView: React.FC<ExamGeneratorViewProps> = ({
   const [examType, setExamType] = useState<string>('Giữa học kì I');
   const [outputOption, setOutputOption] = useState<string>('3'); // 1: Matrix only, 2: Matrix+Spec, 3: Full dossier
 
+  // Question Structure Selection Counters (Specific user request)
+  const [mcqCount, setMcqCount] = useState<number>(12); // Trắc nghiệm khoanh đáp án đúng
+  const [trueFalseCount, setTrueFalseCount] = useState<number>(0); // Trắc nghiệm lựa chọn đúng sai
+  const [fillBlankCount, setFillBlankCount] = useState<number>(0); // Trắc nghiệm điền khuyết
+  const [matchingCount, setMatchingCount] = useState<number>(0); // Trắc nghiệm Nối
+  const [shortAnswerCount, setShortAnswerCount] = useState<number>(0); // Trắc nghiệm trả lời ngắn
+  const [essayCount, setEssayCount] = useState<number>(2); // Tự luận
+
   // Exam details
   const [subject, setSubject] = useState<string>('Ngữ văn');
   const [grade, setGrade] = useState<string>('Khối 8');
@@ -47,8 +55,45 @@ Chủ đề 4: Viết bài văn nghị luận phân tích một tác phẩm văn
   );
 
   const [additionalNotes, setAdditionalNotes] = useState<string>(
-    'Cấu trúc đề: 70% Trắc nghiệm khách quan (12 câu, 7 điểm), 30% Tự luận (2 câu, 3 điểm). Cân đối mức độ: Nhận biết 40%, Thông hiểu 30%, Vận dụng 30%.'
+    'Cấu trúc đề tích hợp theo quy chuẩn GDPT 2018. Bố trí ma trận, đặc tả và đáp án thang điểm 10.'
   );
+
+  // Quick Question Structure Preset applier
+  const handleApplyStructurePreset = (preset: 'standard' | 'diverse' | 'thpt' | 'essayOnly') => {
+    if (preset === 'standard') {
+      setMcqCount(12);
+      setTrueFalseCount(0);
+      setFillBlankCount(0);
+      setMatchingCount(0);
+      setShortAnswerCount(0);
+      setEssayCount(2);
+      onSuccessToast('Đã áp dụng cấu trúc Chuẩn THCS/THPT (12 MCQ + 2 Tự luận)!');
+    } else if (preset === 'diverse') {
+      setMcqCount(8);
+      setTrueFalseCount(2);
+      setFillBlankCount(2);
+      setMatchingCount(2);
+      setShortAnswerCount(2);
+      setEssayCount(1);
+      onSuccessToast('Đã áp dụng cấu trúc Tích hợp Đa dạng 6 dạng câu hỏi!');
+    } else if (preset === 'thpt') {
+      setMcqCount(18);
+      setTrueFalseCount(4);
+      setFillBlankCount(0);
+      setMatchingCount(0);
+      setShortAnswerCount(6);
+      setEssayCount(0);
+      onSuccessToast('Đã áp dụng cấu trúc Mẫu Thi THPT Quốc Gia Mới!');
+    } else if (preset === 'essayOnly') {
+      setMcqCount(0);
+      setTrueFalseCount(0);
+      setFillBlankCount(0);
+      setMatchingCount(0);
+      setShortAnswerCount(0);
+      setEssayCount(4);
+      onSuccessToast('Đã áp dụng cấu trúc 100% Tự luận (4 câu)!');
+    }
+  };
 
   // Loading & generation state
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
@@ -64,6 +109,12 @@ Chủ đề 4: Viết bài văn nghị luận phân tích một tác phẩm văn
       setGrade('Khối 8');
       setExamType('Giữa học kì I');
       setDurationMinutes('60');
+      setMcqCount(12);
+      setTrueFalseCount(0);
+      setFillBlankCount(0);
+      setMatchingCount(0);
+      setShortAnswerCount(0);
+      setEssayCount(2);
       setTopicScope(
         `1. Văn bản đọc hiểu: Hịch tướng sĩ (Trần Quốc Tuấn), Nam quốc sơn hà, Tinh thần yêu nước của nhân dân ta (Hồ Chí Minh).
 2. Tiếng Việt: Nghĩa của từ Hán Việt, Đoạn văn diễn dịch - quy nạp.
@@ -76,6 +127,12 @@ Chủ đề 4: Viết bài văn nghị luận phân tích một tác phẩm văn
       setGrade('Khối 10');
       setExamType('Cuối học kì I');
       setDurationMinutes('90');
+      setMcqCount(12);
+      setTrueFalseCount(4);
+      setFillBlankCount(0);
+      setMatchingCount(0);
+      setShortAnswerCount(4);
+      setEssayCount(2);
       setTopicScope(
         `1. Mệnh đề & Tập hợp (Tập con, giao, hợp, hiệu của các khoảng đoạn).
 2. Bất phương trình & Hệ bất phương trình bậc nhất hai ẩn.
@@ -83,31 +140,43 @@ Chủ đề 4: Viết bài văn nghị luận phân tích một tác phẩm văn
 4. Giá trị lượng giác của một góc từ $0^\\circ$ đến $180^\\circ$, Tích vô hướng của hai vectơ.
 5. Véc-tơ trong mặt phẳng tọa độ.`
       );
-      setAdditionalNotes('Gồm 70% Trắc nghiệm (35 câu), 30% Tự luận (4 câu). Bắt buộc sử dụng công thức LaTeX chuẩn (\\frac, \\sqrt, x^2).');
+      setAdditionalNotes('Gồm 12 Trắc nghiệm MCQ, 4 Đúng/Sai, 4 Trả lời ngắn và 2 Tự luận.');
       onSuccessToast('Đã tải mẫu thông số Đề thi Cuối HK1 Môn Toán 10!');
     } else if (presetType === 'english') {
       setSubject('Tiếng Anh');
       setGrade('Khối 9');
       setExamType('Giữa học kì II');
       setDurationMinutes('60');
+      setMcqCount(15);
+      setTrueFalseCount(0);
+      setFillBlankCount(5);
+      setMatchingCount(5);
+      setShortAnswerCount(5);
+      setEssayCount(1);
       setTopicScope(
         `Unit 7: Recipes and Eating Habits (Vocabulary & Grammar: Quantifiers, Modal verbs in conditional sentences type 1).
 Unit 8: Tourism (Compound nouns, Articles: a/an/the/zero article).
 Phonics: Intonation on questions & lists. Reading comprehension & Writing transformation.`
       );
-      setAdditionalNotes('80% Multiple choice (40 questions), 20% Writing / Sentence transformation.');
+      setAdditionalNotes('Đề tích hợp Tiếng Anh 9 gồm MCQ, Điền khuyết, Nối và Viết lại câu.');
       onSuccessToast('Đã tải mẫu thông số Đề thi Giữa HK2 Tiếng Anh 9!');
     } else if (presetType === 'physics') {
       setSubject('Vật lí');
       setGrade('Khối 11');
       setExamType('Cuối học kì II');
       setDurationMinutes('45');
+      setMcqCount(18);
+      setTrueFalseCount(4);
+      setFillBlankCount(0);
+      setMatchingCount(0);
+      setShortAnswerCount(4);
+      setEssayCount(2);
       setTopicScope(
         `1. Điện trường: Lực Cu-lông, Cường độ điện trường $E = \\frac{F}{q}$, Đường sức điện.
 2. Điện thế & Hiệu điện thế, Tụ điện $C = \\frac{Q}{U}$.
 3. Dòng điện không đổi, Cường độ dòng điện $I = \\frac{q}{t}$, Định luật Ôm cho toàn mạch.`
       );
-      setAdditionalNotes('Gồm 18 câu Trắc nghiệm lựa chọn (4,5đ) + 4 câu Trắc nghiệm Đúng/Sai (2.0đ) + 2 câu Tự luận bài tập (3.5đ). Dùng LaTeX.');
+      setAdditionalNotes('Gồm 18 câu MCQ + 4 câu Đúng/Sai + 4 câu Trả lời ngắn + 2 câu Tự luận bài tập.');
       onSuccessToast('Đã tải mẫu thông số Đề thi Cuối HK2 Vật lí 11!');
     }
   };
@@ -139,6 +208,14 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
           headerDept,
           durationMinutes,
           additionalNotes,
+          questionStructure: {
+            mcqCount,
+            trueFalseCount,
+            fillBlankCount,
+            matchingCount,
+            shortAnswerCount,
+            essayCount,
+          },
         }),
       });
 
@@ -786,6 +863,264 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
                   <div className="text-[11px] text-slate-500 mt-0.5">{opt.desc}</div>
                 </button>
               ))}
+            </div>
+          </div>
+
+          {/* Question 3: Integrated Question Structure Configuration */}
+          <div className="space-y-3 pt-2 border-t border-slate-100">
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-bold text-slate-800">
+                3. Lựa chọn tích hợp dạng câu hỏi: <span className="text-rose-600">*</span>
+              </label>
+              <span className="text-[11px] font-black px-2 py-0.5 bg-rose-100 text-rose-800 rounded-lg">
+                Tổng: {mcqCount + trueFalseCount + fillBlankCount + matchingCount + shortAnswerCount + essayCount} câu
+              </span>
+            </div>
+
+            {/* Structure Presets Bar */}
+            <div className="flex flex-wrap gap-1.5 pb-1">
+              <button
+                type="button"
+                onClick={() => handleApplyStructurePreset('standard')}
+                className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-[10px] font-bold text-slate-700 rounded-lg border border-slate-200 transition cursor-pointer"
+              >
+                Mẫu Chuẩn (12 MCQ + 2 TL)
+              </button>
+              <button
+                type="button"
+                onClick={() => handleApplyStructurePreset('diverse')}
+                className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-[10px] font-bold text-amber-800 rounded-lg border border-amber-200 transition cursor-pointer"
+              >
+                Đa dạng 6 dạng
+              </button>
+              <button
+                type="button"
+                onClick={() => handleApplyStructurePreset('thpt')}
+                className="px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-[10px] font-bold text-indigo-800 rounded-lg border border-indigo-200 transition cursor-pointer"
+              >
+                Mẫu Thi THPT Mới
+              </button>
+              <button
+                type="button"
+                onClick={() => handleApplyStructurePreset('essayOnly')}
+                className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-[10px] font-bold text-rose-800 rounded-lg border border-rose-200 transition cursor-pointer"
+              >
+                100% Tự luận
+              </button>
+            </div>
+
+            <div className="space-y-2 bg-slate-50/80 p-3 rounded-2xl border border-slate-200">
+              
+              {/* 1. MCQ */}
+              <div className="flex items-center justify-between p-2 bg-white rounded-xl border border-slate-200 shadow-2xs">
+                <div className="flex items-center space-x-2">
+                  <div className="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">🎯</div>
+                  <div>
+                    <div className="text-xs font-bold text-slate-900">Trắc nghiệm khoanh đáp án đúng</div>
+                    <div className="text-[10px] text-slate-500">Lựa chọn 1 đáp án A, B, C hoặc D</div>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setMcqCount(Math.max(0, mcqCount - 1))}
+                    className="w-6 h-6 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer"
+                  >
+                    -
+                  </button>
+                  <input
+                    type="number"
+                    min={0}
+                    max={50}
+                    value={mcqCount}
+                    onChange={e => setMcqCount(Math.max(0, parseInt(e.target.value) || 0))}
+                    className="w-10 text-center text-xs font-extrabold text-slate-900 bg-slate-50 border border-slate-200 rounded py-0.5"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setMcqCount(mcqCount + 1)}
+                    className="w-6 h-6 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              {/* 2. True / False */}
+              <div className="flex items-center justify-between p-2 bg-white rounded-xl border border-slate-200 shadow-2xs">
+                <div className="flex items-center space-x-2">
+                  <div className="w-6 h-6 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center font-bold text-xs">⚖️</div>
+                  <div>
+                    <div className="text-xs font-bold text-slate-900">Trắc nghiệm lựa chọn đúng sai</div>
+                    <div className="text-[10px] text-slate-500">Xác định Đúng/Sai cho 4 ý a, b, c, d</div>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setTrueFalseCount(Math.max(0, trueFalseCount - 1))}
+                    className="w-6 h-6 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer"
+                  >
+                    -
+                  </button>
+                  <input
+                    type="number"
+                    min={0}
+                    max={20}
+                    value={trueFalseCount}
+                    onChange={e => setTrueFalseCount(Math.max(0, parseInt(e.target.value) || 0))}
+                    className="w-10 text-center text-xs font-extrabold text-slate-900 bg-slate-50 border border-slate-200 rounded py-0.5"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setTrueFalseCount(trueFalseCount + 1)}
+                    className="w-6 h-6 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              {/* 3. Fill in blank */}
+              <div className="flex items-center justify-between p-2 bg-white rounded-xl border border-slate-200 shadow-2xs">
+                <div className="flex items-center space-x-2">
+                  <div className="w-6 h-6 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs">📝</div>
+                  <div>
+                    <div className="text-xs font-bold text-slate-900">Trắc nghiệm điền khuyết</div>
+                    <div className="text-[10px] text-slate-500">Điền từ / cụm từ thích hợp vào chỗ trống</div>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setFillBlankCount(Math.max(0, fillBlankCount - 1))}
+                    className="w-6 h-6 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer"
+                  >
+                    -
+                  </button>
+                  <input
+                    type="number"
+                    min={0}
+                    max={20}
+                    value={fillBlankCount}
+                    onChange={e => setFillBlankCount(Math.max(0, parseInt(e.target.value) || 0))}
+                    className="w-10 text-center text-xs font-extrabold text-slate-900 bg-slate-50 border border-slate-200 rounded py-0.5"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setFillBlankCount(fillBlankCount + 1)}
+                    className="w-6 h-6 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              {/* 4. Matching */}
+              <div className="flex items-center justify-between p-2 bg-white rounded-xl border border-slate-200 shadow-2xs">
+                <div className="flex items-center space-x-2">
+                  <div className="w-6 h-6 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs">🔗</div>
+                  <div>
+                    <div className="text-xs font-bold text-slate-900">Trắc nghiệm Nối</div>
+                    <div className="text-[10px] text-slate-500">Ghép vế Cột A tương ứng Cột B</div>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setMatchingCount(Math.max(0, matchingCount - 1))}
+                    className="w-6 h-6 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer"
+                  >
+                    -
+                  </button>
+                  <input
+                    type="number"
+                    min={0}
+                    max={20}
+                    value={matchingCount}
+                    onChange={e => setMatchingCount(Math.max(0, parseInt(e.target.value) || 0))}
+                    className="w-10 text-center text-xs font-extrabold text-slate-900 bg-slate-50 border border-slate-200 rounded py-0.5"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setMatchingCount(matchingCount + 1)}
+                    className="w-6 h-6 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              {/* 5. Short Answer */}
+              <div className="flex items-center justify-between p-2 bg-white rounded-xl border border-slate-200 shadow-2xs">
+                <div className="flex items-center space-x-2">
+                  <div className="w-6 h-6 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-xs">💬</div>
+                  <div>
+                    <div className="text-xs font-bold text-slate-900">Trắc nghiệm trả lời ngắn</div>
+                    <div className="text-[10px] text-slate-500">Điền đáp số / câu trả lời vắn tắt</div>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setShortAnswerCount(Math.max(0, shortAnswerCount - 1))}
+                    className="w-6 h-6 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer"
+                  >
+                    -
+                  </button>
+                  <input
+                    type="number"
+                    min={0}
+                    max={20}
+                    value={shortAnswerCount}
+                    onChange={e => setShortAnswerCount(Math.max(0, parseInt(e.target.value) || 0))}
+                    className="w-10 text-center text-xs font-extrabold text-slate-900 bg-slate-50 border border-slate-200 rounded py-0.5"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShortAnswerCount(shortAnswerCount + 1)}
+                    className="w-6 h-6 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              {/* 6. Essay */}
+              <div className="flex items-center justify-between p-2 bg-white rounded-xl border border-slate-200 shadow-2xs">
+                <div className="flex items-center space-x-2">
+                  <div className="w-6 h-6 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center font-bold text-xs">✍️</div>
+                  <div>
+                    <div className="text-xs font-bold text-slate-900">Tự luận</div>
+                    <div className="text-[10px] text-slate-500">Viết đoạn / bài văn, phân tích, giải bài tập</div>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setEssayCount(Math.max(0, essayCount - 1))}
+                    className="w-6 h-6 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer"
+                  >
+                    -
+                  </button>
+                  <input
+                    type="number"
+                    min={0}
+                    max={10}
+                    value={essayCount}
+                    onChange={e => setEssayCount(Math.max(0, parseInt(e.target.value) || 0))}
+                    className="w-10 text-center text-xs font-extrabold text-slate-900 bg-slate-50 border border-slate-200 rounded py-0.5"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setEssayCount(essayCount + 1)}
+                    className="w-6 h-6 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
             </div>
           </div>
 

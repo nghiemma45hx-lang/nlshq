@@ -220,8 +220,17 @@ app.post('/api/gemini/generate-exam', async (req, res) => {
       schoolName, 
       headerDept, 
       durationMinutes, 
-      additionalNotes 
+      additionalNotes,
+      questionStructure
     } = req.body;
+
+    const mcq = questionStructure?.mcqCount ?? 12;
+    const trueFalse = questionStructure?.trueFalseCount ?? 0;
+    const fillBlank = questionStructure?.fillBlankCount ?? 0;
+    const matching = questionStructure?.matchingCount ?? 0;
+    const shortAnswer = questionStructure?.shortAnswerCount ?? 0;
+    const essay = questionStructure?.essayCount ?? 2;
+    const totalQ = mcq + trueFalse + fillBlank + matching + shortAnswer + essay;
 
     const ai = getGeminiClient();
 
@@ -234,26 +243,41 @@ BẮT BUỘC THỰC HIỆN ĐÚNG QUY ĐỊNH CỦA BỘ VỀ XÂY DỰNG HỒ S
    - Đảm bảo ma trận phân bổ kiến thức theo 3 mức độ nhận thức: Nhận biết (40%), Thông hiểu (30%), Vận dụng (30%).
    - Thang điểm tổng: 10 điểm.
 
-2. CẤU TRÚC XUẤT KẾT QUẢ DỰA TRÊN PHƯƠNG ÁN ĐÃ CHỌN (${outputOption || '3'}):
+2. CẤU TRÚC DẠNG CÂU HỎI TÍCH HỢP TRONG ĐỀ THI (TỔNG CỘNG ${totalQ} CÂU, TỔNG 10.0 ĐIỂM):
+   - Trắc nghiệm khoanh đáp án đúng (lựa chọn 1 đáp án A/B/C/D): ${mcq} câu.
+   - Trắc nghiệm lựa chọn Đúng / Sai (mỗi câu gồm 4 ý a, b, c, d): ${trueFalse} câu.
+   - Trắc nghiệm điền khuyết (điền từ/cụm từ vào chỗ trống): ${fillBlank} câu.
+   - Trắc nghiệm Nối (ghép vế Cột A với Cột B): ${matching} câu.
+   - Trắc nghiệm trả lời ngắn (điền đáp số/câu trả lời ngắn gọn): ${shortAnswer} câu.
+   - Tự luận (viết đoạn/bài văn, giải toán, bài tập phân tích): ${essay} câu.
+
+3. CẤU TRÚC XUẤT KẾT QUẢ DỰA TRÊN PHƯƠNG ÁN ĐÃ CHỌN (${outputOption || '3'}):
    ${outputOption === '1' ? `
    BẮT BUỘC TRÌNH BÀY ĐỦ 2 PHẦN THEO THỨ TỰ:
    I. PHÂN TÍCH PHẠM VI KIỂM TRA (Bảng phân tích chủ đề, bài học, YCẦU CẦN ĐẠT, năng lực đánh giá)
-   II. MA TRẬN ĐỀ KIỂM TRA (Bảng Markdown chuẩn: Nội dung/Chủ đề | Nhận biết | Thông hiểu | Vận dụng | Tổng số câu | Tổng điểm | Tỉ lệ %)
+   II. MA TRẬN ĐỀ KIỂM TRA (Bảng Markdown chuẩn phân chia theo từng dạng câu hỏi: Nội dung/Chủ đề | Nhận biết | Thông hiểu | Vận dụng | Tổng số câu | Tổng điểm | Tỉ lệ %)
    ` : outputOption === '2' ? `
    BẮT BUỘC TRÌNH BÀY ĐỦ 3 PHẦN THEO THỨ TỰ:
    I. PHÂN TÍCH PHẠM VI KIỂM TRA
    II. MA TRẬN ĐỀ KIỂM TRA
-   III. BẢNG ĐẶC TẢ ĐỀ KIỂM TRA (Bảng Markdown: Số câu | Nội dung đánh giá | Yêu cầu cần đạt | Mức độ nhận thức | Dạng câu hỏi | Số điểm | Năng lực đánh giá)
+   III. BẢNG ĐẶC TẢ ĐỀ KIỂM TRA (Bảng Markdown: Số câu | Nội dung đánh giá | Yêu cầu cần đạt | Mức độ nhận thức | Dạng câu hỏi [MCQ, Đúng/Sai, Điền khuyết, Nối, Trả lời ngắn, Tự luận] | Số điểm | Năng lực đánh giá)
    ` : `
    BẮT BUỘC TRÌNH BÀY ĐỦ 5 PHẦN TRỌN BỘ HỒ SƠ KIỂM TRA THEO THỨ TỰ:
    I. PHÂN TÍCH PHẠM VI KIỂM TRA
    II. MA TRẬN ĐỀ KIỂM TRA
    III. BẢNG ĐẶC TẢ ĐỀ KIỂM TRA
-   IV. ĐỀ KIỂM TRA (Đầy đủ tiêu đề Header chuẩn: Cơ quan quản lý, Trường/Đơn vị, Tên bài kiểm tra, Môn học, Khối lớp, Thời gian làm bài, Mã đề 101, Họ tên HS, Lớp, Ô ghi điểm & Lời phê. Phần I: Trắc nghiệm khách quan với mỗi lựa chọn A, B, C, D nằm trên một dòng riêng biệt. Phần II: Tự luận kèm số điểm từng câu. Dùng LaTeX chuẩn cho công thức Toán/Lý/Hóa nếu có.)
-   V. ĐÁP ÁN VÀ HƯỚNG DẪN CHẤM (Bảng đáp án trắc nghiệm + Thang điểm tự luận chi tiết từng ý, tổng 10 điểm).
+   IV. ĐỀ KIỂM TRA CHÍNH THỨC (Đầy đủ tiêu đề Header chuẩn: Cơ quan quản lý, Trường/Đơn vị, Tên bài kiểm tra, Môn học, Khối lớp, Thời gian làm bài, Mã đề 101, Họ tên HS, Lớp, Ô ghi điểm & Lời phê. Trình bày rõ ràng thành các Phần tương ứng với từng dạng câu hỏi có số câu > 0:
+       - Phần I: Trắc nghiệm khoanh đáp án đúng (${mcq} câu)
+       ${trueFalse > 0 ? `- Phần II: Trắc nghiệm lựa chọn Đúng / Sai (${trueFalse} câu)` : ''}
+       ${fillBlank > 0 ? `- Phần III: Trắc nghiệm điền khuyết (${fillBlank} câu)` : ''}
+       ${matching > 0 ? `- Phần IV: Trắc nghiệm Nối cột (${matching} câu)` : ''}
+       ${shortAnswer > 0 ? `- Phần V: Trắc nghiệm trả lời ngắn (${shortAnswer} câu)` : ''}
+       ${essay > 0 ? `- Phần VI: Tự luận (${essay} câu)` : ''}
+       Dùng LaTeX chuẩn cho công thức Toán/Lý/Hóa nếu có.)
+   V. ĐÁP ÁN VÀ HƯỚNG DẪN CHẤM CHI TIẾT (Bảng đáp án trắc nghiệm cho tất cả các dạng câu hỏi + Thang điểm tự luận chi tiết từng ý, tổng 10.0 điểm).
    `}
 
-3. TRÌNH BÀY BẢNG VÀ VĂN BẢN:
+4. TRÌNH BÀY BẢNG VÀ VĂN BẢN:
    - Trình bày định dạng HTML/Markdown chuẩn sạch sẽ, dễ đọc, khoa học.
    - Thẻ tiêu đề in đậm, bảng biểu có viền rõ ràng.`;
 
@@ -264,8 +288,17 @@ Tùy chọn sản phẩm: Phương án ${outputOption || '3'}
 Tên đơn vị/Trường: ${schoolName || 'TRƯỜNG THCS LÊ QUÝ ĐÔN'}
 Cơ quan quản lý: ${headerDept || 'SỞ GIÁO DỤC VÀ ĐÀO TẠO'}
 Thời gian làm bài: ${durationMinutes || '60'} phút
+Cấu trúc dạng câu hỏi tích hợp: 
+- Trắc nghiệm khoanh đáp án đúng (A/B/C/D): ${mcq} câu
+- Trắc nghiệm lựa chọn Đúng / Sai: ${trueFalse} câu
+- Trắc nghiệm điền khuyết: ${fillBlank} câu
+- Trắc nghiệm Nối (ghép vế): ${matching} câu
+- Trắc nghiệm trả lời ngắn: ${shortAnswer} câu
+- Tự luận: ${essay} câu
+Tổng số câu hỏi: ${totalQ} câu (Thang điểm 10.0)
+
 Phạm vi kiến thức / Nội dung bài học: ${topicScope || 'Bài 3: Lời sông núi - Hịch tướng sĩ, Nam quốc sơn hà, Tinh thần yêu nước của nhân dân ta, Đoạn văn diễn dịch & quy nạp'}
-Ghi chú / Yêu cầu bổ sung: ${additionalNotes || 'Tỉ lệ 70% trắc nghiệm (12 câu), 30% tự luận (2 câu)'}`;
+Ghi chú / Yêu cầu bổ sung: ${additionalNotes || 'Thiết lập chuẩn cấu trúc đổi mới BGDĐT'}`;
 
     let resultHtml = '';
     let source = 'gemini-3.6-flash';
