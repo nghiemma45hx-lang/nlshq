@@ -219,6 +219,7 @@ app.post('/api/gemini/generate-exam', async (req, res) => {
       topicScope, 
       schoolName, 
       headerDept, 
+      schoolYear = '2025 - 2026',
       durationMinutes, 
       additionalNotes,
       questionStructure
@@ -289,8 +290,9 @@ BẮT BUỘC THỰC HIỆN ĐÚNG QUY ĐỊNH CỦA BỘ VỀ XÂY DỰNG HỒ S
 Cấp/Khối: ${grade || 'Khối 8'}
 Loại bài kiểm tra: ${examType || 'Giữa học kì I'}
 Tùy chọn sản phẩm: Phương án ${outputOption || '3'}
+Cơ quan quản lý / Cấp trên: ${headerDept || 'UBND XÃ ...'}
 Tên đơn vị/Trường: ${schoolName || 'TRƯỜNG THCS LÊ QUÝ ĐÔN'}
-Cơ quan quản lý: ${headerDept || 'SỞ GIÁO DỤC VÀ ĐÀO TẠO'}
+Năm học: ${schoolYear}
 Thời gian làm bài: ${durationMinutes || '60'} phút
 Cấu trúc dạng câu hỏi tích hợp: 
 - Trắc nghiệm khoanh đáp án đúng (A/B/C/D): ${mcq} câu
@@ -301,7 +303,7 @@ Cấu trúc dạng câu hỏi tích hợp:
 - Tự luận: ${essay} câu
 Tổng số câu hỏi: ${totalQ} câu (Thang điểm 10.0)
 
-Phạm vi kiến thức / Nội dung bài học: ${topicScope || 'Bài 3: Lời sông núi - Hịch tướng sĩ, Nam quốc sơn hà, Tinh thần yêu nước của nhân dân ta, Đoạn văn diễn dịch & quy nạp'}
+Phạm vi kiến thức / Nội dung bài học: ${topicScope || 'Nội dung kiểm tra'}
 Ghi chú / Yêu cầu bổ sung: ${additionalNotes || 'Thiết lập chuẩn cấu trúc đổi mới BGDĐT'}`;
 
     let resultHtml = '';

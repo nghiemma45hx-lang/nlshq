@@ -52,7 +52,62 @@ export const ExamGeneratorView: React.FC<ExamGeneratorViewProps> = ({
   const [grade, setGrade] = useState<string>('Khối 8');
   const [durationMinutes, setDurationMinutes] = useState<string>('60');
   const [schoolName, setSchoolName] = useState<string>('TRƯỜNG THCS LÊ QUÝ ĐÔN');
-  const [headerDept, setHeaderDept] = useState<string>('SỞ GIÁO DỤC VÀ ĐÀO TẠO');
+  const [headerDept, setHeaderDept] = useState<string>('UBND XÃ PHÚ THỦY');
+  const [schoolYear, setSchoolYear] = useState<string>('2025 - 2026');
+
+  // Custom Subject and Grade Management
+  const [subjectsList, setSubjectsList] = useState<string[]>([
+    'Ngữ văn',
+    'Toán học',
+    'Tiếng Anh',
+    'Vật lí',
+    'Hóa học',
+    'Sinh học',
+    'Khoa học tự nhiên',
+    'Lịch sử & Địa lý',
+    'Lịch sử',
+    'Địa lý',
+    'Tin học',
+    'GDCD / GD KT&PL',
+    'Công nghệ',
+    'Âm nhạc',
+    'Mỹ thuật',
+    'Hoạt động trải nghiệm'
+  ]);
+  const [isAddingSubject, setIsAddingSubject] = useState<boolean>(false);
+  const [customSubjectInput, setCustomSubjectInput] = useState<string>('');
+
+  const [gradesList, setGradesList] = useState<string[]>([
+    'Khối 1', 'Khối 2', 'Khối 3', 'Khối 4', 'Khối 5',
+    'Khối 6', 'Khối 7', 'Khối 8', 'Khối 9',
+    'Khối 10', 'Khối 11', 'Khối 12'
+  ]);
+  const [isAddingGrade, setIsAddingGrade] = useState<boolean>(false);
+  const [customGradeInput, setCustomGradeInput] = useState<string>('');
+
+  const handleAddNewSubject = () => {
+    const trimmed = customSubjectInput.trim();
+    if (!trimmed) return;
+    if (!subjectsList.includes(trimmed)) {
+      setSubjectsList(prev => [...prev, trimmed]);
+    }
+    setSubject(trimmed);
+    setCustomSubjectInput('');
+    setIsAddingSubject(false);
+    onSuccessToast(`Đã thêm và chọn môn học: "${trimmed}"`);
+  };
+
+  const handleAddNewGrade = () => {
+    const trimmed = customGradeInput.trim();
+    if (!trimmed) return;
+    if (!gradesList.includes(trimmed)) {
+      setGradesList(prev => [...prev, trimmed]);
+    }
+    setGrade(trimmed);
+    setCustomGradeInput('');
+    setIsAddingGrade(false);
+    onSuccessToast(`Đã thêm và chọn khối lớp: "${trimmed}"`);
+  };
   
   const [topicScope, setTopicScope] = useState<string>(
     `Chủ đề 1: Thơ vần bằng và thơ tự do (Bài 1 & Bài 2)
@@ -385,6 +440,7 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
           topicScope: fullTopicScopePayload,
           schoolName,
           headerDept,
+          schoolYear,
           durationMinutes,
           additionalNotes,
           questionStructure: {
@@ -623,32 +679,38 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
         <!-- SECTION 4: ĐỀ KIỂM TRA CHÍNH THỨC -->
         <div class="bg-white p-8 rounded-2xl border border-slate-300 shadow-md printable-exam-paper">
           
-          <!-- OFFICIAL EXAM HEADER -->
-          <div class="grid grid-cols-2 gap-4 pb-6 border-b-2 border-slate-900 mb-6 font-serif">
-            <div class="text-center">
-              <div class="font-bold text-xs uppercase tracking-wide text-slate-900">${headerDept}</div>
-              <div class="font-black text-sm uppercase text-slate-900 mt-0.5">${schoolName}</div>
-              <div class="text-xs italic text-slate-700 mt-1">Mã đề thi: <span class="font-bold font-mono">101</span></div>
-            </div>
-            <div class="text-center">
-              <div class="font-black text-sm uppercase text-indigo-950">ĐỀ KIỂM TRA ${examType.toUpperCase()}</div>
-              <div class="font-bold text-xs text-slate-800 mt-0.5">NĂM HỌC 2025 - 2026</div>
-              <div class="text-xs font-semibold text-slate-900 mt-1">Môn: ${subject.toUpperCase()} - ${grade.toUpperCase()}</div>
-              <div class="text-xs italic text-slate-700">Thời gian làm bài: ${durationMinutes} phút (không kể thời gian phát đề)</div>
-            </div>
-          </div>
+          <!-- OFFICIAL EXAM HEADER (TABLE FORMAT FOR MS WORD COMPATIBILITY) -->
+          <table class="header-table" style="width: 100%; border-collapse: collapse; border: none; margin-bottom: 8px; font-family: 'Times New Roman', serif;">
+            <tr>
+              <td style="width: 48%; text-align: center; vertical-align: top; border: none; padding: 2px;">
+                <div style="font-weight: bold; font-size: 11pt; text-transform: uppercase; color: #0f172a;">${headerDept}</div>
+                <div style="font-weight: bold; font-size: 12pt; text-transform: uppercase; color: #0f172a; margin-top: 2px;">${schoolName}</div>
+                <div style="font-style: italic; font-size: 10pt; color: #334155; margin-top: 4px;">Mã đề thi: <b style="font-family: monospace;">101</b></div>
+              </td>
+              <td style="width: 52%; text-align: center; vertical-align: top; border: none; padding: 2px;">
+                <div style="font-weight: bold; font-size: 12.5pt; text-transform: uppercase; color: #1e1b4b;">ĐỀ KIỂM TRA ${examType.toUpperCase()}</div>
+                <div style="font-weight: bold; font-size: 11pt; color: #0f172a; margin-top: 2px;">NĂM HỌC ${schoolYear}</div>
+                <div style="font-weight: bold; font-size: 11pt; color: #0f172a; margin-top: 2px;">Môn: ${subject.toUpperCase()} - ${grade.toUpperCase()}</div>
+                <div style="font-style: italic; font-size: 10pt; color: #334155; margin-top: 2px;">Thời gian làm bài: ${durationMinutes} phút (không kể thời gian phát đề)</div>
+              </td>
+            </tr>
+          </table>
 
-          <!-- STUDENT INFO & GRADE BOX -->
-          <div class="grid grid-cols-12 gap-3 mb-6 font-serif">
-            <div class="col-span-8 border border-slate-400 p-3 rounded text-xs space-y-1.5">
-              <div>Họ và tên học sinh: ......................................................................................................................</div>
-              <div>Lớp: .............................................. Trường: ....................................................................................</div>
-            </div>
-            <div class="col-span-4 border-2 border-slate-900 rounded p-2 text-center flex flex-col justify-between">
-              <div class="font-bold text-xs uppercase text-slate-900 border-b border-slate-300 pb-1">ĐIỂM SỐ & LỜI PHÊ GIÁO VIÊN</div>
-              <div class="h-10"></div>
-            </div>
-          </div>
+          <hr class="header-line" style="border: none; border-top: 1.5pt solid #0f172a; margin-top: 4px; margin-bottom: 16px;" />
+
+          <!-- STUDENT INFO & GRADE BOX (TABLE FORMAT) -->
+          <table class="student-box-table" style="width: 100%; border-collapse: collapse; margin-bottom: 16px; font-family: 'Times New Roman', serif;">
+            <tr>
+              <td class="info-cell" style="width: 64%; border: 1px solid #475569; padding: 10px; vertical-align: top; font-size: 11pt; line-height: 1.8;">
+                <div><b>Họ và tên học sinh:</b> ......................................................................................................................</div>
+                <div><b>Lớp:</b> .............................................. <b>Trường:</b> ....................................................................................</div>
+              </td>
+              <td class="score-cell" style="width: 36%; border: 1.5pt solid #0f172a; padding: 8px; text-align: center; vertical-align: top; font-size: 11pt;">
+                <div style="font-weight: bold; text-transform: uppercase; color: #0f172a; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; margin-bottom: 8px; font-size: 10pt;">ĐIỂM SỐ & LỜI PHÊ GIÁO VIÊN</div>
+                <div style="height: 40px;"></div>
+              </td>
+            </tr>
+          </table>
 
           <!-- EXAM CONTENT -->
           <div class="space-y-6 text-sm leading-relaxed text-slate-900 font-serif">
@@ -875,18 +937,36 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
 
     const wordHeader = `
       <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-      <head><meta charset='utf-8'><title>${generatedTitle}</title>
+      <head>
+      <meta charset='utf-8'>
+      <title>${generatedTitle}</title>
       <style>
-        body { font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.4; }
-        h1, h2, h3 { font-weight: bold; color: #0f172a; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-        th, td { border: 1px solid #334155; padding: 6px; text-align: left; font-size: 11pt; }
-        th { background-color: #1e293b; color: white; }
-        .exam-header { text-align: center; margin-bottom: 20px; }
+        @page Section1 {
+          size: 21.0cm 29.7cm;
+          margin: 2.0cm 2.0cm 2.0cm 2.0cm;
+          mso-header-margin: 35.4pt;
+          mso-footer-margin: 35.4pt;
+        }
+        div.Section1 { page: Section1; }
+        body { font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.35; color: #000; }
+        h1, h2, h3, h4 { font-family: 'Times New Roman', serif; font-weight: bold; color: #000; margin-top: 12pt; margin-bottom: 6pt; }
+        p { margin-top: 3pt; margin-bottom: 3pt; }
+        table { width: 100%; border-collapse: collapse; margin-top: 6pt; margin-bottom: 12pt; }
+        th, td { padding: 5pt; font-size: 11pt; vertical-align: top; }
+        table:not(.header-table):not(.student-box-table) th, table:not(.header-table):not(.student-box-table) td { border: 1px solid #000; }
+        table:not(.header-table):not(.student-box-table) th { background-color: #f1f5f9; color: #000; font-weight: bold; }
+        .header-table { width: 100%; border: none !important; margin-bottom: 8pt; }
+        .header-table td { border: none !important; padding: 2pt; text-align: center; }
+        .student-box-table { width: 100%; border-collapse: collapse; margin-bottom: 15pt; }
+        .student-box-table td.info-cell { width: 64%; border: 1px solid #000 !important; padding: 8pt; font-size: 11pt; line-height: 1.8; }
+        .student-box-table td.score-cell { width: 36%; border: 1.5pt solid #000 !important; padding: 6pt; text-align: center; font-size: 11pt; }
+        hr.header-line { border: none; border-top: 1.5pt solid #000; margin-top: 6pt; margin-bottom: 12pt; }
       </style>
-      </head><body>
+      </head>
+      <body>
+      <div class="Section1">
     `;
-    const wordFooter = `</body></html>`;
+    const wordFooter = `</div></body></html>`;
     const sourceHTML = wordHeader + generatedExamHtml + wordFooter;
 
     const blob = new Blob(['\ufeff', sourceHTML], { type: 'application/msword' });
@@ -1303,67 +1383,184 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
             </div>
           </div>
 
-          {/* Subject & Grade */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1">Môn học:</label>
-              <select
-                value={subject}
-                onChange={e => setSubject(e.target.value)}
-                className="w-full p-2.5 text-xs font-bold bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-rose-500 focus:outline-hidden"
-              >
-                <option value="Ngữ văn">Ngữ văn</option>
-                <option value="Toán học">Toán học</option>
-                <option value="Tiếng Anh">Tiếng Anh</option>
-                <option value="Vật lí">Vật lí</option>
-                <option value="Hóa học">Hóa học</option>
-                <option value="Sinh học">Sinh học</option>
-                <option value="Lịch sử & Địa lý">Lịch sử & Địa lý</option>
-                <option value="Tin học">Tin học</option>
-                <option value="GDCD">GDCD / GD Kinh tế & Pháp luật</option>
-              </select>
-            </div>
+          {/* Subject & Grade with Add/Edit Capabilities */}
+          <div className="space-y-3 pt-2 border-t border-slate-100">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              
+              {/* Subject Selection & Custom Add */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-bold text-slate-800">Môn học:</label>
+                  <button
+                    type="button"
+                    onClick={() => setIsAddingSubject(!isAddingSubject)}
+                    className="text-[11px] font-bold text-rose-600 hover:text-rose-700 underline flex items-center space-x-0.5 cursor-pointer"
+                  >
+                    <span>{isAddingSubject ? 'Đóng' : '+ Thêm môn mới'}</span>
+                  </button>
+                </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1">Khối lớp:</label>
-              <select
-                value={grade}
-                onChange={e => setGrade(e.target.value)}
-                className="w-full p-2.5 text-xs font-bold bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-rose-500 focus:outline-hidden"
-              >
-                <option value="Khối 6">Khối 6</option>
-                <option value="Khối 7">Khối 7</option>
-                <option value="Khối 8">Khối 8</option>
-                <option value="Khối 9">Khối 9</option>
-                <option value="Khối 10">Khối 10</option>
-                <option value="Khối 11">Khối 11</option>
-                <option value="Khối 12">Khối 12</option>
-              </select>
+                {!isAddingSubject ? (
+                  <select
+                    value={subject}
+                    onChange={e => setSubject(e.target.value)}
+                    className="w-full p-2.5 text-xs font-bold bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-rose-500 focus:outline-hidden"
+                  >
+                    {subjectsList.map((sub) => (
+                      <option key={sub} value={sub}>{sub}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="flex items-center space-x-1 mt-1">
+                    <input
+                      type="text"
+                      value={customSubjectInput}
+                      onChange={e => setCustomSubjectInput(e.target.value)}
+                      placeholder="Nhập tên môn học mới..."
+                      className="w-full p-2 text-xs font-bold bg-white border border-rose-300 rounded-lg focus:ring-2 focus:ring-rose-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddNewSubject}
+                      className="px-2.5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-lg shrink-0 cursor-pointer"
+                    >
+                      Lưu
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Grade Selection & Custom Add */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-bold text-slate-800">Khối lớp:</label>
+                  <button
+                    type="button"
+                    onClick={() => setIsAddingGrade(!isAddingGrade)}
+                    className="text-[11px] font-bold text-rose-600 hover:text-rose-700 underline flex items-center space-x-0.5 cursor-pointer"
+                  >
+                    <span>{isAddingGrade ? 'Đóng' : '+ Thêm khối'}</span>
+                  </button>
+                </div>
+
+                {!isAddingGrade ? (
+                  <select
+                    value={grade}
+                    onChange={e => setGrade(e.target.value)}
+                    className="w-full p-2.5 text-xs font-bold bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-rose-500 focus:outline-hidden"
+                  >
+                    {gradesList.map((g) => (
+                      <option key={g} value={g}>{g}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="flex items-center space-x-1 mt-1">
+                    <input
+                      type="text"
+                      value={customGradeInput}
+                      onChange={e => setCustomGradeInput(e.target.value)}
+                      placeholder="Nhập khối / lớp mới..."
+                      className="w-full p-2 text-xs font-bold bg-white border border-rose-300 rounded-lg focus:ring-2 focus:ring-rose-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddNewGrade}
+                      className="px-2.5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-lg shrink-0 cursor-pointer"
+                    >
+                      Lưu
+                    </button>
+                  </div>
+                )}
+              </div>
+
             </div>
           </div>
 
-          {/* Time & School header info */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1">Thời gian làm bài:</label>
-              <input
-                type="text"
-                value={durationMinutes}
-                onChange={e => setDurationMinutes(e.target.value)}
-                placeholder="Ví dụ: 60"
-                className="w-full p-2.5 text-xs font-semibold bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-rose-500 focus:outline-hidden"
-              />
+          {/* Header Title Information Panel */}
+          <div className="space-y-3 p-3 bg-slate-50/80 rounded-2xl border border-slate-200">
+            <div className="text-xs font-extrabold text-indigo-950 flex items-center justify-between border-b border-slate-200 pb-1.5">
+              <span>Khung Tiêu Đề (Header) Đề Kiểm Tra:</span>
+              <span className="text-[10px] text-slate-500 font-normal">Xuất chuẩn Word 2 cột</span>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1">Tên Trường / Đơn vị:</label>
+            {/* Field: Header Dept (Cơ quan cấp trên) */}
+            <div className="space-y-1">
+              <label className="block text-[11px] font-bold text-slate-700">
+                1. Cơ quan quản lý / UBND Xã / Phòng / Sở:
+              </label>
               <input
                 type="text"
-                value={schoolName}
-                onChange={e => setSchoolName(e.target.value)}
-                placeholder="TRƯỜNG THCS..."
-                className="w-full p-2.5 text-xs font-semibold bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-rose-500 focus:outline-hidden"
+                value={headerDept}
+                onChange={e => setHeaderDept(e.target.value)}
+                placeholder="Ví dụ: UBND XÃ PHÚ THỦY, PHÒNG GD&ĐT..."
+                className="w-full p-2 text-xs font-bold text-slate-900 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-rose-500"
               />
+              <div className="flex flex-wrap gap-1 mt-1">
+                <button
+                  type="button"
+                  onClick={() => setHeaderDept('UBND XÃ PHÚ THỦY')}
+                  className="px-1.5 py-0.5 bg-slate-200/80 hover:bg-slate-300 text-[10px] font-semibold text-slate-800 rounded transition cursor-pointer"
+                >
+                  + UBND Xã Phú Thủy
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setHeaderDept('UBND XÃ ...')}
+                  className="px-1.5 py-0.5 bg-slate-200/80 hover:bg-slate-300 text-[10px] font-semibold text-slate-800 rounded transition cursor-pointer"
+                >
+                  + UBND Xã...
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setHeaderDept('PHÒNG GIÁO DỤC VÀ ĐÀO TẠO')}
+                  className="px-1.5 py-0.5 bg-slate-200/80 hover:bg-slate-300 text-[10px] font-semibold text-slate-800 rounded transition cursor-pointer"
+                >
+                  + Phòng GD&ĐT
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setHeaderDept('SỞ GIÁO DỤC VÀ ĐÀO TẠO')}
+                  className="px-1.5 py-0.5 bg-slate-200/80 hover:bg-slate-300 text-[10px] font-semibold text-slate-800 rounded transition cursor-pointer"
+                >
+                  + Sở GD&ĐT
+                </button>
+              </div>
+            </div>
+
+            {/* School Name & Year & Duration */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-0.5">2. Tên Trường / Đơn vị:</label>
+                <input
+                  type="text"
+                  value={schoolName}
+                  onChange={e => setSchoolName(e.target.value)}
+                  placeholder="TRƯỜNG THCS..."
+                  className="w-full p-2 text-xs font-bold text-slate-900 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-rose-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-0.5">3. Năm học:</label>
+                <input
+                  type="text"
+                  value={schoolYear}
+                  onChange={e => setSchoolYear(e.target.value)}
+                  placeholder="2025 - 2026"
+                  className="w-full p-2 text-xs font-bold text-slate-900 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-rose-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-0.5">4. Thời gian (Phút):</label>
+                <input
+                  type="text"
+                  value={durationMinutes}
+                  onChange={e => setDurationMinutes(e.target.value)}
+                  placeholder="60"
+                  className="w-full p-2 text-xs font-bold text-slate-900 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-rose-500"
+                />
+              </div>
             </div>
           </div>
 
