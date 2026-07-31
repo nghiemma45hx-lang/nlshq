@@ -1433,44 +1433,6 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
               Biên soạn trọn bộ hồ sơ kiểm tra: <span className="text-amber-300 font-semibold">Phân tích phạm vi</span>, <span className="text-amber-300 font-semibold">Ma trận đề</span>, <span className="text-amber-300 font-semibold">Bảng đặc tả chi tiết</span>, <span className="text-amber-300 font-semibold">Đề thi chính thức (Trắc nghiệm + Tự luận LaTeX)</span> và <span className="text-amber-300 font-semibold">Đáp án & Hướng dẫn chấm</span>.
             </p>
           </div>
-
-          <div className="flex flex-wrap gap-2 shrink-0">
-            {[
-              { id: 'literary', name: 'Mẫu Ngữ Văn 8', icon: BookOpen, textColor: 'text-rose-200', borderColor: 'border-rose-700/50' },
-              { id: 'math', name: 'Mẫu Toán 10', icon: FileSpreadsheet, textColor: 'text-amber-200', borderColor: 'border-amber-700/50' },
-              { id: 'english', name: 'Mẫu Tiếng Anh 9', icon: GraduationCap, textColor: 'text-emerald-200', borderColor: 'border-emerald-700/50' },
-              { id: 'physics', name: 'Mẫu Vật Lí 11', icon: FileCheck, textColor: 'text-sky-200', borderColor: 'border-sky-700/50' },
-              { id: 'chemistry', name: 'Mẫu Hóa Học 10', icon: Sparkles, textColor: 'text-purple-200', borderColor: 'border-purple-700/50' },
-            ].map((item) => (
-              <div 
-                key={item.id} 
-                className={`inline-flex items-center rounded-xl bg-slate-800/90 border ${item.borderColor} p-1 shadow-xs hover:bg-slate-800 transition`}
-              >
-                <button
-                  type="button"
-                  onClick={() => handleLoadPreset(item.id as any)}
-                  className={`px-2.5 py-1 text-xs font-bold ${item.textColor} hover:text-white transition cursor-pointer flex items-center space-x-1.5`}
-                  title={`Nạp thông số ${item.name} vào Form`}
-                >
-                  <item.icon className="w-3.5 h-3.5" />
-                  <span>{item.name}</span>
-                </button>
-                <div className="w-[1px] h-4 bg-slate-700/80 my-auto"></div>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDownloadSampleFile(item.id);
-                  }}
-                  className="px-2 py-1 text-[11px] font-extrabold text-amber-300 hover:text-amber-200 hover:bg-slate-700/80 rounded-lg transition cursor-pointer flex items-center space-x-1"
-                  title={`Tải xuống File Word (.DOC) mẫu sẵn cho ${item.name}`}
-                >
-                  <Download className="w-3 h-3 text-amber-400" />
-                  <span className="text-[10px]">Tải Mẫu .DOC</span>
-                </button>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
 
