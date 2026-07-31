@@ -207,6 +207,99 @@ app.post('/api/parse-docx', async (req, res) => {
   }
 });
 
+// API: Server-side Gemini AI Exam Generation (NotebookLM Standard Prompt)
+app.post('/api/gemini/generate-exam', async (req, res) => {
+  const startTime = Date.now();
+  try {
+    const { 
+      examType, 
+      outputOption, 
+      subject, 
+      grade, 
+      topicScope, 
+      schoolName, 
+      headerDept, 
+      durationMinutes, 
+      additionalNotes 
+    } = req.body;
+
+    const ai = getGeminiClient();
+
+    const systemPrompt = `Đóng vai chuyên gia hàng đầu về kiểm tra, đánh giá học sinh theo Chương trình Giáo dục phổ thông 2018, có kinh nghiệm xây dựng ma trận đề, bảng đặc tả, đề kiểm tra định kì và hướng dẫn chấm theo các văn bản hiện hành của Bộ Giáo dục và Đào tạo.
+
+BẮT BUỘC THỰC HIỆN ĐÚNG QUY ĐỊNH CỦA BỘ VỀ XÂY DỰNG HỒ SƠ ĐỀ KIỂM TRA ĐỊNH KÌ:
+
+1. PHẠM VI & TÍNH CÂN ĐỐI:
+   - Căn cứ theo loại bài kiểm tra (${examType || 'Giữa học kì I'}) và Môn ${subject || 'Ngữ văn'} ${grade || 'Khối 8'}.
+   - Đảm bảo ma trận phân bổ kiến thức theo 3 mức độ nhận thức: Nhận biết (40%), Thông hiểu (30%), Vận dụng (30%).
+   - Thang điểm tổng: 10 điểm.
+
+2. CẤU TRÚC XUẤT KẾT QUẢ DỰA TRÊN PHƯƠNG ÁN ĐÃ CHỌN (${outputOption || '3'}):
+   ${outputOption === '1' ? `
+   BẮT BUỘC TRÌNH BÀY ĐỦ 2 PHẦN THEO THỨ TỰ:
+   I. PHÂN TÍCH PHẠM VI KIỂM TRA (Bảng phân tích chủ đề, bài học, YCẦU CẦN ĐẠT, năng lực đánh giá)
+   II. MA TRẬN ĐỀ KIỂM TRA (Bảng Markdown chuẩn: Nội dung/Chủ đề | Nhận biết | Thông hiểu | Vận dụng | Tổng số câu | Tổng điểm | Tỉ lệ %)
+   ` : outputOption === '2' ? `
+   BẮT BUỘC TRÌNH BÀY ĐỦ 3 PHẦN THEO THỨ TỰ:
+   I. PHÂN TÍCH PHẠM VI KIỂM TRA
+   II. MA TRẬN ĐỀ KIỂM TRA
+   III. BẢNG ĐẶC TẢ ĐỀ KIỂM TRA (Bảng Markdown: Số câu | Nội dung đánh giá | Yêu cầu cần đạt | Mức độ nhận thức | Dạng câu hỏi | Số điểm | Năng lực đánh giá)
+   ` : `
+   BẮT BUỘC TRÌNH BÀY ĐỦ 5 PHẦN TRỌN BỘ HỒ SƠ KIỂM TRA THEO THỨ TỰ:
+   I. PHÂN TÍCH PHẠM VI KIỂM TRA
+   II. MA TRẬN ĐỀ KIỂM TRA
+   III. BẢNG ĐẶC TẢ ĐỀ KIỂM TRA
+   IV. ĐỀ KIỂM TRA (Đầy đủ tiêu đề Header chuẩn: Cơ quan quản lý, Trường/Đơn vị, Tên bài kiểm tra, Môn học, Khối lớp, Thời gian làm bài, Mã đề 101, Họ tên HS, Lớp, Ô ghi điểm & Lời phê. Phần I: Trắc nghiệm khách quan với mỗi lựa chọn A, B, C, D nằm trên một dòng riêng biệt. Phần II: Tự luận kèm số điểm từng câu. Dùng LaTeX chuẩn cho công thức Toán/Lý/Hóa nếu có.)
+   V. ĐÁP ÁN VÀ HƯỚNG DẪN CHẤM (Bảng đáp án trắc nghiệm + Thang điểm tự luận chi tiết từng ý, tổng 10 điểm).
+   `}
+
+3. TRÌNH BÀY BẢNG VÀ VĂN BẢN:
+   - Trình bày định dạng HTML/Markdown chuẩn sạch sẽ, dễ đọc, khoa học.
+   - Thẻ tiêu đề in đậm, bảng biểu có viền rõ ràng.`;
+
+    const userPrompt = `Môn học: ${subject || 'Ngữ văn'}
+Cấp/Khối: ${grade || 'Khối 8'}
+Loại bài kiểm tra: ${examType || 'Giữa học kì I'}
+Tùy chọn sản phẩm: Phương án ${outputOption || '3'}
+Tên đơn vị/Trường: ${schoolName || 'TRƯỜNG THCS LÊ QUÝ ĐÔN'}
+Cơ quan quản lý: ${headerDept || 'SỞ GIÁO DỤC VÀ ĐÀO TẠO'}
+Thời gian làm bài: ${durationMinutes || '60'} phút
+Phạm vi kiến thức / Nội dung bài học: ${topicScope || 'Bài 3: Lời sông núi - Hịch tướng sĩ, Nam quốc sơn hà, Tinh thần yêu nước của nhân dân ta, Đoạn văn diễn dịch & quy nạp'}
+Ghi chú / Yêu cầu bổ sung: ${additionalNotes || 'Tỉ lệ 70% trắc nghiệm (12 câu), 30% tự luận (2 câu)'}`;
+
+    let resultHtml = '';
+    let source = 'gemini-3.6-flash';
+
+    if (ai) {
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.6-flash',
+        contents: userPrompt,
+        config: {
+          systemInstruction: systemPrompt,
+          temperature: 0.3,
+        },
+      });
+      resultHtml = response.text || '';
+    } else {
+      source = 'local-engine';
+    }
+
+    const duration = Date.now() - startTime;
+    return res.json({
+      success: true,
+      examHtml: resultHtml,
+      source,
+      responseTimeMs: duration
+    });
+  } catch (error: any) {
+    console.error('Exam Generation Gemini API Error:', error);
+    return res.status(500).json({
+      error: 'Lỗi khi tạo đề kiểm tra.',
+      details: error?.message || String(error),
+    });
+  }
+});
+
 // API: Server-side Gemini AI Lesson Plan Integration Analysis
 app.post('/api/gemini/analyze', async (req, res) => {
   const startTime = Date.now();

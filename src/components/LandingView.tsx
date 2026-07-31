@@ -52,6 +52,25 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSwitchView, onLoadSa
 
           {/* Clock, Date, and Scrolling Text Bar */}
           <TopBar />
+
+          {/* Quick Action CTA Buttons */}
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
+            <button
+              onClick={() => onSwitchView('studio')}
+              className="px-5 py-3 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-amber-950 font-black text-sm rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer flex items-center space-x-2"
+            >
+              <Wand2 className="w-4 h-4 text-amber-950" />
+              <span>TÍCH HỢP NLS BÀI DẠY (AI STUDIO)</span>
+            </button>
+
+            <button
+              onClick={() => onSwitchView('exam')}
+              className="px-5 py-3 bg-gradient-to-r from-rose-600 to-purple-600 hover:from-rose-700 hover:to-purple-700 text-white font-black text-sm rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer flex items-center space-x-2 border border-rose-400/40"
+            >
+              <FileCheck className="w-4 h-4 text-rose-200" />
+              <span>TẠO ĐỀ KIỂM TRA & MA TRẬN (MỚI)</span>
+            </button>
+          </div>
         </div>
       </section>
 

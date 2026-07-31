@@ -6,6 +6,7 @@ import { NavigationCards } from './components/NavigationCards';
 import { AuthModal } from './components/AuthModal';
 import { LandingView } from './components/LandingView';
 import { StudioView } from './components/StudioView';
+import { ExamGeneratorView } from './components/ExamGeneratorView';
 import { RepositoryView } from './components/RepositoryView';
 import { LibraryView } from './components/LibraryView';
 import { LegalView } from './components/LegalView';
@@ -217,6 +218,14 @@ function AppContent() {
             onSaveLesson={handleSaveLesson}
             onSuccessToast={showToast}
             sampleLesson={activeSample}
+          />
+        )}
+
+        {currentView === 'exam' && (
+          <ExamGeneratorView
+            onSaveLesson={handleSaveLesson}
+            onSuccessToast={showToast}
+            onSwitchView={setCurrentView}
           />
         )}
 

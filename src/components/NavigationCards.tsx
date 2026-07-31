@@ -6,7 +6,8 @@ import {
   BookOpen, 
   Scale, 
   LayoutDashboard,
-  CheckCircle2
+  CheckCircle2,
+  FileCheck
 } from 'lucide-react';
 import { useHeroConfig } from '../context/HeroConfigContext';
 
@@ -18,6 +19,7 @@ interface NavigationCardsProps {
 const ICON_MAP: Record<string, React.ElementType> = {
   landing: House,
   studio: Wand2,
+  exam: FileCheck,
   repository: FolderOpen,
   library: BookOpen,
   legal: Scale,
@@ -27,6 +29,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
 const DEFAULT_ICON_BG: Record<string, string> = {
   landing: 'bg-indigo-500/20 text-indigo-300',
   studio: 'bg-amber-400/20 text-amber-300',
+  exam: 'bg-rose-500/20 text-rose-300',
   repository: 'bg-emerald-500/20 text-emerald-300',
   library: 'bg-purple-500/20 text-purple-300',
   legal: 'bg-amber-500/20 text-amber-300',
@@ -44,7 +47,7 @@ export const NavigationCards: React.FC<NavigationCardsProps> = ({ currentView, o
           <span>LỰA CHỌN CHỨC NĂNG / CHUYỂN HƯỚNG HỆ THỐNG</span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2">
           {heroConfig.navCards.map((item) => {
             const Icon = ICON_MAP[item.id] || House;
             const isActive = currentView === item.id;

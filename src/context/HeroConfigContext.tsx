@@ -32,6 +32,16 @@ export const DEFAULT_HERO_CONFIG: HeroBannerConfig = {
       isHot: true
     },
     {
+      id: 'exam',
+      title: 'Tạo Đề Kiểm Tra',
+      sub: 'Ma trận & Đặc tả chuẩn',
+      badge: 'MỚI 2026',
+      badgeColor: 'bg-rose-500 text-white font-extrabold',
+      cardBgColor: 'bg-gradient-to-br from-rose-950 to-purple-950',
+      textColor: 'text-rose-200',
+      isHot: true
+    },
+    {
       id: 'repository',
       title: 'Kho Giáo Án',
       sub: 'Lưu trữ Supabase DB',
@@ -91,7 +101,7 @@ export const HeroConfigProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         return {
           ...DEFAULT_HERO_CONFIG,
           ...parsed,
-          navCards: parsed.navCards && parsed.navCards.length === 6 
+          navCards: parsed.navCards && parsed.navCards.some((c: any) => c.id === 'exam')
             ? parsed.navCards 
             : DEFAULT_HERO_CONFIG.navCards
         };
