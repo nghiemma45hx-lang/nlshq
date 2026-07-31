@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import mammoth from 'mammoth';
 import { 
   FileCheck, 
   Sparkles, 
@@ -91,7 +92,7 @@ Chủ đề 4: Viết bài văn nghị luận phân tích một tác phẩm văn
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    Array.from(files).forEach(file => {
+    Array.from(files).forEach(async (file) => {
       const sizeKb = (file.size / 1024).toFixed(1);
       const sizeStr = file.size > 1024 * 1024 ? `${(file.size / (1024 * 1024)).toFixed(1)} MB` : `${sizeKb} KB`;
       
@@ -100,28 +101,78 @@ Chủ đề 4: Viết bài văn nghị luận phân tích một tác phẩm văn
       if (['doc', 'docx'].includes(ext)) fileType = 'word';
       else if (ext === 'pdf') fileType = 'pdf';
       else if (['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(ext)) fileType = 'image';
-      else if (['txt', 'md', 'json', 'csv'].includes(ext)) fileType = 'text';
+      else if (['txt', 'md', 'json', 'csv', 'html', 'xml'].includes(ext)) fileType = 'text';
 
       const newItem: AttachedFileItem = {
         id: Date.now() + Math.random().toString(),
         name: file.name,
         size: sizeStr,
         type: fileType,
+        content: '',
       };
 
-      if (fileType === 'text') {
+      if (fileType === 'word') {
+        try {
+          const arrayBuffer = await file.arrayBuffer();
+          const result = await mammoth.extractRawText({ arrayBuffer });
+          if (result && result.value && result.value.trim().length > 0) {
+            newItem.content = result.value.trim();
+            onSuccessToast(`Đã đọc & trích xuất ${newItem.content.length} ký tự từ file "${file.name}"!`);
+          } else {
+            // Fallback decode
+            const decoder = new TextDecoder('utf-8', { fatal: false });
+            const raw = decoder.decode(arrayBuffer);
+            const cleaned = raw.replace(/[^\x20-\x7E\u00C0-\u024F\u1EA0-\u1EF9\n\r\t]+/g, ' ').replace(/\s+/g, ' ').trim();
+            newItem.content = cleaned.slice(0, 15000);
+            onSuccessToast(`Đã đọc nội dung văn bản từ file "${file.name}"!`);
+          }
+        } catch (err) {
+          console.warn('Mammoth extraction fallback:', err);
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const raw = (event.target?.result as string) || '';
+            newItem.content = raw.replace(/[^\x20-\x7E\u00C0-\u024F\u1EA0-\u1EF9\n\r\t]+/g, ' ').replace(/\s+/g, ' ').slice(0, 15000);
+            onSuccessToast(`Đã nhận file "${file.name}"!`);
+          };
+          reader.readAsText(file);
+        }
+      } else if (fileType === 'pdf') {
+        try {
+          const arrayBuffer = await file.arrayBuffer();
+          const decoder = new TextDecoder('utf-8', { fatal: false });
+          const rawText = decoder.decode(arrayBuffer);
+          const matches = rawText.match(/[\u0020-\u007E\u00C0-\u024F\u1EA0-\u1EF9]{4,}/g);
+          if (matches && matches.length > 0) {
+            const filtered = matches.filter(m => !m.includes('obj') && !m.includes('endobj') && !m.includes('stream') && !m.includes('PDF')).join(' ');
+            newItem.content = filtered.slice(0, 15000);
+            onSuccessToast(`Đã đọc & trích xuất văn bản từ PDF "${file.name}"!`);
+          } else {
+            newItem.content = `[Nội dung từ file PDF: ${file.name}]`;
+            onSuccessToast(`Đã đính kèm file PDF "${file.name}"!`);
+          }
+        } catch (e) {
+          newItem.content = `[Nội dung từ file PDF: ${file.name}]`;
+          onSuccessToast(`Đã đính kèm file PDF "${file.name}"!`);
+        }
+      } else if (fileType === 'image') {
         const reader = new FileReader();
         reader.onload = (event) => {
-          newItem.content = event.target?.result as string;
-          setAttachedFiles(prev => [...prev, newItem]);
+          newItem.content = `[Ảnh đính kèm chụp đề/SGK: ${file.name}]`;
+          onSuccessToast(`Đã đính kèm ảnh "${file.name}"!`);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          newItem.content = (event.target?.result as string) || '';
+          onSuccessToast(`Đã đọc nội dung từ file "${file.name}"!`);
         };
         reader.readAsText(file);
-      } else {
-        setAttachedFiles(prev => [...prev, newItem]);
       }
+
+      setAttachedFiles(prev => [...prev, newItem]);
     });
 
-    onSuccessToast(`Đã đính kèm ${files.length} tệp tài liệu đề cương/SGK!`);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -284,17 +335,29 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
     const titleStr = `Đề kiểm tra ${examType} ${subject} - ${grade} (${durationMinutes} phút)`;
     setGeneratedTitle(titleStr);
 
-    let fullTopicScopePayload = topicScope;
+    let fullTopicScopePayload = '';
 
     if (attachedFiles.length > 0) {
-      fullTopicScopePayload += `\n\n[CÁC TẬP TIN ĐỀ CƯƠNG / BÀI HỌC / SGK ĐÍNH KÈM]:\n` + 
-        attachedFiles.map(f => `- Tệp [${f.type.toUpperCase()}]: ${f.name} (${f.size})${f.content ? `\n  + Nội dung chi tiết:\n${f.content.slice(0, 2000)}...` : ''}`).join('\n');
+      fullTopicScopePayload += `====================================================\n`;
+      fullTopicScopePayload += `YÊU CẦU QUAN TRỌNG NHẤT: BÁM SÁT 100% NỘI DUNG TỪ TỆP DỮ LIỆU ĐỊNH KÈM NÀY ĐỂ RA ĐỀ THI, MA TRẬN & ĐÁP ÁN.\n`;
+      fullTopicScopePayload += `BẠN BẮT BUỘC DÙNG DỮ LIỆU KIẾN THỨC, CÂU HỎI VÀ TÁC PHẨM TRONG TỆP ĐÃ TẢI LÊN. KHÔNG DÙNG CÁC TÁC PHẨM VÀ BÀI HỌC VÍ DỤ KHÔNG CÓ TRONG TỆP!\n`;
+      fullTopicScopePayload += `====================================================\n\n`;
+
+      attachedFiles.forEach((f, idx) => {
+        fullTopicScopePayload += `--- TỆP ĐÍNH KÈM #${idx + 1}: ${f.name} (${f.type.toUpperCase()}, Dung lượng: ${f.size}) ---\n`;
+        fullTopicScopePayload += `${f.content || 'Nội dung file: ' + f.name}\n\n`;
+      });
     }
 
     if (driveLinks.length > 0) {
-      fullTopicScopePayload += `\n\n[LINK TÀI LIỆU GOOGLE DRIVE / SGK ONLINE TÍCH HỢP]:\n` + 
-        driveLinks.map(l => `- Tài liệu: ${l.title} (URL: ${l.url})`).join('\n');
+      fullTopicScopePayload += `--- DANH SÁCH LINK DRIVE / SGK ONLINE TÍCH HỢP ---\n`;
+      driveLinks.forEach((l) => {
+        fullTopicScopePayload += `- Tên tài liệu: ${l.title} | URL: ${l.url}\n`;
+      });
+      fullTopicScopePayload += `\n`;
     }
+
+    fullTopicScopePayload += `--- PHẠM VI BÀI HỌC BỔ SUNG KHÁC ---:\n${topicScope}`;
 
     try {
       setTimeout(() => setProgressStep('Đang thiết lập Ma trận đề & Tỉ lệ phần trăm (40% NB - 30% TH - 30% VD)...'), 1200);
