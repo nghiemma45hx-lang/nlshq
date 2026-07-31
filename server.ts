@@ -691,8 +691,16 @@ app.post('/api/gemini/generate-exam', async (req, res) => {
       schoolYear = '2025 - 2026',
       durationMinutes, 
       additionalNotes,
+      essayRubricConfig,
       questionStructure
     } = req.body;
+
+    const {
+      loadEssayToRubric = true,
+      extractExactEssayFromFile = true,
+      includeDetailedRubricCriteria = true,
+      includeEssayOutline = true,
+    } = essayRubricConfig || {};
 
     const mcq = questionStructure?.mcqCount ?? 12;
     const trueFalse = questionStructure?.trueFalseCount ?? 0;
@@ -751,7 +759,13 @@ BẮT BUỘC THỰC HIỆN ĐÚNG QUY ĐỊNH CỦA BỘ VỀ XÂY DỰNG HỒ S
    V. ĐÁP ÁN VÀ HƯỚNG DẪN CHẤM CHI TIẾT (Bảng đáp án trắc nghiệm cho tất cả các dạng câu hỏi + Thang điểm tự luận chi tiết từng ý, tổng 10.0 điểm).
    `}
 
-4. TRÌNH BÀY BẢNG VÀ VĂN BẢN:
+4. CẤU HÌNH QUY ĐỊNH CHẤM & NẠP TỰ LUẬN VÀO HƯỚNG DẪN CHẤM:
+   ${loadEssayToRubric ? '- BẮT BUỘC tải và nạp đầy đủ toàn bộ các câu hỏi tự luận cùng đáp án/hướng dẫn chấm chi tiết vào Phần V (Đáp án & Hướng dẫn chấm).' : ''}
+   ${extractExactEssayFromFile ? '- BẮT BUỘC trích xuất nguyên văn chính xác 100% đề câu hỏi tự luận và đáp án từ tệp đính kèm tải lên (nếu có trong dữ liệu đính kèm).' : ''}
+   ${includeDetailedRubricCriteria ? '- Lập biểu điểm chi tiết cho từng ý (Mở bài, Thân bài - Luận điểm/Ý chính, Kết bài, Diễn đạt & Lập luận sáng tạo).' : ''}
+   ${includeEssayOutline ? '- Bổ sung Dàn ý bài làm chi tiết và Gợi ý trả lời/bài làm mẫu tham khảo đầy đủ trong Hướng dẫn chấm.' : ''}
+
+5. TRÌNH BÀY BẢNG VÀ VĂN BẢN:
    - Trình bày định dạng HTML/Markdown chuẩn sạch sẽ, dễ đọc, khoa học.
    - Thẻ tiêu đề in đậm, bảng biểu có viền rõ ràng.`;
 

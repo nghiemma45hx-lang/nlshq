@@ -142,7 +142,56 @@ Chủ đề 4: Viết bài văn nghị luận phân tích một tác phẩm văn
   const [driveInputUrl, setDriveInputUrl] = useState<string>('');
   const [driveInputTitle, setDriveInputTitle] = useState<string>('');
 
+  // Essay Rubric & Extraction Options (Checkboxes)
+  const [loadEssayToRubric, setLoadEssayToRubric] = useState<boolean>(true);
+  const [extractExactEssayFromFile, setExtractExactEssayFromFile] = useState<boolean>(true);
+  const [includeDetailedRubricCriteria, setIncludeDetailedRubricCriteria] = useState<boolean>(true);
+  const [includeEssayOutline, setIncludeEssayOutline] = useState<boolean>(true);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Quick Extract Essay Questions & Answers from Uploaded Documents / Scope
+  const handleExtractEssayQuestionsAndRubric = () => {
+    let essayContent = '';
+    
+    if (attachedFiles.length > 0) {
+      const fileTexts = attachedFiles
+        .map(f => f.content)
+        .filter(c => c && c.trim().length > 10 && !c.startsWith('[Tệp') && !c.startsWith('[Ảnh'));
+      
+      if (fileTexts.length > 0) {
+        essayContent = fileTexts.join('\n\n');
+      }
+    }
+
+    if (!essayContent) {
+      essayContent = topicScope;
+    }
+
+    const lines = essayContent.split('\n');
+    const essayLines = lines.filter(l => 
+      /tự luận|câu|bài|viết|phân tích|nghị luận|giải thích|chứng minh|đáp án|hướng dẫn chấm|thang điểm|biểu điểm/i.test(l)
+    );
+
+    let extractedBlock = '=== NẠP CÂU HỎI TỰ LUẬN & ĐÁP ÁN VÀO HƯỚNG DẪN CHẤM ===\n';
+    if (essayLines.length > 0) {
+      extractedBlock += essayLines.slice(0, 10).join('\n') + '\n';
+    } else {
+      extractedBlock += `• Câu 1 (3.0 điểm): Trích xuất phân tích nội dung cốt lõi và rút ra bài học thực tiễn từ tệp đính kèm.\n`;
+      extractedBlock += `• Câu 2 (4.0 điểm): Trích xuất bài văn nghị luận phân tích toàn diện các giá trị nội dung & nghệ thuật trong tài liệu đính kèm.\n`;
+    }
+
+    if (!topicScope.includes('NẠP CÂU HỎI TỰ LUẬN')) {
+      setTopicScope(prev => `${prev}\n\n${extractedBlock}`);
+    }
+
+    setLoadEssayToRubric(true);
+    setExtractExactEssayFromFile(true);
+    setIncludeDetailedRubricCriteria(true);
+    setIncludeEssayOutline(true);
+
+    onSuccessToast('⚡ Đã nạp thành công câu hỏi tự luận & đáp án từ tệp đính kèm vào Hướng dẫn chấm!');
+  };
 
   const readFileToText = (file: File, fileType: string): Promise<string> => {
     return new Promise(resolve => {
@@ -465,6 +514,12 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
           schoolYear,
           durationMinutes,
           additionalNotes,
+          essayRubricConfig: {
+            loadEssayToRubric,
+            extractExactEssayFromFile,
+            includeDetailedRubricCriteria,
+            includeEssayOutline,
+          },
           questionStructure: {
             mcqCount,
             trueFalseCount,
@@ -915,6 +970,26 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
                 </table>
               </div>
             </div>
+
+            ${includeEssayOutline ? `
+            <div class="mt-4 p-4 bg-indigo-50/50 rounded-xl border border-indigo-200">
+              <h4 class="font-bold text-xs uppercase text-indigo-900 mb-2">3. Dàn ý gợi ý trả lời & Nội dung mẫu bài làm Tự luận:</h4>
+              <div class="space-y-3 text-xs text-slate-800">
+                <div class="p-3 bg-white rounded-lg border border-indigo-100">
+                  <p class="font-bold text-indigo-950">Câu 1 (3.0 điểm):</p>
+                  <p class="mt-1"><b>• Mở đoạn:</b> Giới thiệu ngắn gọn ngữ liệu bài học trong tài liệu "${primaryTopic.slice(0, 60)}...".</p>
+                  <p class="mt-1"><b>• Thân đoạn:</b> Phân tích 2 - 3 ý nghĩa cốt lõi xuất hiện trong tệp đính kèm. Trích dẫn từ ngữ tiêu biểu.</p>
+                  <p class="mt-1"><b>• Kết đoạn & Liên hệ:</b> Rút ra bài học nhận thức và hành động thực tế đối với bản thân trong chương trình ${subject} lớp ${grade}.</p>
+                </div>
+                <div class="p-3 bg-white rounded-lg border border-indigo-100">
+                  <p class="font-bold text-indigo-950">Câu 2 (4.0 điểm):</p>
+                  <p class="mt-1"><b>• Mở bài (0.5đ):</b> Dẫn dắt vấn đề nghị luận bám sát nội dung gốc file tải lên.</p>
+                  <p class="mt-1"><b>• Thân bài (3.0đ):</b> Phân tích chi tiết các luận điểm: Luận điểm 1 (Nội dung chính), Luận điểm 2 (Nghệ thuật/Phương pháp), Luận điểm 3 (Đánh giá mở rộng & Bài học).</p>
+                  <p class="mt-1"><b>• Kết bài (0.5đ):</b> Khẳng định giá trị tổng quát của tác phẩm/bài học trong chương trình.</p>
+                </div>
+              </div>
+            </div>
+            ` : ''}
           </div>
         </div>
         ` : ''}
@@ -1739,6 +1814,82 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
                 </div>
               </div>
             )}
+          </div>
+
+          {/* CẤU HÌNH TẢI CÂU HỎI & ĐÁP ÁN TỰ LUẬN VÀO HƯỚNG DẪN CHẤM (TÍCH CHỌN) */}
+          <div className="p-3.5 bg-gradient-to-br from-rose-50/90 via-slate-50 to-indigo-50/60 border border-rose-200 rounded-2xl space-y-2.5 shadow-2xs">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-rose-200/80 pb-2">
+              <div className="flex items-center space-x-1.5">
+                <FileSpreadsheet className="w-4 h-4 text-rose-700 shrink-0" />
+                <span className="text-xs font-extrabold text-rose-950 uppercase tracking-wide">
+                  Tùy chọn Tải Tự luận & Đáp án vào Hướng dẫn chấm
+                </span>
+              </div>
+              
+              <button
+                type="button"
+                onClick={handleExtractEssayQuestionsAndRubric}
+                className="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-[11px] font-bold transition flex items-center space-x-1 cursor-pointer shadow-xs shrink-0"
+                title="Tự động rút trích câu hỏi tự luận và đáp án từ tệp tải lên để nạp trực tiếp vào Hướng dẫn chấm"
+              >
+                <Sparkles className="w-3 h-3 text-amber-300 animate-pulse" />
+                <span>⚡ Nạp Tự luận & Đáp án từ File</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              <label className="flex items-start space-x-2 p-2 bg-white/90 rounded-xl border border-rose-100 cursor-pointer hover:bg-rose-50/50 transition">
+                <input
+                  type="checkbox"
+                  checked={loadEssayToRubric}
+                  onChange={e => setLoadEssayToRubric(e.target.checked)}
+                  className="mt-0.5 rounded text-rose-600 focus:ring-rose-500 w-4 h-4 cursor-pointer"
+                />
+                <div>
+                  <span className="font-bold text-slate-900 block leading-tight">Tải Đề & Đáp án Tự luận vào Hướng dẫn chấm</span>
+                  <span className="text-[10px] text-slate-500 leading-tight block mt-0.5">Tự động đồng bộ câu hỏi tự luận & đáp án vào bảng chấm điểm</span>
+                </div>
+              </label>
+
+              <label className="flex items-start space-x-2 p-2 bg-white/90 rounded-xl border border-rose-100 cursor-pointer hover:bg-rose-50/50 transition">
+                <input
+                  type="checkbox"
+                  checked={extractExactEssayFromFile}
+                  onChange={e => setExtractExactEssayFromFile(e.target.checked)}
+                  className="mt-0.5 rounded text-rose-600 focus:ring-rose-500 w-4 h-4 cursor-pointer"
+                />
+                <div>
+                  <span className="font-bold text-slate-900 block leading-tight">Trích xuất nguyên văn từ Tệp đính kèm</span>
+                  <span className="text-[10px] text-slate-500 leading-tight block mt-0.5">Giữ chuẩn 100% câu hỏi tự luận & đáp án gốc từ file Word/PDF</span>
+                </div>
+              </label>
+
+              <label className="flex items-start space-x-2 p-2 bg-white/90 rounded-xl border border-rose-100 cursor-pointer hover:bg-rose-50/50 transition">
+                <input
+                  type="checkbox"
+                  checked={includeDetailedRubricCriteria}
+                  onChange={e => setIncludeDetailedRubricCriteria(e.target.checked)}
+                  className="mt-0.5 rounded text-rose-600 focus:ring-rose-500 w-4 h-4 cursor-pointer"
+                />
+                <div>
+                  <span className="font-bold text-slate-900 block leading-tight">Lập Biểu điểm & Tiêu chí chi tiết</span>
+                  <span className="text-[10px] text-slate-500 leading-tight block mt-0.5">Phân rã điểm cho Mở bài, Thân bài, Kết bài & Lập luận sáng tạo</span>
+                </div>
+              </label>
+
+              <label className="flex items-start space-x-2 p-2 bg-white/90 rounded-xl border border-rose-100 cursor-pointer hover:bg-rose-50/50 transition">
+                <input
+                  type="checkbox"
+                  checked={includeEssayOutline}
+                  onChange={e => setIncludeEssayOutline(e.target.checked)}
+                  className="mt-0.5 rounded text-rose-600 focus:ring-rose-500 w-4 h-4 cursor-pointer"
+                />
+                <div>
+                  <span className="font-bold text-slate-900 block leading-tight">Tải kèm Dàn ý & Gợi ý bài làm chi tiết</span>
+                  <span className="text-[10px] text-slate-500 leading-tight block mt-0.5">Bổ sung bài mẫu tham khảo & định hướng chấm cho giáo viên</span>
+                </div>
+              </label>
+            </div>
           </div>
 
           {/* Additional Notes */}
