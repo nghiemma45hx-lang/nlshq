@@ -832,8 +832,12 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
             opts.push(`${prefixes[opts.length]}Phương án tham khảo ${opts.length + 1}`);
           }
         }
+        const cleanQ = eq.q
+          .replace(/^(câu|cau)\s*\d+[\.\:\s]*/i, '')
+          .replace(/\(\s*\d+[\.,]?\d*\s*điểm\s*\)/gi, '')
+          .trim();
         mcqQuestions.push({
-          q: `Câu ${idx + 1}. (0.25 điểm) ${eq.q.replace(/^(câu|cau)\s*\d+[\.\:\s]*/i, '')}`,
+          q: `Câu ${idx + 1}. (0.25 điểm) ${cleanQ}`,
           options: opts.slice(0, 4),
           answer: ['A', 'B', 'C', 'D'][idx % 4]
         });
