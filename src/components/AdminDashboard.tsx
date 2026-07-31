@@ -30,9 +30,15 @@ import {
   Mail,
   UserCheck,
   UserX,
-  Palette
+  Palette,
+  Archive,
+  Upload,
+  HardDrive,
+  RotateCcw,
+  ShieldAlert
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useHeroConfig } from '../context/HeroConfigContext';
 import { LessonPlanItem, AdminStats, UserProfile } from '../types';
 import { formatDateTime } from '../utils/lessonPlanUtils';
 import { AdminHeroEditor } from './AdminHeroEditor';
@@ -40,12 +46,14 @@ import { AdminHeroEditor } from './AdminHeroEditor';
 interface AdminDashboardProps {
   lessons: LessonPlanItem[];
   onDeleteLesson: (id: string) => void;
+  onRestoreLessons?: (lessons: LessonPlanItem[]) => void;
   onSuccessToast: (msg: string) => void;
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   lessons,
   onDeleteLesson,
+  onRestoreLessons,
   onSuccessToast,
 }) => {
   const { 
@@ -55,10 +63,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     adminResetUserPassword, 
     adminToggleUserStatus, 
     adminDeleteUser, 
-    adminAddUser 
+    adminAddUser,
+    restoreUsersData
   } = useAuth();
+  const { heroConfig, resetHeroConfig } = useHeroConfig();
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'lessons' | 'competencies' | 'hero' | 'logs' | 'sql'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'lessons' | 'competencies' | 'hero' | 'backup' | 'logs' | 'sql'>('overview');
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(false);
   const [searchFilter, setSearchFilter] = useState('');
@@ -338,6 +348,18 @@ ON CONFLICT (id) DO NOTHING;`;
         </button>
 
         <button
+          onClick={() => setActiveTab('backup')}
+          className={`flex-1 min-w-[170px] py-2.5 text-xs font-bold rounded-xl transition flex items-center justify-center space-x-2 ${
+            activeTab === 'backup'
+              ? 'bg-rose-600 text-white shadow-2xs ring-2 ring-indigo-400'
+              : 'text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200'
+          }`}
+        >
+          <HardDrive className="w-4 h-4 text-indigo-600" />
+          <span>Sao Lưu & Khôi Phục Dữ Liệu</span>
+        </button>
+
+        <button
           onClick={() => setActiveTab('logs')}
           className={`flex-1 min-w-[130px] py-2.5 text-xs font-bold rounded-xl transition flex items-center justify-center space-x-2 ${
             activeTab === 'logs'
@@ -596,18 +618,29 @@ ON CONFLICT (id) DO NOTHING;`;
                           </button>
 
                           {/* Xóa */}
-                          <button
-                            onClick={() => {
-                              if (window.confirm(`Bạn có chắc muốn xóa vĩnh viễn tài khoản ${u.displayName}?`)) {
-                                adminDeleteUser(u.uid);
-                                onSuccessToast(`Đã xóa tài khoản ${u.displayName}`);
-                              }
-                            }}
-                            className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
-                            title="Xóa tài khoản"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          {u.role === 'admin' || u.isAdmin || u.email.toLowerCase() === 'admin@edunls.vn' || u.uid === 'admin-001' ? (
+                            <button
+                              disabled
+                              onClick={() => alert('CẢNH BÁO: KHÔNG THỂ XÓA TÀI KHOẢN QUẢN TRỊ VIÊN (ADMIN)! Tài khoản Quản trị viên tối cao được bảo vệ để duy trì quyền kiểm soát hệ thống.')}
+                              className="p-1 text-slate-300 cursor-not-allowed rounded-lg"
+                              title="Tài khoản Quản trị viên được bảo vệ - Không thể xóa"
+                            >
+                              <Lock className="w-4 h-4 text-slate-400" />
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => {
+                                if (window.confirm(`CẢNH BÁO: Bạn có chắc muốn XÓA VĨNH VIỄN tài khoản cá nhân ${u.displayName} (${u.email})? Thao tác này không thể hoàn tác.`)) {
+                                  adminDeleteUser(u.uid);
+                                  onSuccessToast(`Đã xóa vĩnh viễn tài khoản ${u.displayName}`);
+                                }
+                              }}
+                              className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
+                              title="Xóa tài khoản cá nhân"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -758,6 +791,141 @@ ON CONFLICT (id) DO NOTHING;`;
       {/* TAB 7: HERO BANNER & NAVIGATION CARDS EDITOR */}
       {activeTab === 'hero' && (
         <AdminHeroEditor onSuccessToast={onSuccessToast} />
+      )}
+
+      {/* TAB 8: DATA BACKUP, RESTORE & SYSTEM RESET */}
+      {activeTab === 'backup' && (
+        <div className="space-y-6">
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs space-y-6">
+            <div className="flex items-center space-x-3 border-b border-slate-200 pb-4">
+              <div className="w-12 h-12 bg-indigo-100 text-indigo-700 rounded-2xl flex items-center justify-center shrink-0">
+                <HardDrive className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-extrabold text-slate-900 text-base">Quản Lý, Sao Lưu & Khôi Phục Dữ Liệu Hệ Thống</h3>
+                <p className="text-xs text-slate-500">
+                  Lưu trữ tập tin sao lưu toàn bộ người dùng, cấu hình giao diện Hero Banner và Kho bài dạy. Tải lại dữ liệu khi đổi thiết bị hoặc chuyển máy.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* CARD 1: EXPORT BACKUP */}
+              <div className="p-5 bg-indigo-50/60 border border-indigo-200 rounded-2xl space-y-4">
+                <div className="flex items-center space-x-2 text-indigo-900 font-bold text-sm">
+                  <Archive className="w-5 h-5 text-indigo-600" />
+                  <span>1. Sao Lưu Dữ Liệu (Export Backup)</span>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Xuất toàn bộ cơ sở dữ liệu hiện tại (gồm <strong>{registeredUsers.length} tài khoản giáo viên</strong>, <strong>{lessons.length} bài dạy</strong> và cấu hình Hero Banner) thành tập tin chuẩn <code className="bg-white px-1.5 py-0.5 rounded border border-indigo-200 font-mono text-indigo-700">.json</code> an toàn.
+                </p>
+                <button
+                  onClick={() => {
+                    const backupObject = {
+                      app: 'EduNLS AI 2026',
+                      exportDate: new Date().toISOString(),
+                      users: registeredUsers,
+                      lessons: lessons,
+                      heroConfig: heroConfig
+                    };
+                    const jsonStr = JSON.stringify(backupObject, null, 2);
+                    const blob = new Blob([jsonStr], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `edunls_backup_${new Date().toISOString().slice(0, 10)}.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    onSuccessToast('Tải xuống file Sao Lưu Dữ Liệu Hệ Thống (.json) thành công!');
+                  }}
+                  className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition flex items-center justify-center space-x-2 shadow-sm"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Tải File Sao Lưu (.json)</span>
+                </button>
+              </div>
+
+              {/* CARD 2: IMPORT RESTORE */}
+              <div className="p-5 bg-emerald-50/60 border border-emerald-200 rounded-2xl space-y-4">
+                <div className="flex items-center space-x-2 text-emerald-900 font-bold text-sm">
+                  <Upload className="w-5 h-5 text-emerald-600" />
+                  <span>2. Khôi Phục Dữ Liệu (Import Restore)</span>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Nạp tập tin sao lưu <code className="bg-white px-1.5 py-0.5 rounded border border-emerald-200 font-mono text-emerald-700">.json</code> đã tải về trước đó để phục hồi người dùng, bài dạy và giao diện nguyên trạng.
+                </p>
+                <label className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition flex items-center justify-center space-x-2 shadow-sm cursor-pointer">
+                  <Upload className="w-4 h-4" />
+                  <span>Chọn File Backup Để Khôi Phục</span>
+                  <input
+                    type="file"
+                    accept=".json"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+
+                      const reader = new FileReader();
+                      reader.onload = (event) => {
+                        try {
+                          const data = JSON.parse(event.target?.result as string);
+                          let countUsers = 0;
+                          let countLessons = 0;
+
+                          if (data.users && Array.isArray(data.users)) {
+                            restoreUsersData(data.users);
+                            localStorage.setItem('edunls_registered_users', JSON.stringify(data.users));
+                            countUsers = data.users.length;
+                          }
+
+                          if (data.lessons && Array.isArray(data.lessons) && onRestoreLessons) {
+                            onRestoreLessons(data.lessons);
+                            countLessons = data.lessons.length;
+                          }
+
+                          if (data.heroConfig && typeof data.heroConfig === 'object') {
+                            localStorage.setItem('EDU_HERO_CONFIG_2026', JSON.stringify(data.heroConfig));
+                          }
+
+                          onSuccessToast(`Khôi phục dữ liệu thành công! Đã nạp ${countUsers} người dùng và ${countLessons} giáo án.`);
+                        } catch (err) {
+                          alert('Tập tin sao lưu không đúng định dạng JSON hợp lệ.');
+                        }
+                      };
+                      reader.readAsText(file);
+                    }}
+                  />
+                </label>
+              </div>
+            </div>
+
+            {/* DANGER ZONE: RESET SYSTEM DATA */}
+            <div className="p-5 bg-rose-50/80 border border-rose-200 rounded-2xl space-y-3 mt-6">
+              <div className="flex items-center space-x-2 text-rose-800 font-extrabold text-sm">
+                <RotateCcw className="w-5 h-5 text-rose-600" />
+                <span>3. Xóa & Khôi Phục Cài Đặt Mặc Định (Reset Data)</span>
+              </div>
+              <p className="text-xs text-rose-900 leading-relaxed">
+                Thao tác này sẽ đặt lại cấu hình Hero Banner về trạng thái mặc định và xóa toàn bộ dữ liệu bài dạy tạm. <strong>Tài khoản Admin tối cao được giữ nguyên tuyệt đối để bảo vệ hệ thống.</strong>
+              </p>
+              <button
+                onClick={() => {
+                  if (confirm('Bạn có chắc chắn muốn đặt lại cấu hình và dữ liệu hệ thống về mặc định?')) {
+                    resetHeroConfig();
+                    if (onRestoreLessons) {
+                      onRestoreLessons([]);
+                    }
+                    onSuccessToast('Đã đặt lại dữ liệu & cấu hình hệ thống về mặc định ban đầu!');
+                  }
+                }}
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs transition inline-flex items-center space-x-1.5 shadow-sm"
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span>Đặt Lai Dữ Liệu Mặc Định (Reset System)</span>
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
 

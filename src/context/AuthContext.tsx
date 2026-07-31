@@ -51,6 +51,9 @@ interface AuthContextType {
   adminToggleUserStatus: (uid: string) => boolean;
   adminDeleteUser: (uid: string) => boolean;
   adminAddUser: (name: string, email: string, phone: string, pass: string, role: 'user' | 'admin') => { success: boolean; message?: string };
+  updateUserProfile: (uid: string, data: Partial<UserProfile>) => { success: boolean; message?: string };
+  deletePersonalAccount: (uid: string) => { success: boolean; message?: string };
+  restoreUsersData: (users: UserProfile[]) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -272,6 +275,51 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return { success: true };
   };
 
+  const updateUserProfile = (uid: string, data: Partial<UserProfile>): { success: boolean; message?: string } => {
+    if (!uid) return { success: false, message: 'Không tìm thấy thông tin tài khoản.' };
+
+    setRegisteredUsers(prev => prev.map(u => u.uid === uid ? { ...u, ...data } : u));
+
+    if (currentUser && currentUser.uid === uid) {
+      const updated = { ...currentUser, ...data };
+      setCurrentUser(updated);
+    }
+
+    return { success: true };
+  };
+
+  const deletePersonalAccount = (uid: string): { success: boolean; message?: string } => {
+    const target = registeredUsers.find(u => u.uid === uid) || (currentUser?.uid === uid ? currentUser : null);
+    if (!target) {
+      return { success: false, message: 'Không tìm thấy tài khoản cần xóa.' };
+    }
+
+    // Safety check: ABSOLUTELY CANNOT DELETE ADMIN ACCOUNT
+    if (
+      target.role === 'admin' ||
+      target.isAdmin === true ||
+      target.email.toLowerCase() === 'admin@edunls.vn' ||
+      target.uid === 'admin-001'
+    ) {
+      return {
+        success: false,
+        message: 'CẢNH BÁO: KHÔNG THỂ XÓA TÀI KHOẢN QUẢN TRỊ VIÊN (ADMIN)! Tài khoản Quản trị viên tối cao được bảo vệ để duy trì quyền kiểm soát hệ thống.'
+      };
+    }
+
+    setRegisteredUsers(prev => prev.filter(u => u.uid !== uid));
+    if (currentUser?.uid === uid) {
+      setCurrentUser(null);
+    }
+    return { success: true };
+  };
+
+  const restoreUsersData = (users: UserProfile[]) => {
+    if (Array.isArray(users) && users.length > 0) {
+      setRegisteredUsers(users);
+    }
+  };
+
   const logout = () => {
     setCurrentUser(null);
   };
@@ -290,7 +338,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       adminResetUserPassword,
       adminToggleUserStatus,
       adminDeleteUser,
-      adminAddUser
+      adminAddUser,
+      updateUserProfile,
+      deletePersonalAccount,
+      restoreUsersData
     }}>
       {children}
     </AuthContext.Provider>

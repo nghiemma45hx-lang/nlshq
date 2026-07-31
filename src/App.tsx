@@ -11,6 +11,7 @@ import { LibraryView } from './components/LibraryView';
 import { LegalView } from './components/LegalView';
 import { AdminDashboard } from './components/AdminDashboard';
 import { CompetencyDetailModal } from './components/CompetencyDetailModal';
+import { UserProfileModal } from './components/UserProfileModal';
 import { SAMPLE_LESSONS } from './data/competencyData';
 import { LessonPlanItem, CompetencyDomain } from './types';
 import { CheckCircle2 } from 'lucide-react';
@@ -25,6 +26,7 @@ function AppContent() {
   const { currentUser } = useAuth();
   const [currentView, setCurrentView] = useState<string>('landing');
   const [isAuthOpen, setIsAuthOpen] = useState<boolean>(false);
+  const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
   const [selectedCompetency, setSelectedCompetency] = useState<CompetencyDomain | null>(null);
 
   // Toast notification state
@@ -160,6 +162,18 @@ function AppContent() {
     showToast(`Đã áp dụng miền "${comp.title}" vào AI Studio Workstation!`);
   };
 
+  const handleRestoreLessons = (restoredLessons: LessonPlanItem[]) => {
+    if (Array.isArray(restoredLessons)) {
+      setLessons(restoredLessons);
+      try {
+        localStorage.setItem('edunls_lessons', JSON.stringify(restoredLessons));
+      } catch (e) {
+        console.warn('LocalStorage error saving restored lessons:', e);
+      }
+      showToast(`Đã khôi phục ${restoredLessons.length} kế hoạch bài dạy thành công!`);
+    }
+  };
+
   return (
     <div className="bg-slate-50 font-sans text-slate-800 antialiased min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
       {/* Header */}
@@ -167,6 +181,7 @@ function AppContent() {
         currentView={currentView}
         onSwitchView={setCurrentView}
         onOpenAuth={() => setIsAuthOpen(true)}
+        onOpenProfile={() => setIsProfileOpen(true)}
       />
 
       {/* Persistent System Function Navigation Cards Banner */}
@@ -218,6 +233,7 @@ function AppContent() {
           <AdminDashboard
             lessons={lessons}
             onDeleteLesson={handleDeleteLesson}
+            onRestoreLessons={handleRestoreLessons}
             onSuccessToast={showToast}
           />
         )}
@@ -240,6 +256,13 @@ function AppContent() {
       <AuthModal
         isOpen={isAuthOpen}
         onClose={() => setIsAuthOpen(false)}
+        onSuccessToast={showToast}
+      />
+
+      {/* User Personal Profile Modal */}
+      <UserProfileModal
+        isOpen={isProfileOpen}
+        onClose={() => setIsProfileOpen(false)}
         onSuccessToast={showToast}
       />
 

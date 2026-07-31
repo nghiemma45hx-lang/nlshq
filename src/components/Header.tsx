@@ -11,9 +11,10 @@ interface HeaderProps {
   currentView: string;
   onSwitchView: (view: string) => void;
   onOpenAuth: () => void;
+  onOpenProfile: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onSwitchView, onOpenAuth }) => {
+export const Header: React.FC<HeaderProps> = ({ onSwitchView, onOpenAuth, onOpenProfile }) => {
   const { currentUser, isAdmin, logout } = useAuth();
 
   return (
@@ -69,13 +70,17 @@ export const Header: React.FC<HeaderProps> = ({ onSwitchView, onOpenAuth }) => {
               </div>
             ) : (
               <div className="flex items-center space-x-2">
-                <div className="flex items-center space-x-2 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
-                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-extrabold shrink-0 ${
+                <button
+                  onClick={onOpenProfile}
+                  className="flex items-center space-x-2 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-xl border border-slate-200 transition text-left cursor-pointer group"
+                  title="Xem và Quản lý Tài Khoản Cá Nhân / Đổi Mật Khẩu"
+                >
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-extrabold shrink-0 group-hover:scale-105 transition-transform ${
                     isAdmin ? 'bg-rose-600' : 'bg-indigo-600'
                   }`}>
                     {currentUser.displayName.charAt(0).toUpperCase()}
                   </div>
-                  <span className="text-xs font-bold text-slate-700 max-w-[120px] sm:max-w-[150px] truncate whitespace-nowrap">
+                  <span className="text-xs font-bold text-slate-800 max-w-[120px] sm:max-w-[150px] truncate whitespace-nowrap">
                     {currentUser.displayName}
                   </span>
                   {isAdmin && (
@@ -83,7 +88,8 @@ export const Header: React.FC<HeaderProps> = ({ onSwitchView, onOpenAuth }) => {
                       ADMIN
                     </span>
                   )}
-                </div>
+                  <User className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 ml-0.5" />
+                </button>
                 <button
                   onClick={logout}
                   className="p-2 text-rose-600 hover:bg-rose-50 rounded-xl transition shrink-0 border border-rose-200"
