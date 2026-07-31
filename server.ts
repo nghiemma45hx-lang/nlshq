@@ -779,84 +779,199 @@ function buildDynamicLocalExam(opts: any): string {
 
         <div class="space-y-6 text-xs">
           <div>
-            <h3 class="font-bold text-sm text-indigo-950 mb-2">1. Đáp án Phần I: Trắc nghiệm khách quan (${formatPts(totalObjectivePts)} điểm)</h3>
-            <div class="overflow-x-auto">
-              <table class="w-full text-center border-collapse border border-slate-300">
-                <thead>
-                  <tr class="bg-slate-800 text-white font-bold">
-                    <th class="p-2 border border-slate-300">Câu</th>
-                    ${generatedMcqs.map((_, i) => `<th class="p-2 border border-slate-300">${i + 1}</th>`).join('')}
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr class="font-bold text-indigo-900 bg-amber-50">
-                    <td class="p-2 border border-slate-300 bg-slate-100">Đáp án</td>
-                    ${generatedMcqs.map(m => `<td class="p-2 border border-slate-300">${m.answer}</td>`).join('')}
-                  </tr>
-                </tbody>
-              </table>
+            <h3 class="font-bold text-sm text-indigo-950 mb-3 border-b pb-1">1. Đáp án Phần I: Trắc nghiệm khách quan (${formatPts(totalObjectivePts)} điểm)</h3>
+            
+            ${generatedMcqs.length > 0 ? `
+            <div class="mb-4">
+              <p class="font-bold text-slate-800 mb-1.5">a) Trắc nghiệm khoanh đáp án đúng (Mỗi câu ${formatPts(mcqPts)} điểm):</p>
+              <div class="overflow-x-auto">
+                <table class="w-full text-center border-collapse border border-slate-300">
+                  <thead>
+                    <tr class="bg-slate-800 text-white font-bold">
+                      <th class="p-2 border border-slate-300">Câu</th>
+                      ${generatedMcqs.map((_, i) => `<th class="p-2 border border-slate-300">${i + 1}</th>`).join('')}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="font-bold text-indigo-900 bg-amber-50">
+                      <td class="p-2 border border-slate-300 bg-slate-100">Đáp án</td>
+                      ${generatedMcqs.map(m => `<td class="p-2 border border-slate-300">${m.answer}</td>`).join('')}
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
+            ` : ''}
+
+            ${generatedTrueFalse.length > 0 ? `
+            <div class="mb-4">
+              <p class="font-bold text-slate-800 mb-1.5">b) Trắc nghiệm lựa chọn Đúng / Sai (Mỗi câu ${formatPts(trueFalsePts)} điểm - Đúng 1 ý: 0.1đ; Đúng 2 ý: 0.25đ; Đúng 3 ý: 0.5đ; Đúng 4 ý: ${formatPts(trueFalsePts)}đ):</p>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse border border-slate-300">
+                  <thead>
+                    <tr class="bg-indigo-900 text-white font-bold text-center">
+                      <th class="p-2 border border-slate-300 w-16">Câu</th>
+                      <th class="p-2 border border-slate-300">Đáp án chi tiết các ý a, b, c, d</th>
+                      <th class="p-2 border border-slate-300 w-28">Điểm tối đa</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${generatedTrueFalse.map((tf, idx) => `
+                      <tr>
+                        <td class="p-2 border border-slate-300 font-bold text-center">Câu ${idx + 1}</td>
+                        <td class="p-2 border border-slate-300">
+                          <div class="grid grid-cols-2 gap-2">
+                            ${tf.items.map(it => `
+                              <div><b>${it.label}</b> ${it.isTrue ? '<span class="text-emerald-700 font-bold">[Đúng]</span>' : '<span class="text-rose-700 font-bold">[Sai]</span>'} : ${it.text}</div>
+                            `).join('')}
+                          </div>
+                        </td>
+                        <td class="p-2 border border-slate-300 text-center font-bold">${formatPts(trueFalsePts)}đ</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            ` : ''}
+
+            ${generatedFillBlank.length > 0 ? `
+            <div class="mb-4">
+              <p class="font-bold text-slate-800 mb-1.5">c) Trắc nghiệm điền khuyết (Mỗi câu ${formatPts(fillBlankPts)} điểm):</p>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse border border-slate-300">
+                  <thead>
+                    <tr class="bg-indigo-900 text-white font-bold text-center">
+                      <th class="p-2 border border-slate-300 w-16">Câu</th>
+                      <th class="p-2 border border-slate-300">Đáp án từ/cụm từ điền đúng</th>
+                      <th class="p-2 border border-slate-300 w-28">Điểm</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${generatedFillBlank.map((fb, idx) => `
+                      <tr>
+                        <td class="p-2 border border-slate-300 font-bold text-center">Câu ${idx + 1}</td>
+                        <td class="p-2 border border-slate-300"><b>(1)</b> Từ/cụm từ cốt lõi 1 từ ngữ liệu gốc ; <b>(2)</b> Khái niệm/Từ khóa 2 từ ngữ liệu gốc.</td>
+                        <td class="p-2 border border-slate-300 text-center font-bold">${formatPts(fillBlankPts)}đ</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            ` : ''}
+
+            ${generatedMatching.length > 0 ? `
+            <div class="mb-4">
+              <p class="font-bold text-slate-800 mb-1.5">d) Trắc nghiệm Nối cột (Mỗi câu ${formatPts(matchingPts)} điểm):</p>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse border border-slate-300">
+                  <thead>
+                    <tr class="bg-indigo-900 text-white font-bold text-center">
+                      <th class="p-2 border border-slate-300 w-16">Câu</th>
+                      <th class="p-2 border border-slate-300">Đáp án ghép nối chuẩn (Cột A - Cột B)</th>
+                      <th class="p-2 border border-slate-300 w-28">Điểm</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${generatedMatching.map((m, idx) => `
+                      <tr>
+                        <td class="p-2 border border-slate-300 font-bold text-center">Câu ${idx + 1}</td>
+                        <td class="p-2 border border-slate-300 font-semibold text-indigo-950">1 - b ; 2 - c ; 3 - a (Khớp đúng định nghĩa & chi tiết trong ngữ liệu)</td>
+                        <td class="p-2 border border-slate-300 text-center font-bold">${formatPts(matchingPts)}đ</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            ` : ''}
+
+            ${generatedShortAnswer.length > 0 ? `
+            <div class="mb-4">
+              <p class="font-bold text-slate-800 mb-1.5">e) Trắc nghiệm trả lời ngắn (Mỗi câu ${formatPts(shortAnswerPts)} điểm):</p>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse border border-slate-300">
+                  <thead>
+                    <tr class="bg-indigo-900 text-white font-bold text-center">
+                      <th class="p-2 border border-slate-300 w-16">Câu</th>
+                      <th class="p-2 border border-slate-300">Nội dung câu hỏi</th>
+                      <th class="p-2 border border-slate-300">Đáp án vắn tắt cốt lõi</th>
+                      <th class="p-2 border border-slate-300 w-24">Điểm</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${generatedShortAnswer.map((sa, idx) => `
+                      <tr>
+                        <td class="p-2 border border-slate-300 font-bold text-center">Câu ${idx + 1}</td>
+                        <td class="p-2 border border-slate-300">${sa.title}</td>
+                        <td class="p-2 border border-slate-300 font-medium text-emerald-900">Trả lời ngắn gọn, chính xác từ khóa chính bám sát ngữ liệu gốc.</td>
+                        <td class="p-2 border border-slate-300 text-center font-bold">${formatPts(shortAnswerPts)}đ</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            ` : ''}
+
           </div>
 
+          ${essayQuestions.length > 0 ? `
           <div>
-            <h3 class="font-bold text-sm text-indigo-950 mb-2">2. Hướng dẫn chấm Phần II: Viết (${formatPts(totalEssayPts)} điểm)</h3>
+            <h3 class="font-bold text-sm text-indigo-950 mb-3 border-b pb-1">2. Hướng dẫn chấm Phần II: Viết / Tự luận (${formatPts(totalEssayPts)} điểm)</h3>
             <div class="overflow-x-auto">
               <table class="w-full text-left border-collapse border border-slate-300">
                 <thead>
                   <tr class="bg-indigo-900 text-white font-bold">
                     <th class="p-2.5 border border-slate-300 w-16 text-center">Câu</th>
-                    <th class="p-2.5 border border-slate-300">Ý / Yêu cầu đạt được dựa trên tài liệu gốc</th>
+                    <th class="p-2.5 border border-slate-300">Ý / Yêu cầu đạt được (Bám sát trực tiếp nội dung đề bài)</th>
                     <th class="p-2.5 border border-slate-300 w-24 text-center">Điểm</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200">
-                  ${essayQuestions.map((eq, idx) => {
-                    if (idx === 0) {
-                      return `
-                        <tr>
-                          <td class="p-2.5 border border-slate-300 font-bold text-center" rowspan="4">Câu 1<br/>(${formatPts(eq.points)}đ)</td>
-                          <td class="p-2.5 border border-slate-300"><b>Hình thức đoạn văn:</b> Đủ dung lượng, diễn đạt mạch lạc, chuẩn chính tả.</td>
-                          <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
-                        </tr>
-                        <tr>
-                          <td class="p-2.5 border border-slate-300"><b>Đúng vấn đề:</b> Phân tích được ý nghĩa từ ngữ liệu gốc (${primaryTopic.slice(0, 50)}...).</td>
-                          <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
-                        </tr>
-                        <tr>
-                          <td class="p-2.5 border border-slate-300"><b>Nội dung triển khai:</b> Nêu rõ tác động, bài học thực tế, vận dụng kiến thức chuẩn bài học.</td>
-                          <td class="p-2.5 border border-slate-300 text-center font-bold">${formatPts(Math.max(0, eq.points - 1.5))}đ</td>
-                        </tr>
-                        <tr>
-                          <td class="p-2.5 border border-slate-300"><b>Sáng tạo & Liên hệ:</b> Rút ra liên hệ bản thân thực tế, góc nhìn độc đáo.</td>
-                          <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
-                        </tr>
-                      `;
-                    } else {
-                      return `
-                        <tr class="bg-slate-50/50">
-                          <td class="p-2.5 border border-slate-300 font-bold text-center" rowspan="4">Câu ${eq.num}<br/>(${formatPts(eq.points)}đ)</td>
-                          <td class="p-2.5 border border-slate-300"><b>Mở bài:</b> Giới thiệu khái quát ngữ liệu/bài học trong tài liệu gốc.</td>
-                          <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
-                        </tr>
-                        <tr class="bg-slate-50/50">
-                          <td class="p-2.5 border border-slate-300"><b>Thân bài - Phân tích nội dung:</b> Phân tích luận điểm, chi tiết, dẫn chứng bám sát file tải lên.</td>
-                          <td class="p-2.5 border border-slate-300 text-center font-bold">${formatPts(Math.max(0, eq.points - 1.5))}đ</td>
-                        </tr>
-                        <tr class="bg-slate-50/50">
-                          <td class="p-2.5 border border-slate-300"><b>Thân bài - Phương pháp / Nghệ thuật:</b> Nêu bật đặc sắc cấu trúc, từ ngữ, lập luận trong tài liệu.</td>
-                          <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
-                        </tr>
-                        <tr class="bg-slate-50/50">
-                          <td class="p-2.5 border border-slate-300"><b>Kết bài:</b> Khẳng định tổng quát giá trị bài học và định hướng ứng dụng.</td>
-                          <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
-                        </tr>
-                      `;
-                    }
-                  }).join('')}
+                  ${essayQuestions.map((eq) => `
+                    <tr>
+                      <td class="p-2.5 border border-slate-300 font-bold text-center bg-slate-50" rowspan="4">Câu ${eq.num}<br/>(${formatPts(eq.points)}đ)</td>
+                      <td class="p-2.5 border border-slate-300 font-semibold text-indigo-950 bg-slate-50/80" colspan="2">
+                        Đề bài: "${eq.text}"
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="p-2.5 border border-slate-300"><b>Hình thức & Kỹ năng:</b> Đảm bảo thể loại/bố cục bài làm, diễn đạt trôi chảy, không mắc lỗi chính tả, dùng từ.</td>
+                      <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
+                    </tr>
+                    <tr>
+                      <td class="p-2.5 border border-slate-300"><b>Nội dung đáp ứng câu hỏi:</b> Trả lời trực tiếp và trọn vẹn yêu cầu của đề: "${eq.text.length > 80 ? eq.text.slice(0, 80) + '...' : eq.text}". Nêu đủ các luận điểm, phân tích chi tiết và trích dẫn bằng chứng thuyết phục từ ngữ liệu gốc (${primaryTopic.slice(0, 50)}...).</td>
+                      <td class="p-2.5 border border-slate-300 text-center font-bold">${formatPts(Math.max(0.5, eq.points - 1.0))}đ</td>
+                    </tr>
+                    <tr>
+                      <td class="p-2.5 border border-slate-300"><b>Sáng tạo & Liên hệ:</b> Có góc nhìn sâu sắc, vận dụng liên hệ thực tế bản thân, lập luận chặt chẽ.</td>
+                      <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
+                    </tr>
+                  `).join('')}
                 </tbody>
               </table>
             </div>
+
+            <div class="mt-4 p-4 bg-indigo-50/50 rounded-xl border border-indigo-200">
+              <h4 class="font-bold text-xs uppercase text-indigo-900 mb-2">3. DÀN Ý GỢI Ý TRẢ LỜI & BÀI LÀM MẪU PHẦN VIẾT / TỰ LUẬN:</h4>
+              <div class="space-y-3">
+                ${essayQuestions.map((eq) => `
+                  <div class="bg-white p-3 rounded-lg border border-slate-200 text-xs">
+                    <p class="font-bold text-indigo-950 mb-1">Câu ${eq.num} (${formatPts(eq.points)} điểm): "${eq.text}"</p>
+                    <ul class="list-disc pl-5 space-y-1 text-slate-700">
+                      <li><b>Mở bài/đoạn:</b> Giới thiệu trực tiếp vấn đề cần giải quyết trong câu hỏi dựa trên ngữ liệu gốc (${primaryTopic.slice(0, 50)}...).</li>
+                      <li><b>Thân bài/đoạn:</b> Phân tích chi tiết 2 - 3 luận điểm cốt lõi, trích dẫn dẫn chứng tiêu biểu từ văn bản đính kèm, liên hệ tác động thực tiễn.</li>
+                      <li><b>Kết bài/đoạn & Bài học:</b> Khẳng định tổng quát thông điệp và rút ra bài học nhận thức, hành động bản thân.</li>
+                    </ul>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
           </div>
+          ` : ''}
+
         </div>
       </div>
       ` : ''}
@@ -941,11 +1056,13 @@ BẮT BUỘC THỰC HIỆN ĐÚNG QUY ĐỊNH CỦA BỘ VỀ XÂY DỰNG HỒ S
    ${fillBlank > 0 ? `- Trắc nghiệm điền khuyết: ${fillBlank} câu (Mỗi câu ${fillBlankPts} điểm -> Tổng ${totalFillBlankPts} điểm).` : ''}
    ${matching > 0 ? `- Trắc nghiệm Nối (ghép Cột A với B): ${matching} câu (Mỗi câu ${matchingPts} điểm -> Tổng ${totalMatchingPts} điểm).` : ''}
    ${shortAnswer > 0 ? `- Trắc nghiệm trả lời ngắn: ${shortAnswer} câu (Mỗi câu ${shortAnswerPts} điểm -> Tổng ${totalShortAnswerPts} điểm).` : ''}
-   ${essay > 0 ? `- Tự luận: ${essay} câu (Mỗi câu ${essayPts} điểm -> Tổng ${totalEssayPts} điểm).` : ''}
+   ${essay > 0 ? `- Tự luận / Viết: ${essay} câu (Mỗi câu ${essayPts} điểm -> Tổng ${totalEssayPts} điểm).` : ''}
 
 QUY ĐỊNH GHI ĐIỂM SỐ TRONG ĐỀ THI & MA TRẬN:
    - Tại mỗi câu hỏi trong Đề thi, BẮT BUỘC ghi rõ số điểm tương ứng trong ngoặc đơn, ví dụ: "Câu 1. (${mcqPts} điểm)...", "Câu 2. (${trueFalsePts} điểm)...", "Câu 1. (${essayPts} điểm)...".
-   - Tại tiêu đề của từng Phần trong Đề thi, BẮT BUỘC ghi rõ tổng điểm phần đó (Ví dụ: "PHẦN I. TRẮC NGHIỆM KHÁCH QUAN (${mcq} câu - ${totalMcqPts} điểm)").
+   - Bố cục Đề thi phải nhóm thành 2 Phần rõ ràng:
+     + "PHẦN I. TRẮC NGHIỆM KHÁCH QUAN (${(mcq * mcqPts + trueFalse * trueFalsePts + fillBlank * fillBlankPts + matching * matchingPts + shortAnswer * shortAnswerPts).toFixed(2).replace(/\.00$/, '')} điểm)"
+     + "PHẦN II. VIẾT" (hoặc "PHẦN II. TỰ LUẬN") "(${totalEssayPts} điểm)"
    - Ma trận và Bảng đặc tả phải phân bổ chính xác tổng điểm ${totalExamPoints} điểm theo đúng các mức điểm từng dạng câu đã thiết lập.
 
 3. CẤU TRÚC XUẤT KẾT QUẢ DỰA TRÊN PHƯƠNG ÁN ĐÃ CHỌN (${outputOption || '3'}):
@@ -963,22 +1080,32 @@ QUY ĐỊNH GHI ĐIỂM SỐ TRONG ĐỀ THI & MA TRẬN:
    I. PHÂN TÍCH PHẠM VI KIỂM TRA
    II. MA TRẬN ĐỀ KIỂM TRA
    III. BẢNG ĐẶC TẢ ĐỀ KIỂM TRA
-   IV. ĐỀ KIỂM TRA CHÍNH THỨC (Đầy đủ tiêu đề Header chuẩn: Cơ quan quản lý ${headerDept.toUpperCase()}, Trường/Đơn vị ${schoolName.toUpperCase()}, Tên bài kiểm tra, Môn học, Khối lớp, Thời gian làm bài, Mã đề 101, Họ tên HS, Lớp, Ô ghi điểm & Lời phê theo cấu trúc bảng hai cột chuẩn MS Word. Trình bày rõ ràng thành các Phần tương ứng với từng dạng câu hỏi:
-       - Phần I: Trắc nghiệm khoanh đáp án đúng (${mcq} câu)
-       ${trueFalse > 0 ? `- Phần II: Trắc nghiệm lựa chọn Đúng / Sai (${trueFalse} câu)` : ''}
-       ${fillBlank > 0 ? `- Phần III: Trắc nghiệm điền khuyết (${fillBlank} câu)` : ''}
-       ${matching > 0 ? `- Phần IV: Trắc nghiệm Nối cột (${matching} câu)` : ''}
-       ${shortAnswer > 0 ? `- Phần V: Trắc nghiệm trả lời ngắn (${shortAnswer} câu)` : ''}
-       ${essay > 0 ? `- Phần VI: Tự luận (${essay} câu)` : ''}
+   IV. ĐỀ KIỂM TRA CHÍNH THỨC (Đầy đủ tiêu đề Header chuẩn: Cơ quan quản lý ${headerDept.toUpperCase()}, Trường/Đơn vị ${schoolName.toUpperCase()}, Tên bài kiểm tra, Môn học, Khối lớp, Thời gian làm bài, Mã đề 101, Họ tên HS, Lớp, Ô ghi điểm & Lời phê theo cấu trúc bảng hai cột chuẩn MS Word. Trình bày rõ ràng thành 2 Phần chính:
+       - PHẦN I. TRẮC NGHIỆM KHÁCH QUAN (${(mcq * mcqPts + trueFalse * trueFalsePts + fillBlank * fillBlankPts + matching * matchingPts + shortAnswer * shortAnswerPts).toFixed(2).replace(/\.00$/, '')} điểm) - Bao gồm các mục nhỏ tương ứng với các dạng trắc nghiệm có trong đề:
+         + 1. Trắc nghiệm khoanh đáp án đúng (A/B/C/D)
+         ${trueFalse > 0 ? `+ 2. Trắc nghiệm lựa chọn Đúng / Sai` : ''}
+         ${fillBlank > 0 ? `+ 3. Trắc nghiệm điền khuyết` : ''}
+         ${matching > 0 ? `+ 4. Trắc nghiệm Nối cột` : ''}
+         ${shortAnswer > 0 ? `+ 5. Trắc nghiệm trả lời ngắn` : ''}
+       - PHẦN II. VIẾT (hoặc TỰ LUẬN) (${totalEssayPts} điểm) - Gồm các câu hỏi tự luận / viết.
        Dùng LaTeX chuẩn cho công thức Toán/Lý/Hóa nếu có.)
-   V. ĐÁP ÁN VÀ HƯỚNG DẪN CHẤM CHI TIẾT (Bảng đáp án trắc nghiệm cho tất cả các dạng câu hỏi + Thang điểm tự luận chi tiết từng ý, tổng 10.0 điểm).
+   V. ĐÁP ÁN VÀ HƯỚNG DẪN CHẤM CHI TIẾT (BÀO GỒM ĐẦY ĐỦ ĐÁP ÁN CỦA TẤT CẢ DẠNG TRẮC NGHIỆM VÀ TIÊU CHÍ CHẤM TỰ LUẬN KHÓP 100% VỚI ĐỀ THI).
    `}
 
-4. CẤU HÌNH QUY ĐỊNH CHẤM & NẠP TỰ LUẬN VÀO HƯỚNG DẪN CHẤM:
-   ${loadEssayToRubric ? '- BẮT BUỘC tải và nạp đầy đủ toàn bộ các câu hỏi tự luận cùng đáp án/hướng dẫn chấm chi tiết vào Phần V (Đáp án & Hướng dẫn chấm).' : ''}
-   ${extractExactEssayFromFile ? '- BẮT BUỘC trích xuất nguyên văn chính xác 100% đề câu hỏi tự luận và đáp án từ tệp đính kèm tải lên (nếu có trong dữ liệu đính kèm).' : ''}
-   ${includeDetailedRubricCriteria ? '- Lập biểu điểm chi tiết cho từng ý (Mở bài, Thân bài - Luận điểm/Ý chính, Kết bài, Diễn đạt & Lập luận sáng tạo).' : ''}
-   ${includeEssayOutline ? '- Bổ sung Dàn ý bài làm chi tiết và Gợi ý trả lời/bài làm mẫu tham khảo đầy đủ trong Hướng dẫn chấm.' : ''}
+4. QUY ĐỊNH BẮT BUỘC VỀ V. ĐÁP ÁN VÀ HƯỚNG DẪN CHẤM CHI TIẾT:
+   - 1. ĐÁP ÁN PHẦN I. TRẮC NGHIỆM KHÁCH QUAN:
+     + BẮT BUỘC BỔ SUNG ĐẦY ĐỦ BẢNG ĐÁP ÁN VÀ QUY TẮC TÍNH ĐIỂM CHO TẤT CẢ CÁC DẠNG TRẮC NGHIỆM CÓ TRONG ĐỀ THI:
+       * Trắc nghiệm khoanh đáp án đúng: Bảng đáp án A/B/C/D cho các câu 1, 2, 3...
+       ${trueFalse > 0 ? `* Trắc nghiệm Đúng / Sai: Bảng/Danh sách đáp án từng câu với 4 ý a, b, c, d [Đúng/Sai] + Quy tắc tính điểm chuẩn (Đúng 1 ý: 0.1đ/0.25đ; Đúng 2 ý: 0.25đ/0.5đ; Đúng 3 ý: 0.5đ/0.75đ; Đúng 4 ý: ${trueFalsePts}đ).` : ''}
+       ${fillBlank > 0 ? `* Trắc nghiệm Điền khuyết: Từ/cụm từ chính xác điền vào vị trí (1), (2)...` : ''}
+       ${matching > 0 ? `* Trắc nghiệm Nối cột: Đáp án ghép nối chuẩn (Ví dụ: 1-b, 2-c, 3-a).` : ''}
+       ${shortAnswer > 0 ? `* Trắc nghiệm Trả lời ngắn: Đáp án vắn tắt chuẩn xác bám sát ngữ liệu gốc.` : ''}
+
+   - 2. HƯỚNG DẪN CHẤM PHẦN II. VIẾT / TỰ LUẬN (${totalEssayPts} điểm):
+     + BẮT BUỘC BẢNG TIÊU CHÍ VÀ NỘI DUNG HƯỚNG DẪN CHẤM PHẢI KHÓP VÀ BÁM SÁT 100% CỤ THỂ CHÍNH XÁC NỘI DUNG CÂU HỎI VIẾT/TỰ LUẬN TRONG ĐỀ THI BÊN TRÊN (PHẦN IV).
+     + TUYỆT ĐỐI KHÔNG DÙNG HƯỚNG DẪN CHẤM CHUNG CHUNG TỰ SINH KHÔNG KHÓP VỚI ĐỀ BÀI.
+     + Ghi rõ nội dung đáp ứng câu hỏi của đúng đề bài đã hỏi (Câu 1: ${essayPts}đ, Câu 2: ${essayPts}đ...).
+     + Bổ sung Dàn ý gợi ý trả lời chi tiết và Bài làm mẫu tham khảo tương ứng chính xác với từng câu hỏi phần Viết/Tự luận.
 
 5. TRÌNH BÀY BẢNG VÀ VĂN BẢN:
    - Trình bày định dạng HTML/Markdown chuẩn sạch sẽ, dễ đọc, khoa học.

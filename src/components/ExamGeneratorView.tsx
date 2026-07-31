@@ -917,17 +917,17 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
     }
 
     // 2. True/False Questions
-    const trueFalseQuestions: { num: number; title: string; items: { label: string; text: string }[] }[] = [];
+    const trueFalseQuestions: { num: number; title: string; items: { label: string; text: string; isTrue: boolean }[] }[] = [];
     if (trueFalseCount > 0) {
       for (let i = 1; i <= trueFalseCount; i++) {
         trueFalseQuestions.push({
           num: i,
           title: `Câu ${i}. (${trueFalsePoints} điểm) Trong các phát biểu sau đây về ngữ liệu gốc, hãy xác định mỗi ý a), b), c), d) là Đúng hay Sai:`,
           items: [
-            { label: 'a)', text: `Văn bản/ngữ liệu gốc tập trung thể hiện nội dung "${primaryTopic.slice(0, 60)}".` },
-            { label: 'b)', text: `Tác giả sử dụng các từ ngữ và hình ảnh chân thực, giàu sức gợi tả.` },
-            { label: 'c)', text: `Nội dung phản ánh sự việc trái ngược với tinh thần thực tế của ngữ liệu gốc.` },
-            { label: 'd)', text: `Thông điệp bài học hướng tới việc bồi dưỡng nhận thức và giá trị sống tích cực.` }
+            { label: 'a)', text: `Văn bản/ngữ liệu gốc tập trung thể hiện nội dung "${primaryTopic.slice(0, 60)}".`, isTrue: true },
+            { label: 'b)', text: `Tác giả sử dụng các từ ngữ và hình ảnh chân thực, giàu sức gợi tả.`, isTrue: true },
+            { label: 'c)', text: `Nội dung phản ánh sự việc trái ngược với tinh thần thực tế của ngữ liệu gốc.`, isTrue: false },
+            { label: 'd)', text: `Thông điệp bài học hướng tới việc bồi dưỡng nhận thức và giá trị sống tích cực.`, isTrue: true }
           ]
         });
       }
@@ -1397,102 +1397,199 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
 
           <div class="space-y-6 text-xs">
             <div>
-              <h3 class="font-bold text-sm text-indigo-950 mb-2">1. Đáp án Phần I: Trắc nghiệm khách quan (${formatPts(totalObjectivePts)} điểm)</h3>
-              <div class="overflow-x-auto">
-                <table class="w-full text-center border-collapse border border-slate-300">
-                  <thead>
-                    <tr class="bg-slate-800 text-white font-bold">
-                      <th class="p-2 border border-slate-300">Câu</th>
-                      ${mcqQuestions.map((_, i) => `<th class="p-2 border border-slate-300">${i + 1}</th>`).join('')}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr class="font-bold text-indigo-900 bg-amber-50">
-                      <td class="p-2 border border-slate-300 bg-slate-100">Đáp án</td>
-                      ${mcqQuestions.map(m => `<td class="p-2 border border-slate-300">${m.answer}</td>`).join('')}
-                    </tr>
-                  </tbody>
-                </table>
+              <h3 class="font-bold text-sm text-indigo-950 mb-3 border-b pb-1">1. Đáp án Phần I: Trắc nghiệm khách quan (${formatPts(totalObjectivePts)} điểm)</h3>
+              
+              ${mcqQuestions.length > 0 ? `
+              <div class="mb-4">
+                <p class="font-bold text-slate-800 mb-1.5">a) Trắc nghiệm khoanh đáp án đúng (Mỗi câu ${formatPts(mcqPoints)} điểm):</p>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-center border-collapse border border-slate-300">
+                    <thead>
+                      <tr class="bg-slate-800 text-white font-bold">
+                        <th class="p-2 border border-slate-300">Câu</th>
+                        ${mcqQuestions.map((_, i) => `<th class="p-2 border border-slate-300">${i + 1}</th>`).join('')}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="font-bold text-indigo-900 bg-amber-50">
+                        <td class="p-2 border border-slate-300 bg-slate-100">Đáp án</td>
+                        ${mcqQuestions.map(m => `<td class="p-2 border border-slate-300">${m.answer}</td>`).join('')}
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
+              ` : ''}
+
+              ${trueFalseQuestions.length > 0 ? `
+              <div class="mb-4">
+                <p class="font-bold text-slate-800 mb-1.5">b) Trắc nghiệm lựa chọn Đúng / Sai (Mỗi câu ${formatPts(trueFalsePoints)} điểm - Đúng 1 ý: 0.1đ; Đúng 2 ý: 0.25đ; Đúng 3 ý: 0.5đ; Đúng 4 ý: ${formatPts(trueFalsePoints)}đ):</p>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse border border-slate-300">
+                    <thead>
+                      <tr class="bg-indigo-900 text-white font-bold text-center">
+                        <th class="p-2 border border-slate-300 w-16">Câu</th>
+                        <th class="p-2 border border-slate-300">Đáp án chi tiết các ý a, b, c, d</th>
+                        <th class="p-2 border border-slate-300 w-28">Điểm tối đa</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${trueFalseQuestions.map((tf, idx) => `
+                        <tr>
+                          <td class="p-2 border border-slate-300 font-bold text-center">Câu ${idx + 1}</td>
+                          <td class="p-2 border border-slate-300">
+                            <div class="grid grid-cols-2 gap-2">
+                              ${tf.items.map(it => `
+                                <div><b>${it.label}</b> ${it.isTrue ? '<span class="text-emerald-700 font-bold">[Đúng]</span>' : '<span class="text-rose-700 font-bold">[Sai]</span>'} : ${it.text}</div>
+                              `).join('')}
+                            </div>
+                          </td>
+                          <td class="p-2 border border-slate-300 text-center font-bold">${formatPts(trueFalsePoints)}đ</td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              ` : ''}
+
+              ${fillBlankQuestions.length > 0 ? `
+              <div class="mb-4">
+                <p class="font-bold text-slate-800 mb-1.5">c) Trắc nghiệm điền khuyết (Mỗi câu ${formatPts(fillBlankPoints)} điểm):</p>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse border border-slate-300">
+                    <thead>
+                      <tr class="bg-indigo-900 text-white font-bold text-center">
+                        <th class="p-2 border border-slate-300 w-16">Câu</th>
+                        <th class="p-2 border border-slate-300">Đáp án từ/cụm từ điền đúng</th>
+                        <th class="p-2 border border-slate-300 w-28">Điểm</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${fillBlankQuestions.map((fb, idx) => `
+                        <tr>
+                          <td class="p-2 border border-slate-300 font-bold text-center">Câu ${idx + 1}</td>
+                          <td class="p-2 border border-slate-300"><b>(1)</b> Từ/cụm từ cốt lõi 1 từ ngữ liệu gốc ; <b>(2)</b> Khái niệm/Từ khóa 2 từ ngữ liệu gốc.</td>
+                          <td class="p-2 border border-slate-300 text-center font-bold">${formatPts(fillBlankPoints)}đ</td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              ` : ''}
+
+              ${matchingQuestions.length > 0 ? `
+              <div class="mb-4">
+                <p class="font-bold text-slate-800 mb-1.5">d) Trắc nghiệm Nối cột (Mỗi câu ${formatPts(matchingPoints)} điểm):</p>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse border border-slate-300">
+                    <thead>
+                      <tr class="bg-indigo-900 text-white font-bold text-center">
+                        <th class="p-2 border border-slate-300 w-16">Câu</th>
+                        <th class="p-2 border border-slate-300">Đáp án ghép nối chuẩn (Cột A - Cột B)</th>
+                        <th class="p-2 border border-slate-300 w-28">Điểm</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${matchingQuestions.map((m, idx) => `
+                        <tr>
+                          <td class="p-2 border border-slate-300 font-bold text-center">Câu ${idx + 1}</td>
+                          <td class="p-2 border border-slate-300 font-semibold text-indigo-950">1 - b ; 2 - c ; 3 - a (Khớp đúng định nghĩa & chi tiết trong ngữ liệu)</td>
+                          <td class="p-2 border border-slate-300 text-center font-bold">${formatPts(matchingPoints)}đ</td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              ` : ''}
+
+              ${shortAnswerQuestions.length > 0 ? `
+              <div class="mb-4">
+                <p class="font-bold text-slate-800 mb-1.5">e) Trắc nghiệm trả lời ngắn (Mỗi câu ${formatPts(shortAnswerPoints)} điểm):</p>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse border border-slate-300">
+                    <thead>
+                      <tr class="bg-indigo-900 text-white font-bold text-center">
+                        <th class="p-2 border border-slate-300 w-16">Câu</th>
+                        <th class="p-2 border border-slate-300">Nội dung câu hỏi</th>
+                        <th class="p-2 border border-slate-300">Đáp án vắn tắt cốt lõi</th>
+                        <th class="p-2 border border-slate-300 w-24">Điểm</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${shortAnswerQuestions.map((sa, idx) => `
+                        <tr>
+                          <td class="p-2 border border-slate-300 font-bold text-center">Câu ${idx + 1}</td>
+                          <td class="p-2 border border-slate-300">${sa.title}</td>
+                          <td class="p-2 border border-slate-300 font-medium text-emerald-900">Trả lời ngắn gọn, chính xác từ khóa chính bám sát ngữ liệu gốc.</td>
+                          <td class="p-2 border border-slate-300 text-center font-bold">${formatPts(shortAnswerPoints)}đ</td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              ` : ''}
+
             </div>
 
+            ${essayQuestionsList.length > 0 ? `
             <div>
-              <h3 class="font-bold text-sm text-indigo-950 mb-2">2. Hướng dẫn chấm Phần II: Viết (${formatPts(totalEssayPts)} điểm)</h3>
+              <h3 class="font-bold text-sm text-indigo-950 mb-3 border-b pb-1">2. Hướng dẫn chấm Phần II: Viết / Tự luận (${formatPts(totalEssayPts)} điểm)</h3>
               <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse border border-slate-300">
                   <thead>
                     <tr class="bg-indigo-900 text-white font-bold">
                       <th class="p-2.5 border border-slate-300 w-16 text-center">Câu</th>
-                      <th class="p-2.5 border border-slate-300">Ý / Yêu cầu đạt được dựa trên tài liệu gốc</th>
+                      <th class="p-2.5 border border-slate-300">Ý / Yêu cầu đạt được (Bám sát trực tiếp nội dung đề bài)</th>
                       <th class="p-2.5 border border-slate-300 w-24 text-center">Điểm</th>
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-slate-200">
-                    ${essayQuestionsList.map((eq, idx) => {
-                      if (idx === 0) {
-                        return `
-                          <tr>
-                            <td class="p-2.5 border border-slate-300 font-bold text-center" rowspan="4">Câu 1<br/>(${formatPts(eq.points)}đ)</td>
-                            <td class="p-2.5 border border-slate-300"><b>Hình thức đoạn văn:</b> Đủ dung lượng, diễn đạt mạch lạc, chuẩn chính tả.</td>
-                            <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
-                          </tr>
-                          <tr>
-                            <td class="p-2.5 border border-slate-300"><b>Đúng vấn đề:</b> Phân tích được ý nghĩa từ ngữ liệu gốc (${primaryTopic.slice(0, 50)}...).</td>
-                            <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
-                          </tr>
-                          <tr>
-                            <td class="p-2.5 border border-slate-300"><b>Nội dung triển khai:</b> Nêu rõ tác động, bài học thực tế, vận dụng kiến thức chuẩn bài học.</td>
-                            <td class="p-2.5 border border-slate-300 text-center font-bold">${formatPts(Math.max(0, eq.points - 1.5))}đ</td>
-                          </tr>
-                          <tr>
-                            <td class="p-2.5 border border-slate-300"><b>Sáng tạo & Liên hệ:</b> Rút ra liên hệ bản thân thực tế, góc nhìn độc đáo.</td>
-                            <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
-                          </tr>
-                        `;
-                      } else {
-                        return `
-                          <tr class="bg-slate-50/50">
-                            <td class="p-2.5 border border-slate-300 font-bold text-center" rowspan="4">Câu ${eq.num}<br/>(${formatPts(eq.points)}đ)</td>
-                            <td class="p-2.5 border border-slate-300"><b>Mở bài:</b> Giới thiệu khái quát ngữ liệu/bài học trong tài liệu gốc.</td>
-                            <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
-                          </tr>
-                          <tr class="bg-slate-50/50">
-                            <td class="p-2.5 border border-slate-300"><b>Thân bài - Phân tích nội dung:</b> Phân tích luận điểm, chi tiết, dẫn chứng bám sát file tải lên.</td>
-                            <td class="p-2.5 border border-slate-300 text-center font-bold">${formatPts(Math.max(0, eq.points - 1.5))}đ</td>
-                          </tr>
-                          <tr class="bg-slate-50/50">
-                            <td class="p-2.5 border border-slate-300"><b>Thân bài - Phương pháp / Nghệ thuật:</b> Nêu bật đặc sắc cấu trúc, từ ngữ, lập luận trong tài liệu.</td>
-                            <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
-                          </tr>
-                          <tr class="bg-slate-50/50">
-                            <td class="p-2.5 border border-slate-300"><b>Kết bài:</b> Khẳng định tổng quát giá trị bài học và định hướng ứng dụng.</td>
-                            <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
-                          </tr>
-                        `;
-                      }
-                    }).join('')}
+                    ${essayQuestionsList.map((eq) => `
+                      <tr>
+                        <td class="p-2.5 border border-slate-300 font-bold text-center bg-slate-50" rowspan="4">Câu ${eq.num}<br/>(${formatPts(eq.points)}đ)</td>
+                        <td class="p-2.5 border border-slate-300 font-semibold text-indigo-950 bg-slate-50/80" colspan="2">
+                          Đề bài: "${eq.text}"
+                        </td>
+                      </tr>
+                      <tr>
+                        <td class="p-2.5 border border-slate-300"><b>Hình thức & Kỹ năng:</b> Đảm bảo thể loại/bố cục bài làm, diễn đạt trôi chảy, không mắc lỗi chính tả, dùng từ.</td>
+                        <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
+                      </tr>
+                      <tr>
+                        <td class="p-2.5 border border-slate-300"><b>Nội dung đáp ứng câu hỏi:</b> Trả lời trực tiếp và trọn vẹn yêu cầu của đề: "${eq.text.length > 80 ? eq.text.slice(0, 80) + '...' : eq.text}". Nêu đủ các luận điểm, phân tích chi tiết và trích dẫn bằng chứng thuyết phục từ ngữ liệu gốc (${primaryTopic.slice(0, 50)}...).</td>
+                        <td class="p-2.5 border border-slate-300 text-center font-bold">${formatPts(Math.max(0.5, eq.points - 1.0))}đ</td>
+                      </tr>
+                      <tr>
+                        <td class="p-2.5 border border-slate-300"><b>Sáng tạo & Liên hệ:</b> Có góc nhìn sâu sắc, vận dụng liên hệ thực tế bản thân, lập luận chặt chẽ.</td>
+                        <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
+                      </tr>
+                    `).join('')}
                   </tbody>
                 </table>
               </div>
-            </div>
 
-            <div class="mt-4 p-4 bg-indigo-50/50 rounded-xl border border-indigo-200">
-              <h4 class="font-bold text-xs uppercase text-indigo-900 mb-2">3. Dàn ý gợi ý trả lời & Nội dung mẫu bài làm Tự luận:</h4>
-              <div class="space-y-3 text-xs text-slate-800">
-                <div class="p-3 bg-white rounded-lg border border-indigo-100">
-                  <p class="font-bold text-indigo-950">Câu 1 (3.0 điểm):</p>
-                  <p class="mt-1"><b>• Mở đoạn:</b> Giới thiệu ngắn gọn ngữ liệu bài học trong tài liệu "${primaryTopic.slice(0, 60)}...".</p>
-                  <p class="mt-1"><b>• Thân đoạn:</b> Phân tích 2 - 3 ý nghĩa cốt lõi xuất hiện trong tệp đính kèm. Trích dẫn từ ngữ tiêu biểu.</p>
-                  <p class="mt-1"><b>• Kết đoạn & Liên hệ:</b> Rút ra bài học nhận thức và hành động thực tế đối với bản thân trong chương trình ${subject} lớp ${grade}.</p>
-                </div>
-                <div class="p-3 bg-white rounded-lg border border-indigo-100">
-                  <p class="font-bold text-indigo-950">Câu 2 (4.0 điểm):</p>
-                  <p class="mt-1"><b>• Mở bài (0.5đ):</b> Dẫn dắt vấn đề nghị luận bám sát nội dung gốc file tải lên.</p>
-                  <p class="mt-1"><b>• Thân bài (3.0đ):</b> Phân tích chi tiết các luận điểm: Luận điểm 1 (Nội dung chính), Luận điểm 2 (Nghệ thuật/Phương pháp), Luận điểm 3 (Đánh giá mở rộng & Bài học).</p>
-                  <p class="mt-1"><b>• Kết bài (0.5đ):</b> Khẳng định giá trị tổng quát của tác phẩm/bài học trong chương trình.</p>
+              <div class="mt-4 p-4 bg-indigo-50/50 rounded-xl border border-indigo-200">
+                <h4 class="font-bold text-xs uppercase text-indigo-900 mb-2">3. DÀN Ý GỢI Ý TRẢ LỜI & BÀI LÀM MẪU PHẦN VIẾT / TỰ LUẬN:</h4>
+                <div class="space-y-3 text-xs text-slate-800">
+                  ${essayQuestionsList.map((eq) => `
+                    <div class="p-3 bg-white rounded-lg border border-indigo-100">
+                      <p class="font-bold text-indigo-950 mb-1">Câu ${eq.num} (${formatPts(eq.points)} điểm): "${eq.text}"</p>
+                      <ul class="list-disc pl-5 space-y-1 text-slate-700">
+                        <li><b>Mở bài/đoạn:</b> Giới thiệu trực tiếp vấn đề cần giải quyết trong câu hỏi dựa trên ngữ liệu gốc (${primaryTopic.slice(0, 50)}...).</li>
+                        <li><b>Thân bài/đoạn:</b> Phân tích chi tiết 2 - 3 luận điểm cốt lõi, trích dẫn dẫn chứng tiêu biểu từ văn bản đính kèm, liên hệ tác động thực tiễn.</li>
+                        <li><b>Kết bài/đoạn & Bài học:</b> Khẳng định tổng quát thông điệp và rút ra bài học nhận thức, hành động bản thân.</li>
+                      </ul>
+                    </div>
+                  `).join('')}
                 </div>
               </div>
             </div>
+            ` : ''}
+
           </div>
         </div>
         ` : ''}
