@@ -270,33 +270,99 @@ function buildDynamicLocalExam(opts: any): string {
 
   // Generate MCQ questions based strictly on source text
   const generatedMcqs: { q: string; options: string[]; answer: string }[] = [];
-  if (explicitQuestions.length >= 3) {
+  if (explicitQuestions.length >= 2) {
     explicitQuestions.forEach((eq, idx) => {
-      const options = eq.options.length >= 4 ? eq.options.slice(0, 4) : [
-        'A. Dựa trên nội dung tài liệu gốc',
-        'B. Lựa chọn phản ánh đúng ngữ liệu tải lên',
-        'C. Khái quát nội dung bài học',
-        'D. Phù hợp yêu cầu cần đạt'
-      ];
+      let opts = eq.options;
+      if (opts.length < 4) {
+        const prefixes = ['A. ', 'B. ', 'C. ', 'D. '];
+        while (opts.length < 4) {
+          opts.push(`${prefixes[opts.length]}Phương án tham khảo ${opts.length + 1}`);
+        }
+      }
       generatedMcqs.push({
         q: `Câu ${idx + 1}. (0.25 điểm) ${eq.q.replace(/^(câu|cau)\s*\d+[\.\:\s]*/i, '')}`,
-        options,
+        options: opts.slice(0, 4),
         answer: ['A', 'B', 'C', 'D'][idx % 4]
       });
     });
   } else {
     for (let i = 1; i <= Math.max(mcq, 4); i++) {
-      const paragraphSnippet = textParagraphs[i - 1] || textParagraphs[0] || primaryTopic;
-      const snippetShort = paragraphSnippet.slice(0, 80);
+      const pChoice = textParagraphs[(i - 1) % textParagraphs.length] || primaryTopic;
+      const cleanSnippet = pChoice.replace(/^"|"$/g, '').trim();
+      const shortPhrase = cleanSnippet.split('.')[0] || cleanSnippet;
+
+      let qText = '';
+      let options: string[] = [];
+      const correctAns = ['A', 'B', 'C', 'D'][(i - 1) % 4];
+      const qType = (i - 1) % 6;
+
+      if (qType === 0) {
+        qText = `Câu ${i}. (0.25 điểm) Phương thức biểu đạt chính được sử dụng trong ngữ liệu/đoạn trích trên là gì?`;
+        options = [
+          'A. Miêu tả kết hợp tự sự và biểu cảm',
+          'B. Thuyết minh khoa học',
+          'C. Nghị luận xã hội',
+          'D. Hành chính - công vụ'
+        ];
+      } else if (qType === 1) {
+        qText = `Câu ${i}. (0.25 điểm) Dựa vào đoạn trích, thông tin nào sau đây miêu tả đúng nhất chi tiết: "${shortPhrase.slice(0, 75)}..."?`;
+        options = [
+          `A. Tái hiện sinh động đặc điểm, hình ảnh: ${shortPhrase.slice(0, 45)}...`,
+          `B. Diễn tả sự việc trái ngược với ngữ liệu thực tế`,
+          `C. Phản ánh một sự kiện không có trong đoạn trích`,
+          `D. Đưa ra kết luận chung không có căn cứ trong văn bản`
+        ];
+      } else if (qType === 2) {
+        qText = `Câu ${i}. (0.25 điểm) Trong câu văn: "${shortPhrase.slice(0, 65)}...", cách sử dụng từ ngữ/biện pháp nghệ thuật nổi bật là gì?`;
+        options = [
+          `A. Biện pháp so sánh/nhân hóa gợi hình ảnh giàu cảm xúc`,
+          `B. Sử dụng từ ngữ mượn tiếng nước ngoài`,
+          `C. Phép liệt kê mang tính kỹ thuật`,
+          `D. Biện pháp nói giảm nói tránh`
+        ];
+      } else if (qType === 3) {
+        qText = `Câu ${i}. (0.25 điểm) Chủ đề trọng tâm bao trùm toàn bộ ngữ liệu đính kèm là gì?`;
+        options = [
+          `A. ${primaryTopic.slice(0, 75)}`,
+          `B. Phân tích biến đổi khí hậu và môi trường sinh thái`,
+          `C. Giới thiệu xu hướng công nghệ hiện đại`,
+          `D. Tóm tắt lịch sử phát triển của các nền văn minh cổ đại`
+        ];
+      } else if (qType === 4) {
+        const words = cleanSnippet.split(' ').filter(w => w.length > 3).slice(0, 3);
+        const w1 = words[0] || 'mùa hè';
+        const w2 = words[1] || 'mưa rào';
+        qText = `Câu ${i}. (0.25 điểm) Các từ ngữ "${w1}", "${w2}" trong đoạn trích đóng vai trò như thế nào trong việc thể hiện cảm xúc/nội dung?`;
+        options = [
+          `A. Gợi mở không gian, không khí và vẻ đẹp chân thực của cảnh vật`,
+          `B. Bày tỏ sự phản đối của tác giả đối với hoàn cảnh`,
+          `C. Bổ sung các khái niệm lý thuyết hành chính`,
+          `D. Nhấn mạnh sự tranh luận giữa các nhân vật`
+        ];
+      } else {
+        qText = `Câu ${i}. (0.25 điểm) Thông điệp hoặc ý nghĩa sâu sắc nhất rút ra từ ngữ liệu đính kèm là gì?`;
+        options = [
+          `A. Yêu mến vẻ đẹp thiên nhiên, nuôi dưỡng tinh thần gắn bó với quê hương`,
+          `B. Không nên chú ý đến những đổi thay của thời tiết`,
+          `C. Phê bình nhận thức của mọi người về cuộc sống`,
+          `D. Tìm hiểu nguyên nhân gây ra các hiện tượng tự nhiên`
+        ];
+      }
+
+      const targetIdx = ['A', 'B', 'C', 'D'].indexOf(correctAns);
+      if (targetIdx !== 0) {
+        const temp = options[0];
+        options[0] = options[targetIdx];
+        options[targetIdx] = temp;
+      }
+
+      const prefixes = ['A. ', 'B. ', 'C. ', 'D. '];
+      const formattedOpts = options.map((opt, oIdx) => `${prefixes[oIdx]}${opt.replace(/^[A-D][\.\:\s]*/, '')}`);
+
       generatedMcqs.push({
-        q: `Câu ${i}. (0.25 điểm) Dựa vào dữ liệu gốc từ tài liệu tải lên: "${snippetShort}...", phương án nào thể hiện đúng ý nghĩa trọng tâm?`,
-        options: [
-          `A. Khẳng định nội dung cốt lõi: ${snippetShort.slice(0, 40)}...`,
-          `B. Phân tích chi tiết ngữ liệu theo yêu cầu bài học môn ${subject}`,
-          `C. Mở rộng khái niệm và vận dụng thực hành trong chương trình ${grade}`,
-          `D. Tóm tắt kết quả và bài học rút ra từ văn bản/dữ liệu gốc`
-        ],
-        answer: ['A', 'B', 'C', 'D'][(i - 1) % 4]
+        q: qText,
+        options: formattedOpts,
+        answer: correctAns
       });
     }
   }

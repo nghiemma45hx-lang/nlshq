@@ -142,56 +142,7 @@ Chủ đề 4: Viết bài văn nghị luận phân tích một tác phẩm văn
   const [driveInputUrl, setDriveInputUrl] = useState<string>('');
   const [driveInputTitle, setDriveInputTitle] = useState<string>('');
 
-  // Essay Rubric & Extraction Options (Checkboxes)
-  const [loadEssayToRubric, setLoadEssayToRubric] = useState<boolean>(true);
-  const [extractExactEssayFromFile, setExtractExactEssayFromFile] = useState<boolean>(true);
-  const [includeDetailedRubricCriteria, setIncludeDetailedRubricCriteria] = useState<boolean>(true);
-  const [includeEssayOutline, setIncludeEssayOutline] = useState<boolean>(true);
-
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Quick Extract Essay Questions & Answers from Uploaded Documents / Scope
-  const handleExtractEssayQuestionsAndRubric = () => {
-    let essayContent = '';
-    
-    if (attachedFiles.length > 0) {
-      const fileTexts = attachedFiles
-        .map(f => f.content)
-        .filter(c => c && c.trim().length > 10 && !c.startsWith('[Tệp') && !c.startsWith('[Ảnh'));
-      
-      if (fileTexts.length > 0) {
-        essayContent = fileTexts.join('\n\n');
-      }
-    }
-
-    if (!essayContent) {
-      essayContent = topicScope;
-    }
-
-    const lines = essayContent.split('\n');
-    const essayLines = lines.filter(l => 
-      /tự luận|câu|bài|viết|phân tích|nghị luận|giải thích|chứng minh|đáp án|hướng dẫn chấm|thang điểm|biểu điểm/i.test(l)
-    );
-
-    let extractedBlock = '=== NẠP CÂU HỎI TỰ LUẬN & ĐÁP ÁN VÀO HƯỚNG DẪN CHẤM ===\n';
-    if (essayLines.length > 0) {
-      extractedBlock += essayLines.slice(0, 10).join('\n') + '\n';
-    } else {
-      extractedBlock += `• Câu 1 (3.0 điểm): Trích xuất phân tích nội dung cốt lõi và rút ra bài học thực tiễn từ tệp đính kèm.\n`;
-      extractedBlock += `• Câu 2 (4.0 điểm): Trích xuất bài văn nghị luận phân tích toàn diện các giá trị nội dung & nghệ thuật trong tài liệu đính kèm.\n`;
-    }
-
-    if (!topicScope.includes('NẠP CÂU HỎI TỰ LUẬN')) {
-      setTopicScope(prev => `${prev}\n\n${extractedBlock}`);
-    }
-
-    setLoadEssayToRubric(true);
-    setExtractExactEssayFromFile(true);
-    setIncludeDetailedRubricCriteria(true);
-    setIncludeEssayOutline(true);
-
-    onSuccessToast('⚡ Đã nạp thành công câu hỏi tự luận & đáp án từ tệp đính kèm vào Hướng dẫn chấm!');
-  };
 
   const readFileToText = (file: File, fileType: string): Promise<string> => {
     return new Promise(resolve => {
@@ -514,12 +465,6 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
           schoolYear,
           durationMinutes,
           additionalNotes,
-          essayRubricConfig: {
-            loadEssayToRubric,
-            extractExactEssayFromFile,
-            includeDetailedRubricCriteria,
-            includeEssayOutline,
-          },
           questionStructure: {
             mcqCount,
             trueFalseCount,
@@ -580,19 +525,122 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
     const mcqQuestions: { q: string; options: string[]; answer: string }[] = [];
     const countToGen = Math.max(mcqCount || 12, 4);
 
-    for (let i = 1; i <= countToGen; i++) {
-      const pSnippet = textParagraphs[i - 1] || textParagraphs[0] || primaryTopic;
-      const snippetShort = pSnippet.slice(0, 85);
-      mcqQuestions.push({
-        q: `Câu ${i}. (0.25 điểm) Dựa vào dữ liệu từ tài liệu gốc tải lên: "${snippetShort}...", nhận định nào sau đây thể hiện đúng nhất nội dung chính?`,
-        options: [
-          `A. Khẳng định nội dung cốt lõi: ${snippetShort.slice(0, 45)}...`,
-          `B. Phân tích chi tiết đặc điểm ngữ liệu trong bài học môn ${subject}`,
-          `C. Mở rộng khái niệm và vận dụng thực hành trong chương trình ${grade}`,
-          `D. Tóm tắt kết quả và bài học rút ra từ ngữ liệu gốc`
-        ],
-        answer: ['A', 'B', 'C', 'D'][(i - 1) % 4]
+    // Parse explicit MCQs if available in rawLines
+    const explicitMCQs: { q: string; options: string[]; answer: string }[] = [];
+    let currentParseQ: { q: string; options: string[]; answer: string } | null = null;
+
+    for (const line of rawLines) {
+      if (/^(câu|cau)\s*\d+/i.test(line) || /^\d+\.\s+/.test(line)) {
+        if (currentParseQ && currentParseQ.options.length >= 2) {
+          explicitMCQs.push(currentParseQ);
+        }
+        currentParseQ = { q: line, options: [], answer: 'A' };
+      } else if (currentParseQ && /^[A-D][\.\:\s]/i.test(line)) {
+        currentParseQ.options.push(line);
+      }
+    }
+    if (currentParseQ && currentParseQ.options.length >= 2) {
+      explicitMCQs.push(currentParseQ);
+    }
+
+    if (explicitMCQs.length >= 2) {
+      explicitMCQs.forEach((eq, idx) => {
+        let opts = eq.options;
+        if (opts.length < 4) {
+          const prefixes = ['A. ', 'B. ', 'C. ', 'D. '];
+          while (opts.length < 4) {
+            opts.push(`${prefixes[opts.length]}Phương án tham khảo ${opts.length + 1}`);
+          }
+        }
+        mcqQuestions.push({
+          q: `Câu ${idx + 1}. (0.25 điểm) ${eq.q.replace(/^(câu|cau)\s*\d+[\.\:\s]*/i, '')}`,
+          options: opts.slice(0, 4),
+          answer: ['A', 'B', 'C', 'D'][idx % 4]
+        });
       });
+    } else {
+      // Build dynamic, specific questions centered around text content
+      for (let i = 1; i <= countToGen; i++) {
+        const pChoice = textParagraphs[(i - 1) % textParagraphs.length] || primaryTopic;
+        const cleanSnippet = pChoice.replace(/^"|"$/g, '').trim();
+        const shortPhrase = cleanSnippet.split('.')[0] || cleanSnippet;
+
+        let qText = '';
+        let options: string[] = [];
+        const correctAns = ['A', 'B', 'C', 'D'][(i - 1) % 4];
+        const qType = (i - 1) % 6;
+
+        if (qType === 0) {
+          qText = `Câu ${i}. (0.25 điểm) Phương thức biểu đạt chính được sử dụng trong ngữ liệu/đoạn trích trên là gì?`;
+          options = [
+            'A. Miêu tả kết hợp tự sự và biểu cảm',
+            'B. Thuyết minh khoa học',
+            'C. Nghị luận xã hội',
+            'D. Hành chính - công vụ'
+          ];
+        } else if (qType === 1) {
+          qText = `Câu ${i}. (0.25 điểm) Dựa vào đoạn trích, thông tin nào sau đây miêu tả đúng nhất chi tiết: "${shortPhrase.slice(0, 75)}..."?`;
+          options = [
+            `A. Tái hiện sinh động đặc điểm, hình ảnh: ${shortPhrase.slice(0, 45)}...`,
+            `B. Diễn tả sự việc trái ngược với ngữ liệu thực tế`,
+            `C. Phản ánh một sự kiện không có trong đoạn trích`,
+            `D. Đưa ra kết luận chung không có căn cứ trong văn bản`
+          ];
+        } else if (qType === 2) {
+          qText = `Câu ${i}. (0.25 điểm) Trong câu văn: "${shortPhrase.slice(0, 65)}...", cách sử dụng từ ngữ/biện pháp nghệ thuật nổi bật là gì?`;
+          options = [
+            `A. Biện pháp so sánh/nhân hóa gợi hình ảnh giàu cảm xúc`,
+            `B. Sử dụng từ ngữ mượn tiếng nước ngoài`,
+            `C. Phép liệt kê mang tính kỹ thuật`,
+            `D. Biện pháp nói giảm nói tránh`
+          ];
+        } else if (qType === 3) {
+          qText = `Câu ${i}. (0.25 điểm) Chủ đề trọng tâm bao trùm toàn bộ ngữ liệu đính kèm là gì?`;
+          options = [
+            `A. ${primaryTopic.slice(0, 75)}`,
+            `B. Phân tích biến đổi khí hậu và môi trường sinh thái`,
+            `C. Giới thiệu xu hướng công nghệ hiện đại`,
+            `D. Tóm tắt lịch sử phát triển của các nền văn minh cổ đại`
+          ];
+        } else if (qType === 4) {
+          const words = cleanSnippet.split(' ').filter(w => w.length > 3).slice(0, 3);
+          const w1 = words[0] || 'mùa hè';
+          const w2 = words[1] || 'mưa rào';
+          qText = `Câu ${i}. (0.25 điểm) Các từ ngữ "${w1}", "${w2}" trong đoạn trích đóng vai trò như thế nào trong việc thể hiện cảm xúc/nội dung?`;
+          options = [
+            `A. Gợi mở không gian, không khí và vẻ đẹp chân thực của cảnh vật`,
+            `B. Bày tỏ sự phản đối của tác giả đối với hoàn cảnh`,
+            `C. Bổ sung các khái niệm lý thuyết hành chính`,
+            `D. Nhấn mạnh sự tranh luận giữa các nhân vật`
+          ];
+        } else {
+          qText = `Câu ${i}. (0.25 điểm) Thông điệp hoặc ý nghĩa sâu sắc nhất rút ra từ ngữ liệu đính kèm là gì?`;
+          options = [
+            `A. Yêu mến vẻ đẹp thiên nhiên, nuôi dưỡng tinh thần gắn bó với quê hương`,
+            `B. Không nên chú ý đến những đổi thay của thời tiết`,
+            `C. Phê bình nhận thức của mọi người về cuộc sống`,
+            `D. Tìm hiểu nguyên nhân gây ra các hiện tượng tự nhiên`
+          ];
+        }
+
+        // Adjust options array so correctAns lands on correct answer letter
+        const targetIdx = ['A', 'B', 'C', 'D'].indexOf(correctAns);
+        if (targetIdx !== 0) {
+          const temp = options[0];
+          options[0] = options[targetIdx];
+          options[targetIdx] = temp;
+        }
+
+        // Format prefixes A., B., C., D.
+        const prefixes = ['A. ', 'B. ', 'C. ', 'D. '];
+        const formattedOpts = options.map((opt, oIdx) => `${prefixes[oIdx]}${opt.replace(/^[A-D][\.\:\s]*/, '')}`);
+
+        mcqQuestions.push({
+          q: qText,
+          options: formattedOpts,
+          answer: correctAns
+        });
+      }
     }
 
     const localHtml = `
@@ -971,7 +1019,6 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
               </div>
             </div>
 
-            ${includeEssayOutline ? `
             <div class="mt-4 p-4 bg-indigo-50/50 rounded-xl border border-indigo-200">
               <h4 class="font-bold text-xs uppercase text-indigo-900 mb-2">3. Dàn ý gợi ý trả lời & Nội dung mẫu bài làm Tự luận:</h4>
               <div class="space-y-3 text-xs text-slate-800">
@@ -989,7 +1036,6 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
                 </div>
               </div>
             </div>
-            ` : ''}
           </div>
         </div>
         ` : ''}
@@ -1814,82 +1860,6 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
                 </div>
               </div>
             )}
-          </div>
-
-          {/* CẤU HÌNH TẢI CÂU HỎI & ĐÁP ÁN TỰ LUẬN VÀO HƯỚNG DẪN CHẤM (TÍCH CHỌN) */}
-          <div className="p-3.5 bg-gradient-to-br from-rose-50/90 via-slate-50 to-indigo-50/60 border border-rose-200 rounded-2xl space-y-2.5 shadow-2xs">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-rose-200/80 pb-2">
-              <div className="flex items-center space-x-1.5">
-                <FileSpreadsheet className="w-4 h-4 text-rose-700 shrink-0" />
-                <span className="text-xs font-extrabold text-rose-950 uppercase tracking-wide">
-                  Tùy chọn Tải Tự luận & Đáp án vào Hướng dẫn chấm
-                </span>
-              </div>
-              
-              <button
-                type="button"
-                onClick={handleExtractEssayQuestionsAndRubric}
-                className="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-[11px] font-bold transition flex items-center space-x-1 cursor-pointer shadow-xs shrink-0"
-                title="Tự động rút trích câu hỏi tự luận và đáp án từ tệp tải lên để nạp trực tiếp vào Hướng dẫn chấm"
-              >
-                <Sparkles className="w-3 h-3 text-amber-300 animate-pulse" />
-                <span>⚡ Nạp Tự luận & Đáp án từ File</span>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-              <label className="flex items-start space-x-2 p-2 bg-white/90 rounded-xl border border-rose-100 cursor-pointer hover:bg-rose-50/50 transition">
-                <input
-                  type="checkbox"
-                  checked={loadEssayToRubric}
-                  onChange={e => setLoadEssayToRubric(e.target.checked)}
-                  className="mt-0.5 rounded text-rose-600 focus:ring-rose-500 w-4 h-4 cursor-pointer"
-                />
-                <div>
-                  <span className="font-bold text-slate-900 block leading-tight">Tải Đề & Đáp án Tự luận vào Hướng dẫn chấm</span>
-                  <span className="text-[10px] text-slate-500 leading-tight block mt-0.5">Tự động đồng bộ câu hỏi tự luận & đáp án vào bảng chấm điểm</span>
-                </div>
-              </label>
-
-              <label className="flex items-start space-x-2 p-2 bg-white/90 rounded-xl border border-rose-100 cursor-pointer hover:bg-rose-50/50 transition">
-                <input
-                  type="checkbox"
-                  checked={extractExactEssayFromFile}
-                  onChange={e => setExtractExactEssayFromFile(e.target.checked)}
-                  className="mt-0.5 rounded text-rose-600 focus:ring-rose-500 w-4 h-4 cursor-pointer"
-                />
-                <div>
-                  <span className="font-bold text-slate-900 block leading-tight">Trích xuất nguyên văn từ Tệp đính kèm</span>
-                  <span className="text-[10px] text-slate-500 leading-tight block mt-0.5">Giữ chuẩn 100% câu hỏi tự luận & đáp án gốc từ file Word/PDF</span>
-                </div>
-              </label>
-
-              <label className="flex items-start space-x-2 p-2 bg-white/90 rounded-xl border border-rose-100 cursor-pointer hover:bg-rose-50/50 transition">
-                <input
-                  type="checkbox"
-                  checked={includeDetailedRubricCriteria}
-                  onChange={e => setIncludeDetailedRubricCriteria(e.target.checked)}
-                  className="mt-0.5 rounded text-rose-600 focus:ring-rose-500 w-4 h-4 cursor-pointer"
-                />
-                <div>
-                  <span className="font-bold text-slate-900 block leading-tight">Lập Biểu điểm & Tiêu chí chi tiết</span>
-                  <span className="text-[10px] text-slate-500 leading-tight block mt-0.5">Phân rã điểm cho Mở bài, Thân bài, Kết bài & Lập luận sáng tạo</span>
-                </div>
-              </label>
-
-              <label className="flex items-start space-x-2 p-2 bg-white/90 rounded-xl border border-rose-100 cursor-pointer hover:bg-rose-50/50 transition">
-                <input
-                  type="checkbox"
-                  checked={includeEssayOutline}
-                  onChange={e => setIncludeEssayOutline(e.target.checked)}
-                  className="mt-0.5 rounded text-rose-600 focus:ring-rose-500 w-4 h-4 cursor-pointer"
-                />
-                <div>
-                  <span className="font-bold text-slate-900 block leading-tight">Tải kèm Dàn ý & Gợi ý bài làm chi tiết</span>
-                  <span className="text-[10px] text-slate-500 leading-tight block mt-0.5">Bổ sung bài mẫu tham khảo & định hướng chấm cho giáo viên</span>
-                </div>
-              </label>
-            </div>
           </div>
 
           {/* Additional Notes */}
