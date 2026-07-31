@@ -330,8 +330,270 @@ Chủ đề 4: Viết bài văn nghị luận phân tích một tác phẩm văn
   const [generatedTitle, setGeneratedTitle] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'all' | 'matrix' | 'spec' | 'exam' | 'rubric'>('all');
 
+  // Download Sample Word (.DOC) file directly for presets
+  const handleDownloadSampleFile = (presetType: string) => {
+    let sampleTitle = '';
+    let sampleSubject = '';
+    let sampleGrade = '';
+    let sampleBodyHtml = '';
+
+    if (presetType === 'literary') {
+      sampleSubject = 'Ngữ văn';
+      sampleGrade = 'Khối 8';
+      sampleTitle = 'Mau_De_Kiem_Tra_Ngu_Van_8_Giuahk1';
+      sampleBodyHtml = `
+        <table style="width:100%; border-collapse:collapse; margin-bottom:12pt;">
+          <tr>
+            <td style="width:45%; text-align:center; font-weight:bold; font-size:11pt; vertical-align:top;">
+              PHÒNG GIÁO DỤC VÀ ĐÀO TẠO<br/>TRƯỜNG THCS CHUẨN MẪU
+            </td>
+            <td style="width:55%; text-align:center; font-weight:bold; font-size:11pt; vertical-align:top;">
+              ĐỀ KIỂM TRA GIỮA HỌC KÌ I<br/>NĂM HỌC 2025 - 2026<br/>Môn: NGỮ VĂN - KHỐI 8<br/><i>Thời gian làm bài: 60 phút (Không kể thời gian phát đề)</i>
+            </td>
+          </tr>
+        </table>
+        <hr class="header-line" />
+        <h2 style="text-align:center; font-size:13pt; margin-top:12pt; margin-bottom:12pt; font-weight:bold; color:#1e293b;">I. MA TRẬN ĐỀ KIỂM TRA (10.0 ĐIỂM)</h2>
+        <table style="width:100%; border-collapse:collapse; font-size:10pt;" border="1">
+          <thead>
+            <tr style="background-color:#f1f5f9;">
+              <th style="padding:6px;">TT</th>
+              <th style="padding:6px;">Chủ đề / Nội dung</th>
+              <th style="padding:6px;">Nhận biết</th>
+              <th style="padding:6px;">Thông hiểu</th>
+              <th style="padding:6px;">Vận dụng</th>
+              <th style="padding:6px;">Vận dụng cao</th>
+              <th style="padding:6px;">Tổng % điểm</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:6px; text-align:center;">1</td>
+              <td style="padding:6px;">Đọc hiểu văn bản (Hịch tướng sĩ / Thơ yêu nước)</td>
+              <td style="padding:6px; text-align:center;">4 câu MCQ (1.0đ)</td>
+              <td style="padding:6px; text-align:center;">4 câu MCQ (1.0đ)</td>
+              <td style="padding:6px; text-align:center;">2 câu Tự luận (2.0đ)</td>
+              <td style="padding:6px; text-align:center;">1 câu TL (2.0đ)</td>
+              <td style="padding:6px; text-align:center; font-weight:bold;">60% (6.0đ)</td>
+            </tr>
+            <tr>
+              <td style="padding:6px; text-align:center;">2</td>
+              <td style="padding:6px;">Tập làm văn (Nghị luận xã hội về tinh thần tự học)</td>
+              <td style="padding:6px; text-align:center;">-</td>
+              <td style="padding:6px; text-align:center;">1.0đ</td>
+              <td style="padding:6px; text-align:center;">2.0đ</td>
+              <td style="padding:6px; text-align:center;">1.0đ</td>
+              <td style="padding:6px; text-align:center; font-weight:bold;">40% (4.0đ)</td>
+            </tr>
+            <tr style="font-weight:bold; background-color:#f8fafc;">
+              <td colspan="2" style="padding:6px; text-align:center;">Tổng cộng điểm</td>
+              <td style="padding:6px; text-align:center;">2.0đ (20%)</td>
+              <td style="padding:6px; text-align:center;">3.0đ (30%)</td>
+              <td style="padding:6px; text-align:center;">3.0đ (30%)</td>
+              <td style="padding:6px; text-align:center;">2.0đ (20%)</td>
+              <td style="padding:6px; text-align:center;">10.0 điểm (100%)</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2 style="text-align:center; font-size:13pt; margin-top:18pt; margin-bottom:12pt; font-weight:bold; color:#1e293b;">II. ĐỀ THI CHÍNH THỨC</h2>
+        <p><b>PHẦN I: ĐỌC HIỂU (6.0 ĐIỂM)</b></p>
+        <p><i>Đọc đoạn trích sau và thực hiện các yêu cầu bên dưới:</i></p>
+        <blockquote style="margin:8pt 16pt; padding:8pt; background-color:#f8fafc; border-left:3pt solid #0284c7;">
+          "Huống chi ta cùng các ngươi sinh phải thời loạn lạc, lớn gặp buổi gian nan... Thấy sứ giặc đi lại nghênh ngang ngoài đường, uốn lưỡi cú diều mà lăng mạ triều đình, đem thân dê chó mà bắt nạt phụ đạo..."
+          <br/><i>(Trích Hịch tướng sĩ - Trần Quốc Tuấn)</i>
+        </blockquote>
+        <p><b>Câu 1 (0.25đ):</b> Tác giả của đoạn trích trên là ai?<br/>
+        A. Nguyễn Trãi &nbsp;&nbsp;&nbsp;&nbsp; B. Trần Quốc Tuấn &nbsp;&nbsp;&nbsp;&nbsp; C. Lý Thường Kiệt &nbsp;&nbsp;&nbsp;&nbsp; D. Hồ Chí Minh</p>
+        <p><b>Câu 2 (0.25đ):</b> Đoạn trích trên được viết theo thể loại nào trong văn học trung đại?<br/>
+        A. Hịch &nbsp;&nbsp;&nbsp;&nbsp; B. Cáo &nbsp;&nbsp;&nbsp;&nbsp; C. Chiếu &nbsp;&nbsp;&nbsp;&nbsp; D. Tấu</p>
+        <p><b>Câu 3 (2.0đ) (Tự luận):</b> Nêu ngắn gọn thái độ của tác giả đối với tội ác và sự hống hách của kẻ thù trong đoạn trích.</p>
+
+        <p><b>PHẦN II: VIẾT (4.0 ĐIỂM)</b></p>
+        <p>Viết bài văn nghị luận (khoảng 400 - 500 chữ) trình bày suy nghĩ của em về ý nghĩa của tinh thần tự học đối với học sinh hiện nay.</p>
+
+        <h2 style="text-align:center; font-size:13pt; margin-top:18pt; margin-bottom:12pt; font-weight:bold; color:#1e293b;">III. ĐÁP ÁN VÀ HƯỚNG DẪN CHẤM</h2>
+        <table style="width:100%; border-collapse:collapse; font-size:10pt;" border="1">
+          <thead>
+            <tr style="background-color:#f1f5f9;">
+              <th style="padding:6px;">Câu</th>
+              <th style="padding:6px;">Nội dung / Đáp án chi tiết</th>
+              <th style="padding:6px;">Điểm</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:6px; text-align:center; font-weight:bold;">Câu 1</td>
+              <td style="padding:6px;">Đáp án B. Trần Quốc Tuấn</td>
+              <td style="padding:6px; text-align:center;">0.25đ</td>
+            </tr>
+            <tr>
+              <td style="padding:6px; text-align:center; font-weight:bold;">Câu 2</td>
+              <td style="padding:6px;">Đáp án A. Hịch</td>
+              <td style="padding:6px; text-align:center;">0.25đ</td>
+            </tr>
+            <tr>
+              <td style="padding:6px; text-align:center; font-weight:bold;">Câu 3</td>
+              <td style="padding:6px;">Thái độ căm thù sục sôi, khinh bỉ sâu sắc tội ác hống hách của giặc; khơi dậy lòng tự tôn dân tộc cho các tướng sĩ.</td>
+              <td style="padding:6px; text-align:center;">2.0đ</td>
+            </tr>
+            <tr>
+              <td style="padding:6px; text-align:center; font-weight:bold;">Phần Viết</td>
+              <td style="padding:6px;">
+                • Mở bài (0.5đ): Dẫn dắt vấn đề tự học.<br/>
+                • Thân bài (3.0đ): Giải thích khái niệm (0.5đ), Phân tích vai trò & lợi ích tự học (1.5đ), Dẫn chứng & Phản biện (1.0đ).<br/>
+                • Kết bài (0.5đ): Bài học nhận thức và hành động của bản thân.
+              </td>
+              <td style="padding:6px; text-align:center;">4.0đ</td>
+            </tr>
+          </tbody>
+        </table>
+      `;
+    } else if (presetType === 'math') {
+      sampleSubject = 'Toán học';
+      sampleGrade = 'Khối 10';
+      sampleTitle = 'Mau_De_Kiem_Tra_Toan_10_Cuoihk1';
+      sampleBodyHtml = `
+        <table style="width:100%; border-collapse:collapse; margin-bottom:12pt;">
+          <tr>
+            <td style="width:45%; text-align:center; font-weight:bold; font-size:11pt; vertical-align:top;">
+              SỞ GIÁO DỤC VÀ ĐÀO TẠO<br/>TRƯỜNG THPT MẪU TOÁN HỌC
+            </td>
+            <td style="width:55%; text-align:center; font-weight:bold; font-size:11pt; vertical-align:top;">
+              ĐỀ KIỂM TRA CUỐI HỌC KÌ I<br/>NĂM HỌC 2025 - 2026<br/>Môn: TOÁN HỌC - KHỐI 10<br/><i>Thời gian làm bài: 90 phút</i>
+            </td>
+          </tr>
+        </table>
+        <hr class="header-line" />
+        <h2 style="text-align:center; font-size:13pt; margin-top:12pt; margin-bottom:12pt; font-weight:bold; color:#1e293b;">I. MA TRẬN ĐỀ KIỂM TRA MÔN TOÁN 10</h2>
+        <table style="width:100%; border-collapse:collapse; font-size:10pt;" border="1">
+          <thead>
+            <tr style="background-color:#f1f5f9;">
+              <th style="padding:6px;">STT</th>
+              <th style="padding:6px;">Nội dung kiến thức</th>
+              <th style="padding:6px;">Trắc nghiệm MCQ (12c)</th>
+              <th style="padding:6px;">Đúng/Sai (4c)</th>
+              <th style="padding:6px;">Trả lời ngắn (4c)</th>
+              <th style="padding:6px;">Tự luận (2c)</th>
+              <th style="padding:6px;">Điểm</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:6px; text-align:center;">1</td>
+              <td style="padding:6px;">Mệnh đề & Tập hợp</td>
+              <td style="padding:6px; text-align:center;">3 câu (0.75đ)</td>
+              <td style="padding:6px; text-align:center;">1 câu (1.0đ)</td>
+              <td style="padding:6px; text-align:center;">1 câu (0.5đ)</td>
+              <td style="padding:6px; text-align:center;">-</td>
+              <td style="padding:6px; text-align:center; font-weight:bold;">2.25đ</td>
+            </tr>
+            <tr>
+              <td style="padding:6px; text-align:center;">2</td>
+              <td style="padding:6px;">Bất phương trình & Hàm số bậc hai</td>
+              <td style="padding:6px; text-align:center;">4 câu (1.0đ)</td>
+              <td style="padding:6px; text-align:center;">1 câu (1.0đ)</td>
+              <td style="padding:6px; text-align:center;">1 câu (0.5đ)</td>
+              <td style="padding:6px; text-align:center;">1 câu (1.5đ)</td>
+              <td style="padding:6px; text-align:center; font-weight:bold;">4.0đ</td>
+            </tr>
+            <tr>
+              <td style="padding:6px; text-align:center;">3</td>
+              <td style="padding:6px;">Vectơ & Lượng giác mặt phẳng</td>
+              <td style="padding:6px; text-align:center;">5 câu (1.25đ)</td>
+              <td style="padding:6px; text-align:center;">2 câu (2.0đ)</td>
+              <td style="padding:6px; text-align:center;">2 câu (1.0đ)</td>
+              <td style="padding:6px; text-align:center;">1 câu (1.5đ)</td>
+              <td style="padding:6px; text-align:center; font-weight:bold;">3.75đ</td>
+            </tr>
+          </tbody>
+        </table>
+        <h2 style="text-align:center; font-size:13pt; margin-top:18pt; margin-bottom:12pt; font-weight:bold; color:#1e293b;">II. ĐỀ THI VÀ ĐÁP ÁN MẪU</h2>
+        <p><b>PHẦN 1: TRẮC NGHIỆM KHÁCH QUAN (3.0 ĐIỂM)</b></p>
+        <p><b>Câu 1:</b> Cho tập hợp A = [1; 5) và B = (2; 7]. Tìm tập hợp A &cap; B.<br/>
+        A. [1; 7] &nbsp;&nbsp;&nbsp;&nbsp; B. (2; 5) &nbsp;&nbsp;&nbsp;&nbsp; C. [1; 2] &nbsp;&nbsp;&nbsp;&nbsp; D. (5; 7]</p>
+        <p><b>PHẦN 2: TỰ LUẬN BÀI TẬP (3.0 ĐIỂM)</b></p>
+        <p><b>Câu 1 (1.5đ):</b> Lập bảng biến thiên và vẽ đồ thị hàm số y = x<sup>2</sup> - 4x + 3.</p>
+        <p><b>Câu 2 (1.5đ):</b> Trong mặt phẳng tọa độ Oxy, cho tam giác ABC có A(1; 2), B(-2; 3), C(5; 4). Tính tọa độ trọng tâm G và độ dài cạnh BC.</p>
+      `;
+    } else if (presetType === 'english') {
+      sampleSubject = 'Tiếng Anh';
+      sampleGrade = 'Khối 9';
+      sampleTitle = 'Mau_De_Kiem_Tra_Tieng_Anh_9_Giuahk2';
+      sampleBodyHtml = `
+        <table style="width:100%; border-collapse:collapse; margin-bottom:12pt;">
+          <tr>
+            <td style="width:45%; text-align:center; font-weight:bold; font-size:11pt; vertical-align:top;">
+              PHÒNG GIÁO DỤC VÀ ĐÀO TẠO<br/>TRƯỜNG THCS TIẾNG ANH CHUẨN
+            </td>
+            <td style="width:55%; text-align:center; font-weight:bold; font-size:11pt; vertical-align:top;">
+              ENGLISH MID-TERM EXAMINATION<br/>GRADE 9 - SCHOOL YEAR 2025 - 2026<br/><i>Time allowed: 60 minutes</i>
+            </td>
+          </tr>
+        </table>
+        <hr class="header-line" />
+        <h2 style="text-align:center; font-size:13pt; margin-top:12pt; margin-bottom:12pt; font-weight:bold; color:#1e293b;">I. SPECIFICATION MATRIX (10 MARKS)</h2>
+        <p>Includes Phonetics, Vocabulary & Grammar, Reading Comprehension, Listening, and Sentence Transformation.</p>
+        <h2 style="text-align:center; font-size:13pt; margin-top:18pt; margin-bottom:12pt; font-weight:bold; color:#1e293b;">II. OFFICIAL TEST PAPER</h2>
+        <p><b>SECTION A: MULTIPLE CHOICE (4.0 MARKS)</b></p>
+        <p><b>Question 1:</b> Choose the word whose underlined part is pronounced differently:<br/>
+        A. r<u>e</u>cipe &nbsp;&nbsp;&nbsp;&nbsp; B. d<u>e</u>licious &nbsp;&nbsp;&nbsp;&nbsp; C. l<u>e</u>mon &nbsp;&nbsp;&nbsp;&nbsp; D. m<u>e</u>nu</p>
+        <p><b>Question 2:</b> If you want to lose weight, you __________ eat too much fast food.<br/>
+        A. shouldn't &nbsp;&nbsp;&nbsp;&nbsp; B. must &nbsp;&nbsp;&nbsp;&nbsp; C. can &nbsp;&nbsp;&nbsp;&nbsp; D. might</p>
+        <p><b>SECTION B: WRITING TRANSFORMATION (2.0 MARKS)</b></p>
+        <p><b>Question 1:</b> "If I don't practice every day, I won't improve my speaking skills."<br/>
+        &rarr; Unless _______________________________________________________</p>
+      `;
+    } else {
+      sampleSubject = presetType === 'chemistry' ? 'Hóa học' : 'Vật lí';
+      sampleGrade = presetType === 'chemistry' ? 'Khối 10' : 'Khối 11';
+      sampleTitle = `Mau_De_Kiem_Tra_${sampleSubject}_${sampleGrade}`.replace(/\s+/g, '_');
+      sampleBodyHtml = `
+        <table style="width:100%; border-collapse:collapse; margin-bottom:12pt;">
+          <tr>
+            <td style="width:45%; text-align:center; font-weight:bold; font-size:11pt; vertical-align:top;">
+              SỞ GIÁO DỤC VÀ ĐÀO TẠO<br/>TRƯỜNG THPT CHUYÊN MẪU
+            </td>
+            <td style="width:55%; text-align:center; font-weight:bold; font-size:11pt; vertical-align:top;">
+              ĐỀ KIỂM TRA ĐỊNH KỲ MÔN ${sampleSubject.toUpperCase()}<br/>KHỐI ${sampleGrade.toUpperCase()}<br/><i>Thời gian làm bài: 45 phút</i>
+            </td>
+          </tr>
+        </table>
+        <hr class="header-line" />
+        <h2 style="text-align:center; font-size:13pt; margin-top:12pt; margin-bottom:12pt; font-weight:bold;">MA TRẬN & ĐỀ THI MẪU CHUẨN BỘ GD&ĐT</h2>
+        <p>Tài liệu bao gồm đầy đủ Ma trận 10 điểm, Bảng đặc tả 4 mức độ tư duy (Nhận biết, Thông hiểu, Vận dụng, Vận dụng cao), Đề kiểm tra và Bảng đáp án chấm chi tiết.</p>
+      `;
+    }
+
+    const wordHeader = `
+      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+      <head><meta charset='utf-8'><title>${sampleTitle}</title>
+      <style>
+        body { font-family: 'Times New Roman', serif; font-size: 11pt; line-height: 1.25; margin: 20pt; }
+        table { border-collapse: collapse; width: 100%; margin-top: 6pt; margin-bottom: 6pt; }
+        th, td { border: 1pt solid #000; padding: 5pt; text-align: left; }
+        hr.header-line { border: none; border-top: 1.5pt solid #000; margin-top: 6pt; margin-bottom: 12pt; }
+      </style>
+      </head>
+      <body>
+    `;
+    const fullSourceHtml = wordHeader + sampleBodyHtml + `</body></html>`;
+
+    const blob = new Blob(['\ufeff', fullSourceHtml], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${sampleTitle}.doc`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    onSuccessToast(`📥 Đã tải xuống thành công File Mẫu (.DOC): ${sampleSubject} ${sampleGrade}!`);
+  };
+
   // Load Presets
-  const handleLoadPreset = (presetType: 'literary' | 'math' | 'english' | 'physics') => {
+  const handleLoadPreset = (presetType: 'literary' | 'math' | 'english' | 'physics' | 'chemistry') => {
     if (presetType === 'literary') {
       setSubject('Ngữ văn');
       setGrade('Khối 8');
@@ -349,7 +611,7 @@ Chủ đề 4: Viết bài văn nghị luận phân tích một tác phẩm văn
 3. Tập làm văn: Viết bài văn nghị luận xã hội về tinh thần tự học.`
       );
       setAdditionalNotes('Tỉ lệ: 60% Đọc hiểu (Trắc nghiệm 12 câu + Tự luận ngắn 2 câu), 40% Viết tập làm văn.');
-      onSuccessToast('Đã tải mẫu thông số Đề thi Giữa HK1 Môn Ngữ văn 8!');
+      onSuccessToast('Đã tải thông số Mẫu Ngữ văn 8 vào Form! Bấm [Tải Mẫu .DOC] để tải file Word về máy.');
     } else if (presetType === 'math') {
       setSubject('Toán học');
       setGrade('Khối 10');
@@ -369,7 +631,7 @@ Chủ đề 4: Viết bài văn nghị luận phân tích một tác phẩm văn
 5. Véc-tơ trong mặt phẳng tọa độ.`
       );
       setAdditionalNotes('Gồm 12 Trắc nghiệm MCQ, 4 Đúng/Sai, 4 Trả lời ngắn và 2 Tự luận.');
-      onSuccessToast('Đã tải mẫu thông số Đề thi Cuối HK1 Môn Toán 10!');
+      onSuccessToast('Đã tải thông số Mẫu Toán 10 vào Form! Bấm [Tải Mẫu .DOC] để tải file Word về máy.');
     } else if (presetType === 'english') {
       setSubject('Tiếng Anh');
       setGrade('Khối 9');
@@ -387,7 +649,7 @@ Unit 8: Tourism (Compound nouns, Articles: a/an/the/zero article).
 Phonics: Intonation on questions & lists. Reading comprehension & Writing transformation.`
       );
       setAdditionalNotes('Đề tích hợp Tiếng Anh 9 gồm MCQ, Điền khuyết, Nối và Viết lại câu.');
-      onSuccessToast('Đã tải mẫu thông số Đề thi Giữa HK2 Tiếng Anh 9!');
+      onSuccessToast('Đã tải thông số Mẫu Tiếng Anh 9 vào Form! Bấm [Tải Mẫu .DOC] để tải file Word về máy.');
     } else if (presetType === 'physics') {
       setSubject('Vật lí');
       setGrade('Khối 11');
@@ -405,7 +667,25 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
 3. Dòng điện không đổi, Cường độ dòng điện $I = \\frac{q}{t}$, Định luật Ôm cho toàn mạch.`
       );
       setAdditionalNotes('Gồm 18 câu MCQ + 4 câu Đúng/Sai + 4 câu Trả lời ngắn + 2 câu Tự luận bài tập.');
-      onSuccessToast('Đã tải mẫu thông số Đề thi Cuối HK2 Vật lí 11!');
+      onSuccessToast('Đã tải thông số Mẫu Vật lí 11 vào Form! Bấm [Tải Mẫu .DOC] để tải file Word về máy.');
+    } else if (presetType === 'chemistry') {
+      setSubject('Hóa học');
+      setGrade('Khối 10');
+      setExamType('Giữa học kì I');
+      setDurationMinutes('45');
+      setMcqCount(16);
+      setTrueFalseCount(2);
+      setFillBlankCount(0);
+      setMatchingCount(0);
+      setShortAnswerCount(4);
+      setEssayCount(2);
+      setTopicScope(
+        `1. Cấu tạo nguyên tử: Hạt nhân, Electron, Đồng vị, Cấu hình electron nguyên tử.
+2. Bảng tuần hoàn các nguyên tố hóa học & Định luật tuần hoàn.
+3. Liên kết hóa học: Liên kết ion, liên kết cộng hóa trị.`
+      );
+      setAdditionalNotes('Gồm 16 câu MCQ, 2 câu Đúng/Sai, 4 câu Trả lời ngắn và 2 câu Tự luận tính toán.');
+      onSuccessToast('Đã tải thông số Mẫu Hóa học 10 vào Form! Bấm [Tải Mẫu .DOC] để tải file Word về máy.');
     }
   };
 
@@ -1147,7 +1427,7 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
               <span>CHUẨN BỘ GD&ĐT 2018 • MA TRẬN, BẢNG ĐẶC TẢ & NĂNG LỰC ĐÁNH GIÁ</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
-              Tạo Đề Kiểm Tra Định Kỳ & Ma Trận Chuẩn NotebookLM
+              Tạo Đề Kiểm Tra Định Kỳ & Ma Trận Chuẩn
             </h1>
             <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
               Biên soạn trọn bộ hồ sơ kiểm tra: <span className="text-amber-300 font-semibold">Phân tích phạm vi</span>, <span className="text-amber-300 font-semibold">Ma trận đề</span>, <span className="text-amber-300 font-semibold">Bảng đặc tả chi tiết</span>, <span className="text-amber-300 font-semibold">Đề thi chính thức (Trắc nghiệm + Tự luận LaTeX)</span> và <span className="text-amber-300 font-semibold">Đáp án & Hướng dẫn chấm</span>.
@@ -1155,34 +1435,41 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
           </div>
 
           <div className="flex flex-wrap gap-2 shrink-0">
-            <button
-              onClick={() => handleLoadPreset('literary')}
-              className="px-3 py-1.5 bg-slate-800/80 hover:bg-slate-700 text-xs font-bold text-rose-200 border border-rose-700/50 rounded-xl transition cursor-pointer flex items-center space-x-1"
-            >
-              <BookOpen className="w-3.5 h-3.5 text-rose-400" />
-              <span>Mẫu Ngữ Văn 8</span>
-            </button>
-            <button
-              onClick={() => handleLoadPreset('math')}
-              className="px-3 py-1.5 bg-slate-800/80 hover:bg-slate-700 text-xs font-bold text-amber-200 border border-amber-700/50 rounded-xl transition cursor-pointer flex items-center space-x-1"
-            >
-              <FileSpreadsheet className="w-3.5 h-3.5 text-amber-400" />
-              <span>Mẫu Toán 10</span>
-            </button>
-            <button
-              onClick={() => handleLoadPreset('english')}
-              className="px-3 py-1.5 bg-slate-800/80 hover:bg-slate-700 text-xs font-bold text-emerald-200 border border-emerald-700/50 rounded-xl transition cursor-pointer flex items-center space-x-1"
-            >
-              <GraduationCap className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Mẫu Tiếng Anh 9</span>
-            </button>
-            <button
-              onClick={() => handleLoadPreset('physics')}
-              className="px-3 py-1.5 bg-slate-800/80 hover:bg-slate-700 text-xs font-bold text-sky-200 border border-sky-700/50 rounded-xl transition cursor-pointer flex items-center space-x-1"
-            >
-              <FileCheck className="w-3.5 h-3.5 text-sky-400" />
-              <span>Mẫu Vật Lí 11</span>
-            </button>
+            {[
+              { id: 'literary', name: 'Mẫu Ngữ Văn 8', icon: BookOpen, textColor: 'text-rose-200', borderColor: 'border-rose-700/50' },
+              { id: 'math', name: 'Mẫu Toán 10', icon: FileSpreadsheet, textColor: 'text-amber-200', borderColor: 'border-amber-700/50' },
+              { id: 'english', name: 'Mẫu Tiếng Anh 9', icon: GraduationCap, textColor: 'text-emerald-200', borderColor: 'border-emerald-700/50' },
+              { id: 'physics', name: 'Mẫu Vật Lí 11', icon: FileCheck, textColor: 'text-sky-200', borderColor: 'border-sky-700/50' },
+              { id: 'chemistry', name: 'Mẫu Hóa Học 10', icon: Sparkles, textColor: 'text-purple-200', borderColor: 'border-purple-700/50' },
+            ].map((item) => (
+              <div 
+                key={item.id} 
+                className={`inline-flex items-center rounded-xl bg-slate-800/90 border ${item.borderColor} p-1 shadow-xs hover:bg-slate-800 transition`}
+              >
+                <button
+                  type="button"
+                  onClick={() => handleLoadPreset(item.id as any)}
+                  className={`px-2.5 py-1 text-xs font-bold ${item.textColor} hover:text-white transition cursor-pointer flex items-center space-x-1.5`}
+                  title={`Nạp thông số ${item.name} vào Form`}
+                >
+                  <item.icon className="w-3.5 h-3.5" />
+                  <span>{item.name}</span>
+                </button>
+                <div className="w-[1px] h-4 bg-slate-700/80 my-auto"></div>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDownloadSampleFile(item.id);
+                  }}
+                  className="px-2 py-1 text-[11px] font-extrabold text-amber-300 hover:text-amber-200 hover:bg-slate-700/80 rounded-lg transition cursor-pointer flex items-center space-x-1"
+                  title={`Tải xuống File Word (.DOC) mẫu sẵn cho ${item.name}`}
+                >
+                  <Download className="w-3 h-3 text-amber-400" />
+                  <span className="text-[10px]">Tải Mẫu .DOC</span>
+                </button>
+              </div>
+            ))}
           </div>
         </div>
       </div>
