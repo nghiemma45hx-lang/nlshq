@@ -277,9 +277,16 @@ QUY TẮC PHÂN TÍCH VÀ TÍCH HỢP BẮT BUỘC (QUAN TRỌNG NHẤT):
      <span class="bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded font-mono text-xs">[AI-NLc: Prompting]</span>
    - Đảm bảo toàn bộ giáo án sau tích hợp là MỘT VĂN BẢN KHINHKHÍT, THỐNG NHẤT từ Mục tiêu -> Thiết bị -> Hoạt động 1 -> Hoạt động 2 -> Hoạt động 3 -> Hoạt động 4.
 
-7. ĐẶC TRƯNG MÔN NGỮ VĂN & PHẦN ĐỌC TÌM HIỂU CHUNG (TÍCH HỢP NLS MIỀN 1):
-   - Trong môn Ngữ văn (và phần đầu tiên của 1 tiết/bài/chủ đề như Khám phá/Tìm hiểu chung), phần "I. Đọc - tìm hiểu chung", "Tìm hiểu chung", "1. Tác giả", "2. Tác phẩm", "B. Đọc văn bản" BẮT BUỘC TÍCH HỢP NLS MIỀN 1: KHAI THÁC DỮ LIỆU VÀ THÔNG TIN ([NLS 1.1-a], [NLS 1.2-a], [NLS 1.3-a]).
-   - Hoạt động NLS Miền 1 BẮT BUỘC chèn vào CỘT BÊN TRÁI ('Tổ chức thực hiện'): Cho HS sử dụng thiết bị số (Internet, QR Code, tra cứu Google, thư viện số) tra cứu, thu thập và quản lý thông tin về tác giả, tác phẩm, bối cảnh ra đời, hoàn thành Phiếu học tập số (PHT) báo cáo.`;
+7. ĐẶC TRƯNG MÔN NGỮ VĂN & MẪU TÍCH HỢP NLS CHUẨN (MÃ MÔ TẢ TC2a & NLS THÔNG TƯ 02):
+   - Trong môn Ngữ văn (Đọc hiểu, Tiếng Việt, Viết, Nói & Nghe), áp dụng quy chuẩn tích hợp NLS kèm các mã chỉ báo cụ thể:
+     + Mục tiêu Năng lực số: "Tìm kiếm, đánh giá độ tin cậy và tổng hợp các nguồn tài liệu số về lịch sử, văn học phục vụ cho việc đọc hiểu và viết bài văn nghị luận. (1.2.TC2a); Sử dụng các công cụ số như phần mềm trình chiếu, soạn thảo văn bản và các nền tảng tương tác trực tuyến để hợp tác nhóm, chia sẻ kết quả học tập. (2.4.TC2a)"
+     + Thiết bị & Học liệu số (Mục II): "GV: Hệ thống học liệu số bao gồm video tư liệu lịch sử trên Youtube, các phiếu học tập số được lưu trữ và chia sẻ trên Google Drive. (1.3.TC2a) | HS: Thiết bị công nghệ cá nhân như máy tính hoặc điện thoại thông minh có kết nối Internet để tra cứu tư liệu và thực hiện các nhiệm vụ học tập số. (5.2.TC2a)"
+     + Mở đầu / Khởi động (Hoạt động 1): Cho HS xem/truy cập video tư liệu lịch sử/văn học trên nền tảng Youtube hoặc nhận link qua Zalo/lớp. (1.1.TC2a) (2.1.TC2a)
+     + Đọc - Tìm hiểu chung tác giả, tác phẩm (Hoạt động 2): BẮT BUỘC chèn vào CỘT BÊN TRÁI ('Tổ chức thực hiện'): HS sử dụng máy tính/điện thoại tra cứu thông tin trên các trang web chính thống (Viện Lịch sử, Cổng TTĐT Chính phủ, Bách khoa toàn thư uy tín) và đánh giá độ tin cậy của thông tin trước khi báo cáo. (1.2.TC2a)
+     + Vẽ Sơ đồ tư duy kiến thức (Hoạt động 2): GV hướng dẫn HS sử dụng công cụ Canva hoặc Mindmeister để vẽ sơ đồ tư duy thể hiện mối quan hệ giữa luận đề, luận điểm, lí lẽ và bằng chứng. (3.1.TC2a)
+     + Thảo luận nhóm trực tuyến (Hoạt động 2 / Phiếu học tập): GV gửi đường liên kết tài liệu Google Docs chứa Phiếu học tập số để các thành viên trong nhóm cùng truy cập, thảo luận trực tuyến và hoàn thành nội dung. (2.4.TC2a)
+     + Soạn thảo văn bản / Làm bài tập Viết (Hoạt động 3): HS thực hiện soạn thảo bài viết/đoạn văn trên máy tính bằng phần mềm MS Word/PowerPoint, áp dụng đúng quy chuẩn kỹ thuật (phông Times New Roman, cỡ 13-14, căn lề Justify, giãn dòng 1.15) và lưu tệp tin đúng cú pháp "HoTen_TenBai.docx" trong thư mục học tập cá nhân. (3.1.TC2a)
+     + Vận dụng / Đăng tải & Đánh giá chéo (Hoạt động 4): Đăng tải đoạn văn/bài viết lên Padlet chung của lớp, đọc và nhận xét, góp ý mang tính xây dựng theo quy tắc ứng xử văn minh trên không gian mạng. (2.5.TC2a) (3.2.TC2a)`;
 
     const userPrompt = `Môn học: ${subject}
 Cấp/Khối: ${grade}
