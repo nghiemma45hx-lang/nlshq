@@ -12,7 +12,13 @@ import {
   Copy,
   FileText,
   Search,
-  Eye
+  Eye,
+  Plus,
+  Pencil,
+  Trash2,
+  Undo2,
+  RotateCcw,
+  Save
 } from 'lucide-react';
 import { LEGAL_DOCUMENTS } from '../data/competencyData';
 import { LegalDocument } from '../types';
@@ -21,21 +27,96 @@ interface LegalViewProps {
   onSuccessToast: (msg: string) => void;
 }
 
+export interface TagMatrixItem {
+  domain: string;
+  doc: string;
+  tags: string[];
+  position: string;
+}
+
+const DEFAULT_TAG_MATRIX: TagMatrixItem[] = [
+  {
+    domain: "1. Khai thác dữ liệu và thông tin",
+    doc: "TT 02/2025/TT-BGDĐT",
+    tags: ["[NLS 1.1-a]", "[NLS 1.2-b]", "[NLS 1.3-a]"],
+    position: "Hoạt động 1 (Khởi động) & Hoạt động 2 (Tìm kiếm tư liệu học tập)"
+  },
+  {
+    domain: "2. Giao tiếp và hợp tác số",
+    doc: "TT 02/2025/TT-BGDĐT",
+    tags: ["[NLS 2.1-b]", "[NLS 2.4-a]", "[NLS 2.5-c]"],
+    position: "Hoạt động 2 & 3 (Thảo luận nhóm trên Padlet, Google Docs)"
+  },
+  {
+    domain: "3. Sáng tạo nội dung số",
+    doc: "TT 02/2025/TT-BGDĐT",
+    tags: ["[NLS 3.1-a]", "[NLS 3.3-a]", "[NLS 3.4-a]"],
+    position: "Hoạt động 3 (Luyện tập) & Hoạt động 4 (Tạo Video/Infographic)"
+  },
+  {
+    domain: "4. An toàn số & Đạo đức AI",
+    doc: "QĐ 3439/QĐ-BGDĐT",
+    tags: ["[AI-NLb: Đạo đức AI]", "[NLS 4.2-c]"],
+    position: "Mục tiêu Phẩm chất & Hoạt động thực hành với công cụ GenAI"
+  },
+  {
+    domain: "5. Kĩ thuật & Ứng dụng AI",
+    doc: "QĐ 3439/QĐ-BGDĐT",
+    tags: ["[AI-NLc: Prompting]", "[AI-NLd: Model]"],
+    position: "Hoạt động 2 & 3 (Dùng ChatGPT/GeoGebra/Quizizz hỗ trợ giải bài)"
+  }
+];
+
 export const LegalView: React.FC<LegalViewProps> = ({ onSuccessToast }) => {
   const [selectedDoc, setSelectedDoc] = useState<LegalDocument | null>(null);
   const [modalTab, setModalTab] = useState<'fulltext' | 'summary'>('fulltext');
   const [searchQuery, setSearchQuery] = useState<string>('');
+
+  // Tag Matrix State & History Stack for Undo
+  const [tagMatrix, setTagMatrix] = useState<TagMatrixItem[]>(() => {
+    try {
+      const saved = localStorage.getItem('EDUNLS_INDICATOR_MATRIX_2026');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.warn('Error reading indicator matrix from localStorage:', e);
+    }
+    return DEFAULT_TAG_MATRIX;
+  });
+
+  const [historyStack, setHistoryStack] = useState<TagMatrixItem[][]>([]);
+
+  // Modal State for Add / Edit Row
+  const [isMatrixModalOpen, setIsMatrixModalOpen] = useState(false);
+  const [editingRowIndex, setEditingRowIndex] = useState<number | null>(null);
+  const [formDomain, setFormDomain] = useState('');
+  const [formDoc, setFormDoc] = useState('');
+  const [formTags, setFormTags] = useState('');
+  const [formPosition, setFormPosition] = useState('');
 
   // Close modal on Escape key press
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setSelectedDoc(null);
+        setIsMatrixModalOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  const updateTagMatrixWithHistory = (newMatrix: TagMatrixItem[]) => {
+    setHistoryStack(prev => [...prev, tagMatrix]);
+    setTagMatrix(newMatrix);
+    try {
+      localStorage.setItem('EDUNLS_INDICATOR_MATRIX_2026', JSON.stringify(newMatrix));
+    } catch (e) {
+      console.warn('Error saving indicator matrix to localStorage:', e);
+    }
+  };
 
   const handleOpenDoc = (doc: LegalDocument) => {
     setSelectedDoc(doc);
@@ -43,38 +124,85 @@ export const LegalView: React.FC<LegalViewProps> = ({ onSuccessToast }) => {
     setSearchQuery('');
   };
 
-  const tagMatrix = [
-    {
-      domain: "1. Khai thác dữ liệu và thông tin",
-      doc: "TT 02/2025/TT-BGDĐT",
-      tags: ["[NLS 1.1-a]", "[NLS 1.2-b]", "[NLS 1.3-a]"],
-      position: "Hoạt động 1 (Khởi động) & Hoạt động 2 (Tìm kiếm tư liệu học tập)"
-    },
-    {
-      domain: "2. Giao tiếp và hợp tác số",
-      doc: "TT 02/2025/TT-BGDĐT",
-      tags: ["[NLS 2.1-b]", "[NLS 2.4-a]", "[NLS 2.5-c]"],
-      position: "Hoạt động 2 & 3 (Thảo luận nhóm trên Padlet, Google Docs)"
-    },
-    {
-      domain: "3. Sáng tạo nội dung số",
-      doc: "TT 02/2025/TT-BGDĐT",
-      tags: ["[NLS 3.1-a]", "[NLS 3.3-a]", "[NLS 3.4-a]"],
-      position: "Hoạt động 3 (Luyện tập) & Hoạt động 4 (Tạo Video/Infographic)"
-    },
-    {
-      domain: "4. An toàn số & Đạo đức AI",
-      doc: "QĐ 3439/QĐ-BGDĐT",
-      tags: ["[AI-NLb: Đạo đức AI]", "[NLS 4.2-c]"],
-      position: "Mục tiêu Phẩm chất & Hoạt động thực hành với công cụ GenAI"
-    },
-    {
-      domain: "5. Kĩ thuật & Ứng dụng AI",
-      doc: "QĐ 3439/QĐ-BGDĐT",
-      tags: ["[AI-NLc: Prompting]", "[AI-NLd: Model]"],
-      position: "Hoạt động 2 & 3 (Dùng ChatGPT/GeoGebra/Quizizz hỗ trợ giải bài)"
+  const handleUndo = () => {
+    if (historyStack.length === 0) return;
+    const previousState = historyStack[historyStack.length - 1];
+    setHistoryStack(prev => prev.slice(0, prev.length - 1));
+    setTagMatrix(previousState);
+    try {
+      localStorage.setItem('EDUNLS_INDICATOR_MATRIX_2026', JSON.stringify(previousState));
+    } catch (e) {
+      console.warn('Error saving undo state to localStorage:', e);
     }
-  ];
+    onSuccessToast('Đã hoàn tác thao tác vừa thực hiện!');
+  };
+
+  const handleOpenAddModal = () => {
+    setEditingRowIndex(null);
+    setFormDomain('');
+    setFormDoc('TT 02/2025/TT-BGDĐT');
+    setFormTags('');
+    setFormPosition('');
+    setIsMatrixModalOpen(true);
+  };
+
+  const handleOpenEditModal = (index: number) => {
+    const target = tagMatrix[index];
+    if (!target) return;
+    setEditingRowIndex(index);
+    setFormDomain(target.domain);
+    setFormDoc(target.doc);
+    setFormTags(target.tags.join(', '));
+    setFormPosition(target.position);
+    setIsMatrixModalOpen(true);
+  };
+
+  const handleDeleteRow = (index: number) => {
+    const target = tagMatrix[index];
+    if (!target) return;
+    if (window.confirm(`Bạn có chắc muốn xóa mạch năng lực "${target.domain}"?`)) {
+      const updated = tagMatrix.filter((_, i) => i !== index);
+      updateTagMatrixWithHistory(updated);
+      onSuccessToast(`Đã xóa "${target.domain}". Bạn có thể bấm "Hoàn Tác" để khôi phục.`);
+    }
+  };
+
+  const handleResetMatrix = () => {
+    if (window.confirm('Khôi phục toàn bộ Bảng Mã Chỉ Báo về danh sách mặc định?')) {
+      updateTagMatrixWithHistory(DEFAULT_TAG_MATRIX);
+      onSuccessToast('Đã đặt lại Bảng Mã Chỉ Báo về mặc định!');
+    }
+  };
+
+  const handleSaveRow = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formDomain.trim()) return;
+
+    const parsedTags = formTags
+      .split(',')
+      .map(t => t.trim())
+      .filter(Boolean)
+      .map(t => (t.startsWith('[') ? t : `[${t}]`));
+
+    const newRow: TagMatrixItem = {
+      domain: formDomain.trim(),
+      doc: formDoc.trim() || 'TT 02/2025/TT-BGDĐT',
+      tags: parsedTags.length > 0 ? parsedTags : ['[NLS mới]'],
+      position: formPosition.trim() || 'Hoạt động học tập'
+    };
+
+    if (editingRowIndex !== null) {
+      const updated = tagMatrix.map((item, idx) => idx === editingRowIndex ? newRow : item);
+      updateTagMatrixWithHistory(updated);
+      onSuccessToast('Đã cập nhật mã chỉ báo thành công!');
+    } else {
+      const updated = [...tagMatrix, newRow];
+      updateTagMatrixWithHistory(updated);
+      onSuccessToast('Đã thêm mới mã chỉ báo năng lực số!');
+    }
+
+    setIsMatrixModalOpen(false);
+  };
 
   const handleCopyTag = (tag: string) => {
     navigator.clipboard.writeText(tag);
@@ -466,10 +594,46 @@ export const LegalView: React.FC<LegalViewProps> = ({ onSuccessToast }) => {
 
       {/* Cross-Reference Matrix Table */}
       <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-2xs">
-        <h3 className="text-base font-bold text-slate-800 mb-4 flex items-center">
-          <ListCheck className="w-5 h-5 text-indigo-600 mr-2" />
-          Bảng Mã Chỉ Báo Tích Hợp Năng Lực Số & AI Trực Tiếp Vào Giáo Án
-        </h3>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 border-b border-slate-100 pb-3">
+          <h3 className="text-base font-bold text-slate-800 flex items-center">
+            <ListCheck className="w-5 h-5 text-indigo-600 mr-2" />
+            Bảng Mã Chỉ Báo Tích Hợp Năng Lực Số & AI Trực Tiếp Vào Giáo Án
+          </h3>
+
+          {/* Action Toolbar for Add / Edit / Delete / Undo */}
+          <div className="flex items-center flex-wrap gap-2 shrink-0">
+            <button
+              onClick={handleUndo}
+              disabled={historyStack.length === 0}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 border ${
+                historyStack.length > 0
+                  ? 'bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-300 shadow-2xs cursor-pointer'
+                  : 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed opacity-60'
+              }`}
+              title="Hoàn tác thao tác vừa thực hiện"
+            >
+              <Undo2 className="w-3.5 h-3.5" />
+              <span>Hoàn Tác {historyStack.length > 0 && `(${historyStack.length})`}</span>
+            </button>
+
+            <button
+              onClick={handleOpenAddModal}
+              className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition flex items-center space-x-1.5 shadow-2xs cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Thêm Chỉ Báo Mới</span>
+            </button>
+
+            <button
+              onClick={handleResetMatrix}
+              className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition flex items-center space-x-1 border border-slate-300"
+              title="Khôi phục bảng mã chỉ báo về danh sách mặc định"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
+              <span>Đặt Lại</span>
+            </button>
+          </div>
+        </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs text-slate-600 border-collapse">
@@ -478,7 +642,8 @@ export const LegalView: React.FC<LegalViewProps> = ({ onSuccessToast }) => {
                 <th className="p-3 border-r border-slate-200">Miền / Mạch Năng Lực</th>
                 <th className="p-3 border-r border-slate-200">Căn Cứ Pháp Lý</th>
                 <th className="p-3 border-r border-slate-200">Mã Chỉ Báo / Tag Tích Hợp (Click copy)</th>
-                <th className="p-3">Gợi Ý Vị Trí Chèn Trong KHBD (CV 5512)</th>
+                <th className="p-3 border-r border-slate-200">Gợi Ý Vị Trí Chèn Trong KHBD (CV 5512)</th>
+                <th className="p-3 text-center w-24">Thao Tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
@@ -487,7 +652,7 @@ export const LegalView: React.FC<LegalViewProps> = ({ onSuccessToast }) => {
                   <td className="p-3 font-bold text-slate-800 border-r border-slate-200">
                     {item.domain}
                   </td>
-                  <td className="p-3 border-r border-slate-200 font-medium">
+                  <td className="p-3 border-r border-slate-200 font-medium whitespace-nowrap">
                     <span className="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded text-[10px] font-bold">
                       {item.doc}
                     </span>
@@ -506,8 +671,26 @@ export const LegalView: React.FC<LegalViewProps> = ({ onSuccessToast }) => {
                       ))}
                     </div>
                   </td>
-                  <td className="p-3 text-slate-700 font-medium">
+                  <td className="p-3 text-slate-700 font-medium border-r border-slate-200">
                     {item.position}
+                  </td>
+                  <td className="p-3 text-center font-medium">
+                    <div className="flex items-center justify-center space-x-1">
+                      <button
+                        onClick={() => handleOpenEditModal(idx)}
+                        className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg transition"
+                        title="Chỉnh sửa thông tin chỉ báo"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteRow(idx)}
+                        className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition"
+                        title="Xóa chỉ báo này"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -515,6 +698,97 @@ export const LegalView: React.FC<LegalViewProps> = ({ onSuccessToast }) => {
           </table>
         </div>
       </div>
+
+      {/* ADD / EDIT INDICATOR MATRIX MODAL */}
+      {isMatrixModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl relative border border-slate-200 animate-in fade-in zoom-in-95 duration-150">
+            <button
+              onClick={() => setIsMatrixModalOpen(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 p-2 rounded-full transition"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <h3 className="text-base font-extrabold text-slate-900 mb-4 flex items-center space-x-2 border-b border-slate-100 pb-3">
+              <Sparkles className="w-5 h-5 text-indigo-600" />
+              <span>{editingRowIndex !== null ? 'Chỉnh Sửa Mã Chỉ Báo Năng Lực' : 'Thêm Mã Chỉ Báo Năng Lực Mới'}</span>
+            </h3>
+
+            <form onSubmit={handleSaveRow} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Miền / Mạch Năng Lực</label>
+                <input
+                  type="text"
+                  required
+                  value={formDomain}
+                  onChange={(e) => setFormDomain(e.target.value)}
+                  placeholder="Ví dụ: 6. Kĩ năng dữ liệu lớn & Đổi mới sáng tạo"
+                  className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Căn Cứ Pháp Lý</label>
+                <input
+                  type="text"
+                  required
+                  value={formDoc}
+                  onChange={(e) => setFormDoc(e.target.value)}
+                  placeholder="TT 02/2025/TT-BGDĐT hoặc QĐ 3439/QĐ-BGDĐT"
+                  className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-xs font-medium outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Mã Chỉ Báo / Tag Tích Hợp (Phân cách bằng dấu phẩy)
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formTags}
+                  onChange={(e) => setFormTags(e.target.value)}
+                  placeholder="[NLS 6.1-a], [NLS 6.2-b], [AI-NLe]"
+                  className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-xs font-mono outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+                <span className="text-[10px] text-slate-500 mt-1 block">
+                  Hệ thống sẽ tự động bọc thẻ [Mã] nếu bạn nhập chuỗi chữ thông thường.
+                </span>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Gợi Ý Vị Trí Chèn Trong KHBD (CV 5512)</label>
+                <textarea
+                  rows={3}
+                  required
+                  value={formPosition}
+                  onChange={(e) => setFormPosition(e.target.value)}
+                  placeholder="Hoạt động 3 (Luyện tập) & Hoạt động 4 (Vận dụng mở rộng)"
+                  className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-xs outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+
+              <div className="flex justify-end space-x-2 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsMatrixModalOpen(false)}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition"
+                >
+                  Hủy Bỏ
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition shadow-sm flex items-center space-x-1"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>{editingRowIndex !== null ? 'Lưu Thay Đổi' : 'Thêm Chỉ Báo'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
