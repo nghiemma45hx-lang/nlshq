@@ -100,15 +100,20 @@ export const RepositoryView: React.FC<RepositoryViewProps> = ({
     );
   }
 
-  // Filter lessons belonging EXCLUSIVELY to the current logged-in user
+  // Filter lessons belonging to the current logged-in user or guest/local session
   const userOwnLessons = lessons.filter(l => {
     // Exact user match
-    const matchUid = l.userId && l.userId === currentUser.uid;
-    const matchEmail = l.ownerEmail && currentUser.email && l.ownerEmail.toLowerCase() === currentUser.email.toLowerCase();
+    const matchUid = Boolean(l.userId && l.userId === currentUser.uid);
+    const matchEmail = Boolean(l.ownerEmail && currentUser.email && l.ownerEmail.toLowerCase() === currentUser.email.toLowerCase());
     if (matchUid || matchEmail) return true;
 
-    // Unassigned legacy lessons: allow if lesson has no owner specified yet and user is admin or initial user
-    if (!l.userId && !l.ownerEmail) {
+    // Local / guest / unassigned lessons created in current session
+    if (!l.userId || !l.ownerEmail || l.userId.startsWith('guest') || l.userId === 'anonymous-teacher' || l.ownerEmail === '') {
+      return true;
+    }
+
+    // Admin user access
+    if (isAdmin) {
       return true;
     }
 

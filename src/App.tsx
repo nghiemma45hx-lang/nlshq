@@ -21,6 +21,12 @@ import {
   deleteLessonFromSupabase, 
   seedSampleDataToSupabase 
 } from './lib/supabaseService';
+import {
+  saveLessonToStorage,
+  saveAllLessonsToStorage,
+  deleteLessonFromStorage,
+  loadAllLessonsFromStorage
+} from './lib/storageService';
 
 function AppContent() {
   const { currentUser } = useAuth();
@@ -39,7 +45,7 @@ function AppContent() {
     }, 3200);
   };
 
-  // Saved lessons state (stored in LocalStorage & Supabase)
+  // Saved lessons state (stored in IndexedDB, LocalStorage & Supabase)
   const [lessons, setLessons] = useState<LessonPlanItem[]>(() => {
     const saved = localStorage.getItem('edunls_lessons');
     if (saved) {
@@ -52,44 +58,42 @@ function AppContent() {
     return SAMPLE_LESSONS;
   });
 
-  // Sync Supabase on initial load without wiping local cache
+  // Durable initial load: Load IndexedDB master cache first, then merge with Supabase
   useEffect(() => {
-    const loadFromSupabase = async () => {
+    const loadDurableData = async () => {
+      // 1. Load from IndexedDB
+      const localDurableLessons = await loadAllLessonsFromStorage();
+      if (localDurableLessons && localDurableLessons.length > 0) {
+        setLessons(localDurableLessons);
+      }
+
+      // 2. Fetch remote lessons from Supabase and merge
       try {
         const remoteLessons = await fetchLessonsFromSupabase();
         if (remoteLessons && remoteLessons.length > 0) {
           setLessons(prev => {
             const map = new Map<string, LessonPlanItem>();
-            // Add remote lessons first
             remoteLessons.forEach(l => map.set(l.id, l));
-            // Overlay local lessons so recent local saves/edits are preserved
             prev.forEach(l => map.set(l.id, l));
-            return Array.from(map.values());
+            const merged = Array.from(map.values()).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+            saveAllLessonsToStorage(merged);
+            return merged;
           });
         } else {
-          // Seed sample data to Supabase
           await seedSampleDataToSupabase();
         }
       } catch (err) {
-        console.warn('Supabase initial fetch failed, using local cache:', err);
+        console.warn('Supabase initial fetch failed, relying on IndexedDB local cache:', err);
       }
     };
-    loadFromSupabase();
+
+    loadDurableData();
   }, []);
 
+  // Sync state changes to durable IndexedDB storage
   useEffect(() => {
-    try {
-      localStorage.setItem('edunls_lessons', JSON.stringify(lessons));
-    } catch (e) {
-      console.warn('localStorage quota exceeded while saving lessons cache:', e);
-      // Fallback: Store fewer recent items intact without truncating any text content
-      try {
-        localStorage.setItem('edunls_lessons', JSON.stringify(lessons.slice(0, 8)));
-      } catch {
-        try {
-          localStorage.removeItem('edunls_lessons');
-        } catch {}
-      }
+    if (lessons && lessons.length > 0) {
+      saveAllLessonsToStorage(lessons);
     }
   }, [lessons]);
 
@@ -117,10 +121,11 @@ function AppContent() {
       id: lessonId,
       createdAt: lessonData.createdAt || Date.now(),
       dateString: fullDateString,
-      userId: currentUser?.uid || 'guest-' + Date.now(),
-      ownerEmail: currentUser?.email || '',
+      userId: currentUser?.uid || lessonData.userId || 'guest-teacher',
+      ownerEmail: currentUser?.email || lessonData.ownerEmail || '',
     };
 
+    // 1. Update React memory state
     setLessons(prev => {
       const exists = prev.some(l => l.id === lessonId);
       if (exists) {
@@ -129,18 +134,26 @@ function AppContent() {
       return [newLesson, ...prev];
     });
 
-    // Save to Supabase Cloud Database
+    // 2. Persist to IndexedDB immediately (durable across browser exits)
+    await saveLessonToStorage(newLesson);
+
+    // 3. Save to Supabase Cloud Database
     await saveLessonToSupabase(newLesson, currentUser?.uid || currentUser?.email);
   };
 
   const handleDeleteLesson = async (id: string) => {
     setLessons(prev => prev.filter(l => l.id !== id));
+    await deleteLessonFromStorage(id);
     await deleteLessonFromSupabase(id);
-    showToast('Đã xóa giáo án khỏi Supabase Database.');
+    showToast('Đã xóa giáo án khỏi bộ nhớ và Supabase Database.');
   };
 
   const handleUpdateLessonTitle = (id: string, newTitle: string) => {
-    setLessons(prev => prev.map(l => l.id === id ? { ...l, title: newTitle } : l));
+    setLessons(prev => {
+      const updated = prev.map(l => l.id === id ? { ...l, title: newTitle } : l);
+      saveAllLessonsToStorage(updated);
+      return updated;
+    });
     showToast('Đã cập nhật tên bài dạy!');
   };
 
