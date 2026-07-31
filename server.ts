@@ -236,6 +236,20 @@ function buildDynamicLocalExam(opts: any): string {
   const essay = questionStructure?.essayCount ?? 2;
   const essayPts = questionStructure?.essayPoints ?? 3.5;
 
+  const totalMcqPts = mcq * mcqPts;
+  const totalTrueFalsePts = trueFalse * trueFalsePts;
+  const totalFillBlankPts = fillBlank * fillBlankPts;
+  const totalMatchingPts = matching * matchingPts;
+  const totalShortAnswerPts = shortAnswer * shortAnswerPts;
+  const totalEssayPts = essay * essayPts;
+  const totalObjectivePts = totalMcqPts + totalTrueFalsePts + totalFillBlankPts + totalMatchingPts + totalShortAnswerPts;
+  const totalExamScore = totalObjectivePts + totalEssayPts;
+
+  const formatPts = (num: number) => {
+    const r = Math.round(num * 100) / 100;
+    return Number.isInteger(r) ? r.toFixed(1) : r.toString();
+  };
+
   // Clean raw topicScope text
   const rawText = (topicScope || '').trim();
   const rawLines = rawText
@@ -618,133 +632,128 @@ function buildDynamicLocalExam(opts: any): string {
           <div class="whitespace-pre-wrap italic text-slate-900">${mainPassage}</div>
         </div>
 
-        <!-- PHẦN I: TRẮC NGHIỆM KHOANH ĐÁP ÁN ĐÚNG -->
-        ${generatedMcqs.length > 0 ? `
+        <!-- PHẦN I: TRẮC NGHIỆM KHÁCH QUAN -->
+        ${(generatedMcqs.length > 0 || generatedTrueFalse.length > 0 || generatedFillBlank.length > 0 || generatedMatching.length > 0 || generatedShortAnswer.length > 0) ? `
         <div>
           <div class="font-bold text-base uppercase text-indigo-950 border-b border-slate-300 pb-1 mb-3">
-            PHẦN I. TRẮC NGHIỆM KHÁCH QUAN (${generatedMcqs.length} câu)
+            PHẦN I. TRẮC NGHIỆM KHÁCH QUAN (${formatPts(totalObjectivePts)} điểm)
           </div>
-          <p class="italic text-xs text-slate-600 mb-4">Khoanh tròn vào duy nhất một chữ cái A, B, C hoặc D đứng trước câu trả lời đúng nhất:</p>
 
           <div class="space-y-4">
-            ${generatedMcqs.map(m => `
-              <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs">
-                <p class="font-bold text-slate-900">${m.q}</p>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 mt-2 pl-2">
-                  ${m.options.map(opt => `<div>${opt}</div>`).join('')}
-                </div>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-        ` : ''}
+            ${generatedMcqs.length > 0 ? `
+            <div>
+              ${(generatedTrueFalse.length > 0 || generatedFillBlank.length > 0 || generatedMatching.length > 0 || generatedShortAnswer.length > 0) ? `
+                <div class="font-bold text-xs uppercase text-slate-800 mb-2">1. Trắc nghiệm khoanh đáp án đúng:</div>
+              ` : ''}
+              <p class="italic text-xs text-slate-600 mb-3">Khoanh tròn vào duy nhất một chữ cái A, B, C hoặc D đứng trước câu trả lời đúng nhất:</p>
 
-        <!-- PHẦN II: TRẮC NGHIỆM ĐÚNG / SAI -->
-        ${generatedTrueFalse.length > 0 ? `
-        <div class="pt-4">
-          <div class="font-bold text-base uppercase text-indigo-950 border-b border-slate-300 pb-1 mb-3">
-            PHẦN II. TRẮC NGHIỆM LỰA CHỌN ĐÚNG / SAI (${generatedTrueFalse.length} câu)
-          </div>
-          <p class="italic text-xs text-slate-600 mb-4">Trong mỗi câu, chọn Đúng hoặc Sai cho mỗi ý a), b), c), d):</p>
-
-          <div class="space-y-4 text-xs">
-            ${generatedTrueFalse.map(tf => `
-              <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                <p class="font-bold text-slate-900">${tf.title}</p>
-                <div class="mt-2 pl-3 space-y-1">
-                  ${tf.items.map(it => `
-                    <div class="flex items-start justify-between border-b border-slate-100 py-1">
-                      <span><b>${it.label}</b> ${it.text}</span>
-                      <span class="font-bold text-indigo-900 ml-2 font-mono">[Đ/S]</span>
+              <div class="space-y-3">
+                ${generatedMcqs.map(m => `
+                  <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs">
+                    <p class="font-bold text-slate-900">${m.q}</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 mt-2 pl-2">
+                      ${m.options.map(opt => `<div>${opt}</div>`).join('')}
                     </div>
-                  `).join('')}
-                </div>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-        ` : ''}
-
-        <!-- PHẦN III: TRẮC NGHIỆM ĐIỀN KHUYẾT -->
-        ${generatedFillBlank.length > 0 ? `
-        <div class="pt-4">
-          <div class="font-bold text-base uppercase text-indigo-950 border-b border-slate-300 pb-1 mb-3">
-            PHẦN III. TRẮC NGHIỆM ĐIỀN KHUYẾT (${generatedFillBlank.length} câu)
-          </div>
-
-          <div class="space-y-4 text-xs">
-            ${generatedFillBlank.map(fb => `
-              <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                <p class="font-bold text-slate-900">${fb.title}</p>
-                <p class="mt-2 italic pl-2 text-slate-800">${fb.excerpt}</p>
-                <p class="mt-2 pl-2 text-slate-600">(1): ........................................ | (2): ........................................</p>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-        ` : ''}
-
-        <!-- PHẦN IV: TRẮC NGHIỆM NỐI CỘT -->
-        ${generatedMatching.length > 0 ? `
-        <div class="pt-4">
-          <div class="font-bold text-base uppercase text-indigo-950 border-b border-slate-300 pb-1 mb-3">
-            PHẦN IV. TRẮC NGHIỆM NỐI CỘT (${generatedMatching.length} câu)
-          </div>
-
-          <div class="space-y-4 text-xs">
-            ${generatedMatching.map(m => `
-              <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                <p class="font-bold text-slate-900">${m.title}</p>
-                <div class="grid grid-cols-2 gap-4 mt-2 border border-slate-200 p-2 rounded bg-white">
-                  <div>
-                    <p class="font-bold text-indigo-900 border-b pb-1">Cột A</p>
-                    <ul class="list-none space-y-1 mt-1">
-                      ${m.colA.map(a => `<li>${a}</li>`).join('')}
-                    </ul>
                   </div>
-                  <div>
-                    <p class="font-bold text-indigo-900 border-b pb-1">Cột B</p>
-                    <ul class="list-none space-y-1 mt-1">
-                      ${m.colB.map(b => `<li>${b}</li>`).join('')}
-                    </ul>
+                `).join('')}
+              </div>
+            </div>
+            ` : ''}
+
+            ${generatedTrueFalse.length > 0 ? `
+            <div class="pt-2">
+              <div class="font-bold text-xs uppercase text-slate-800 mb-2">2. Trắc nghiệm lựa chọn Đúng / Sai:</div>
+              <p class="italic text-xs text-slate-600 mb-3">Trong mỗi câu, chọn Đúng hoặc Sai cho mỗi ý a), b), c), d):</p>
+
+              <div class="space-y-3 text-xs">
+                ${generatedTrueFalse.map(tf => `
+                  <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    <p class="font-bold text-slate-900">${tf.title}</p>
+                    <div class="mt-2 pl-3 space-y-1">
+                      ${tf.items.map(it => `
+                        <div class="flex items-start justify-between border-b border-slate-100 py-1">
+                          <span><b>${it.label}</b> ${it.text}</span>
+                          <span class="font-bold text-indigo-900 ml-2 font-mono">[Đ/S]</span>
+                        </div>
+                      `).join('')}
+                    </div>
                   </div>
-                </div>
-                <p class="mt-2 font-semibold text-slate-700">Trả lời ghép nối: 1 - ..... ; 2 - ..... ; 3 - .....</p>
+                `).join('')}
               </div>
-            `).join('')}
+            </div>
+            ` : ''}
+
+            ${generatedFillBlank.length > 0 ? `
+            <div class="pt-2">
+              <div class="font-bold text-xs uppercase text-slate-800 mb-2">3. Trắc nghiệm điền khuyết:</div>
+              <div class="space-y-3 text-xs">
+                ${generatedFillBlank.map(fb => `
+                  <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    <p class="font-bold text-slate-900">${fb.title}</p>
+                    <p class="mt-2 italic pl-2 text-slate-800">${fb.excerpt}</p>
+                    <p class="mt-2 pl-2 text-slate-600">(1): ........................................ | (2): ........................................</p>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+            ` : ''}
+
+            ${generatedMatching.length > 0 ? `
+            <div class="pt-2">
+              <div class="font-bold text-xs uppercase text-slate-800 mb-2">4. Trắc nghiệm Nối cột:</div>
+              <div class="space-y-3 text-xs">
+                ${generatedMatching.map(m => `
+                  <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    <p class="font-bold text-slate-900">${m.title}</p>
+                    <div class="grid grid-cols-2 gap-4 mt-2 border border-slate-200 p-2 rounded bg-white">
+                      <div>
+                        <p class="font-bold text-indigo-900 border-b pb-1">Cột A</p>
+                        <ul class="list-none space-y-1 mt-1">
+                          ${m.colA.map(a => `<li>${a}</li>`).join('')}
+                        </ul>
+                      </div>
+                      <div>
+                        <p class="font-bold text-indigo-900 border-b pb-1">Cột B</p>
+                        <ul class="list-none space-y-1 mt-1">
+                          ${m.colB.map(b => `<li>${b}</li>`).join('')}
+                        </ul>
+                      </div>
+                    </div>
+                    <p class="mt-2 font-semibold text-slate-700">Trả lời ghép nối: 1 - ..... ; 2 - ..... ; 3 - .....</p>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+            ` : ''}
+
+            ${generatedShortAnswer.length > 0 ? `
+            <div class="pt-2">
+              <div class="font-bold text-xs uppercase text-slate-800 mb-2">5. Trắc nghiệm trả lời ngắn:</div>
+              <div class="space-y-3 text-xs">
+                ${generatedShortAnswer.map(sa => `
+                  <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    <p class="font-bold text-slate-900">${sa.title}</p>
+                    <p class="mt-2 text-slate-500 italic">Trả lời: ................................................................................................................................................</p>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+            ` : ''}
           </div>
         </div>
         ` : ''}
 
-        <!-- PHẦN V: TRẮC NGHIỆM TRẢ LỜI NGẮN -->
-        ${generatedShortAnswer.length > 0 ? `
-        <div class="pt-4">
-          <div class="font-bold text-base uppercase text-indigo-950 border-b border-slate-300 pb-1 mb-3">
-            PHẦN V. TRẮC NGHIỆM TRẢ LỜI NGẮN (${generatedShortAnswer.length} câu)
-          </div>
-
-          <div class="space-y-4 text-xs">
-            ${generatedShortAnswer.map(sa => `
-              <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                <p class="font-bold text-slate-900">${sa.title}</p>
-                <p class="mt-2 text-slate-500 italic">Trả lời: ................................................................................................................................................</p>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-        ` : ''}
-
-        <!-- PHẦN VI: TỰ LUẬN -->
+        <!-- PHẦN II: VIẾT -->
         ${essayQuestions.length > 0 ? `
         <div class="pt-4">
           <div class="font-bold text-base uppercase text-indigo-950 border-b border-slate-300 pb-1 mb-3">
-            PHẦN VI. TỰ LUẬN (${essayQuestions.length} câu)
+            PHẦN II. VIẾT (${formatPts(totalEssayPts)} điểm)
           </div>
 
           <div class="space-y-4 text-xs">
             ${essayQuestions.map(eq => `
               <div class="p-4 bg-indigo-50/40 rounded-lg border border-indigo-100">
-                <p class="font-bold text-slate-900">Câu ${eq.num}. (${eq.points.toFixed(1)} điểm)</p>
+                <p class="font-bold text-slate-900">Câu ${eq.num}. (${formatPts(eq.points)} điểm)</p>
                 <p class="mt-1 text-slate-800 leading-relaxed">${eq.text}</p>
               </div>
             `).join('')}
@@ -764,13 +773,13 @@ function buildDynamicLocalExam(opts: any): string {
         <div class="border-b border-indigo-100 pb-3 mb-4 flex items-center justify-between">
           <h2 class="text-lg font-bold text-indigo-900 flex items-center">
             <span class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-black mr-2">V</span>
-            ĐÁP ÁN VÀ HƯỚNG DẪN CHẤM CHI TIẾT (THANG ĐIỂM 10.0)
+            ĐÁP ÁN VÀ HƯỚNG DẪN CHẤM CHI TIẾT (THANG ĐIỂM ${formatPts(totalExamScore)})
           </h2>
         </div>
 
         <div class="space-y-6 text-xs">
           <div>
-            <h3 class="font-bold text-sm text-indigo-950 mb-2">1. Đáp án Phần I: Trắc nghiệm khách quan (3.0 điểm - Mỗi câu 0.25đ)</h3>
+            <h3 class="font-bold text-sm text-indigo-950 mb-2">1. Đáp án Phần I: Trắc nghiệm khách quan (${formatPts(totalObjectivePts)} điểm)</h3>
             <div class="overflow-x-auto">
               <table class="w-full text-center border-collapse border border-slate-300">
                 <thead>
@@ -790,7 +799,7 @@ function buildDynamicLocalExam(opts: any): string {
           </div>
 
           <div>
-            <h3 class="font-bold text-sm text-indigo-950 mb-2">2. Hướng dẫn chấm Phần II: Tự luận (7.0 điểm)</h3>
+            <h3 class="font-bold text-sm text-indigo-950 mb-2">2. Hướng dẫn chấm Phần II: Viết (${formatPts(totalEssayPts)} điểm)</h3>
             <div class="overflow-x-auto">
               <table class="w-full text-left border-collapse border border-slate-300">
                 <thead>
@@ -801,41 +810,49 @@ function buildDynamicLocalExam(opts: any): string {
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200">
-                  <tr>
-                    <td class="p-2.5 border border-slate-300 font-bold text-center" rowspan="4">Câu 1<br/>(3.0đ)</td>
-                    <td class="p-2.5 border border-slate-300"><b>Hình thức đoạn văn:</b> Đủ dung lượng, diễn đạt mạch lạc, chuẩn chính tả.</td>
-                    <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
-                  </tr>
-                  <tr>
-                    <td class="p-2.5 border border-slate-300"><b>Đúng vấn đề:</b> Phân tích được ý nghĩa từ ngữ liệu gốc (${primaryTopic.slice(0, 50)}...).</td>
-                    <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
-                  </tr>
-                  <tr>
-                    <td class="p-2.5 border border-slate-300"><b>Nội dung triển khai:</b> Nêu rõ tác động, bài học thực tế, vận dụng kiến thức chuẩn bài học.</td>
-                    <td class="p-2.5 border border-slate-300 text-center font-bold">1.5đ</td>
-                  </tr>
-                  <tr>
-                    <td class="p-2.5 border border-slate-300"><b>Sáng tạo & Liên hệ:</b> Rút ra liên hệ bản thân thực tế, góc nhìn độc đáo.</td>
-                    <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
-                  </tr>
-
-                  <tr class="bg-slate-50/50">
-                    <td class="p-2.5 border border-slate-300 font-bold text-center" rowspan="4">Câu 2<br/>(4.0đ)</td>
-                    <td class="p-2.5 border border-slate-300"><b>Mở bài:</b> Giới thiệu khái quát ngữ liệu/bài học trong tài liệu gốc.</td>
-                    <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
-                  </tr>
-                  <tr class="bg-slate-50/50">
-                    <td class="p-2.5 border border-slate-300"><b>Thân bài - Phân tích nội dung:</b> Phân tích luận điểm, chi tiết, dẫn chứng bám sát file tải lên.</td>
-                    <td class="p-2.5 border border-slate-300 text-center font-bold">2.5đ</td>
-                  </tr>
-                  <tr class="bg-slate-50/50">
-                    <td class="p-2.5 border border-slate-300"><b>Thân bài - Phương pháp / Nghệ thuật:</b> Nêu bật đặc sắc cấu trúc, từ ngữ, lập luận trong tài liệu.</td>
-                    <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
-                  </tr>
-                  <tr class="bg-slate-50/50">
-                    <td class="p-2.5 border border-slate-300"><b>Kết bài:</b> Khẳng định tổng quát giá trị bài học và định hướng ứng dụng.</td>
-                    <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
-                  </tr>
+                  ${essayQuestions.map((eq, idx) => {
+                    if (idx === 0) {
+                      return `
+                        <tr>
+                          <td class="p-2.5 border border-slate-300 font-bold text-center" rowspan="4">Câu 1<br/>(${formatPts(eq.points)}đ)</td>
+                          <td class="p-2.5 border border-slate-300"><b>Hình thức đoạn văn:</b> Đủ dung lượng, diễn đạt mạch lạc, chuẩn chính tả.</td>
+                          <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
+                        </tr>
+                        <tr>
+                          <td class="p-2.5 border border-slate-300"><b>Đúng vấn đề:</b> Phân tích được ý nghĩa từ ngữ liệu gốc (${primaryTopic.slice(0, 50)}...).</td>
+                          <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
+                        </tr>
+                        <tr>
+                          <td class="p-2.5 border border-slate-300"><b>Nội dung triển khai:</b> Nêu rõ tác động, bài học thực tế, vận dụng kiến thức chuẩn bài học.</td>
+                          <td class="p-2.5 border border-slate-300 text-center font-bold">${formatPts(Math.max(0, eq.points - 1.5))}đ</td>
+                        </tr>
+                        <tr>
+                          <td class="p-2.5 border border-slate-300"><b>Sáng tạo & Liên hệ:</b> Rút ra liên hệ bản thân thực tế, góc nhìn độc đáo.</td>
+                          <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
+                        </tr>
+                      `;
+                    } else {
+                      return `
+                        <tr class="bg-slate-50/50">
+                          <td class="p-2.5 border border-slate-300 font-bold text-center" rowspan="4">Câu ${eq.num}<br/>(${formatPts(eq.points)}đ)</td>
+                          <td class="p-2.5 border border-slate-300"><b>Mở bài:</b> Giới thiệu khái quát ngữ liệu/bài học trong tài liệu gốc.</td>
+                          <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
+                        </tr>
+                        <tr class="bg-slate-50/50">
+                          <td class="p-2.5 border border-slate-300"><b>Thân bài - Phân tích nội dung:</b> Phân tích luận điểm, chi tiết, dẫn chứng bám sát file tải lên.</td>
+                          <td class="p-2.5 border border-slate-300 text-center font-bold">${formatPts(Math.max(0, eq.points - 1.5))}đ</td>
+                        </tr>
+                        <tr class="bg-slate-50/50">
+                          <td class="p-2.5 border border-slate-300"><b>Thân bài - Phương pháp / Nghệ thuật:</b> Nêu bật đặc sắc cấu trúc, từ ngữ, lập luận trong tài liệu.</td>
+                          <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
+                        </tr>
+                        <tr class="bg-slate-50/50">
+                          <td class="p-2.5 border border-slate-300"><b>Kết bài:</b> Khẳng định tổng quát giá trị bài học và định hướng ứng dụng.</td>
+                          <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
+                        </tr>
+                      `;
+                    }
+                  }).join('')}
                 </tbody>
               </table>
             </div>
