@@ -224,11 +224,17 @@ function buildDynamicLocalExam(opts: any): string {
   } = opts;
 
   const mcq = questionStructure?.mcqCount ?? 8;
+  const mcqPts = questionStructure?.mcqPoints ?? 0.25;
   const trueFalse = questionStructure?.trueFalseCount ?? 0;
+  const trueFalsePts = questionStructure?.trueFalsePoints ?? 1.0;
   const fillBlank = questionStructure?.fillBlankCount ?? 0;
+  const fillBlankPts = questionStructure?.fillBlankPoints ?? 0.5;
   const matching = questionStructure?.matchingCount ?? 0;
+  const matchingPts = questionStructure?.matchingPoints ?? 0.5;
   const shortAnswer = questionStructure?.shortAnswerCount ?? 0;
+  const shortAnswerPts = questionStructure?.shortAnswerPoints ?? 0.25;
   const essay = questionStructure?.essayCount ?? 2;
+  const essayPts = questionStructure?.essayPoints ?? 3.5;
 
   // Clean raw topicScope text
   const rawText = (topicScope || '').trim();
@@ -265,10 +271,10 @@ function buildDynamicLocalExam(opts: any): string {
       const qType = (i - 1) % 5;
 
       if (qType === 0) {
-        qText = `Câu ${i}. (0.25 điểm) Phương thức biểu đạt chính được sử dụng trong ngữ liệu/đoạn trích trên là gì?`;
+        qText = `Câu ${i}. (${mcqPts} điểm) Phương thức biểu đạt chính được sử dụng trong ngữ liệu/đoạn trích trên là gì?`;
         options = ['A. Miêu tả kết hợp tự sự và biểu cảm', 'B. Thuyết minh khoa học', 'C. Nghị luận xã hội', 'D. Hành chính - công vụ'];
       } else if (qType === 1) {
-        qText = `Câu ${i}. (0.25 điểm) Dựa vào đoạn trích, chi tiết "${shortPhrase.slice(0, 60)}..." thể hiện nội dung gì?`;
+        qText = `Câu ${i}. (${mcqPts} điểm) Dựa vào đoạn trích, chi tiết "${shortPhrase.slice(0, 60)}..." thể hiện nội dung gì?`;
         options = [
           `A. Tái hiện hình ảnh/nội dung: ${shortPhrase.slice(0, 40)}...`,
           `B. Phủ định nhận định về thực tế văn bản`,
@@ -276,7 +282,7 @@ function buildDynamicLocalExam(opts: any): string {
           `D. Đánh giá mang tính giả thuyết`
         ];
       } else if (qType === 2) {
-        qText = `Câu ${i}. (0.25 điểm) Cách sử dụng từ ngữ/biện pháp nghệ thuật nổi bật trong đoạn trích là gì?`;
+        qText = `Câu ${i}. (${mcqPts} điểm) Cách sử dụng từ ngữ/biện pháp nghệ thuật nổi bật trong đoạn trích là gì?`;
         options = [
           `A. Biện pháp so sánh/nhân hóa/ẩn dụ giàu giá trị biểu cảm`,
           `B. Phép thuật ngữ kỹ thuật`,
@@ -284,7 +290,7 @@ function buildDynamicLocalExam(opts: any): string {
           `D. Nói giảm nói tránh`
         ];
       } else if (qType === 3) {
-        qText = `Câu ${i}. (0.25 điểm) Chủ đề trọng tâm bao trùm ngữ liệu đính kèm là gì?`;
+        qText = `Câu ${i}. (${mcqPts} điểm) Chủ đề trọng tâm bao trùm ngữ liệu đính kèm là gì?`;
         options = [
           `A. ${primaryTopic.slice(0, 70)}`,
           `B. Tìm hiểu sự thay đổi của khoa học công nghệ`,
@@ -292,7 +298,7 @@ function buildDynamicLocalExam(opts: any): string {
           `D. Nghiên cứu địa lý tự nhiên`
         ];
       } else {
-        qText = `Câu ${i}. (0.25 điểm) Thông điệp/ý nghĩa sâu sắc nhất rút ra từ ngữ liệu là gì?`;
+        qText = `Câu ${i}. (${mcqPts} điểm) Thông điệp/ý nghĩa sâu sắc nhất rút ra từ ngữ liệu là gì?`;
         options = [
           `A. Bồi dưỡng tình yêu thiên nhiên, quê hương và đạo lý cuộc sống`,
           `B. Phản đối việc tiếp thu bài học văn hóa`,
@@ -313,7 +319,7 @@ function buildDynamicLocalExam(opts: any): string {
     for (let i = 1; i <= trueFalse; i++) {
       generatedTrueFalse.push({
         num: i,
-        title: `Câu ${i}. (1.0 điểm) Trong các phát biểu sau đây về ngữ liệu gốc, hãy xác định mỗi ý a), b), c), d) là Đúng hay Sai:`,
+        title: `Câu ${i}. (${trueFalsePts} điểm) Trong các phát biểu sau đây về ngữ liệu gốc, hãy xác định mỗi ý a), b), c), d) là Đúng hay Sai:`,
         items: [
           { label: 'a)', text: `Văn bản/ngữ liệu gốc tập trung thể hiện nội dung "${primaryTopic.slice(0, 60)}".`, isTrue: true },
           { label: 'b)', text: `Tác giả sử dụng các từ ngữ và hình ảnh chân thực, giàu sức gợi tả.`, isTrue: true },
@@ -331,7 +337,7 @@ function buildDynamicLocalExam(opts: any): string {
       const pSnippet = textParagraphs[i % (textParagraphs.length || 1)] || primaryTopic;
       generatedFillBlank.push({
         num: i,
-        title: `Câu ${i}. (0.5 điểm) Chọn từ/cụm từ thích hợp từ ngữ liệu gốc để điền vào chỗ trống (...):`,
+        title: `Câu ${i}. (${fillBlankPts} điểm) Chọn từ/cụm từ thích hợp từ ngữ liệu gốc để điền vào chỗ trống (...):`,
         excerpt: `"${pSnippet.slice(0, 80)} ... (1) ... ${pSnippet.slice(80, 160)} ... (2) ... "`
       });
     }
@@ -343,7 +349,7 @@ function buildDynamicLocalExam(opts: any): string {
     for (let i = 1; i <= matching; i++) {
       generatedMatching.push({
         num: i,
-        title: `Câu ${i}. (0.5 điểm) Ghép thông tin ở Cột A tương ứng với Cột B dựa trên ngữ liệu gốc:`,
+        title: `Câu ${i}. (${matchingPts} điểm) Ghép thông tin ở Cột A tương ứng với Cột B dựa trên ngữ liệu gốc:`,
         colA: ['1. Chi tiết / Từ ngữ nổi bật', '2. Biện pháp / Phương thức', '3. Ý nghĩa / Thông điệp'],
         colB: ['a. Bồi dưỡng tư tưởng và cảm xúc nhân văn', 'b. Tái hiện không gian và hình ảnh chân thực', 'c. Thể hiện tư tưởng chủ đạo của tác phẩm']
       });
@@ -356,7 +362,7 @@ function buildDynamicLocalExam(opts: any): string {
     for (let i = 1; i <= shortAnswer; i++) {
       generatedShortAnswer.push({
         num: i,
-        title: `Câu ${i}. (0.25 điểm) Dựa vào ngữ liệu gốc, hãy trả lời ngắn gọn (trong 1-2 câu) nội dung chính hoặc bài học cốt lõi.`
+        title: `Câu ${i}. (${shortAnswerPts} điểm) Dựa vào ngữ liệu gốc, hãy trả lời ngắn gọn (trong 1-2 câu) nội dung chính hoặc bài học cốt lõi.`
       });
     }
   }
@@ -364,17 +370,21 @@ function buildDynamicLocalExam(opts: any): string {
   // 6. Essay Questions
   const essayQuestions: { num: number; points: number; text: string }[] = [];
   if (essay > 0) {
-    essayQuestions.push({
-      num: 1,
-      points: 3.0,
-      text: `Từ nội dung dữ liệu gốc trong tài liệu "${primaryTopic}", em hãy viết một đoạn văn (khoảng 10-12 câu) phân tích ý nghĩa cốt lõi và bài học thực tiễn rút ra cho bản thân.`
-    });
-    if (essay >= 2) {
-      essayQuestions.push({
-        num: 2,
-        points: 4.0,
-        text: `Phân tích toàn diện ngữ liệu/đề bài trong tài liệu tải lên (${primaryTopic}). Chỉ rõ các giá trị nội dung, nghệ thuật/phương pháp biểu đạt và liên hệ thực tế.`
-      });
+    const ptsPerEssay = essay === 1 ? essayPts : parseFloat((essayPts).toFixed(2));
+    for (let i = 1; i <= essay; i++) {
+      if (i === 1) {
+        essayQuestions.push({
+          num: 1,
+          points: ptsPerEssay,
+          text: `Từ nội dung dữ liệu gốc trong tài liệu "${primaryTopic}", em hãy viết một đoạn văn (khoảng 10-12 câu) phân tích ý nghĩa cốt lõi và bài học thực tiễn rút ra cho bản thân.`
+        });
+      } else {
+        essayQuestions.push({
+          num: i,
+          points: ptsPerEssay,
+          text: `Phân tích toàn diện ngữ liệu/đề bài trong tài liệu tải lên (${primaryTopic}). Chỉ rõ các giá trị nội dung, nghệ thuật/phương pháp biểu đạt và liên hệ thực tế.`
+        });
+      }
     }
   }
 
@@ -865,12 +875,33 @@ app.post('/api/gemini/generate-exam', async (req, res) => {
     } = essayRubricConfig || {};
 
     const mcq = questionStructure?.mcqCount ?? 12;
+    const mcqPts = questionStructure?.mcqPoints ?? 0.25;
     const trueFalse = questionStructure?.trueFalseCount ?? 0;
+    const trueFalsePts = questionStructure?.trueFalsePoints ?? 1.0;
     const fillBlank = questionStructure?.fillBlankCount ?? 0;
+    const fillBlankPts = questionStructure?.fillBlankPoints ?? 0.5;
     const matching = questionStructure?.matchingCount ?? 0;
+    const matchingPts = questionStructure?.matchingPoints ?? 0.5;
     const shortAnswer = questionStructure?.shortAnswerCount ?? 0;
+    const shortAnswerPts = questionStructure?.shortAnswerPoints ?? 0.25;
     const essay = questionStructure?.essayCount ?? 2;
+    const essayPts = questionStructure?.essayPoints ?? 3.5;
     const totalQ = mcq + trueFalse + fillBlank + matching + shortAnswer + essay;
+
+    const totalMcqPts = (mcq * mcqPts).toFixed(2).replace(/\.00$/, '');
+    const totalTrueFalsePts = (trueFalse * trueFalsePts).toFixed(2).replace(/\.00$/, '');
+    const totalFillBlankPts = (fillBlank * fillBlankPts).toFixed(2).replace(/\.00$/, '');
+    const totalMatchingPts = (matching * matchingPts).toFixed(2).replace(/\.00$/, '');
+    const totalShortAnswerPts = (shortAnswer * shortAnswerPts).toFixed(2).replace(/\.00$/, '');
+    const totalEssayPts = (essay * essayPts).toFixed(2).replace(/\.00$/, '');
+    const totalExamPoints = (
+      mcq * mcqPts +
+      trueFalse * trueFalsePts +
+      fillBlank * fillBlankPts +
+      matching * matchingPts +
+      shortAnswer * shortAnswerPts +
+      essay * essayPts
+    ).toFixed(2).replace(/\.00$/, '');
 
     const ai = getGeminiClient();
 
@@ -885,15 +916,20 @@ BẮT BUỘC THỰC HIỆN ĐÚNG QUY ĐỊNH CỦA BỘ VỀ XÂY DỰNG HỒ S
 1. PHẠM VI & TÍNH CÂN ĐỐI:
    - Căn cứ theo loại bài kiểm tra (${examType || 'Giữa học kì I'}) và Môn ${subject || 'Ngữ văn'} ${grade || 'Khối 8'}.
    - Đảm bảo ma trận phân bổ kiến thức theo 3 mức độ nhận thức: Nhận biết (40%), Thông hiểu (30%), Vận dụng (30%).
-   - Thang điểm tổng: 10 điểm.
+   - Thang điểm tổng: ${totalExamPoints} điểm.
 
-2. CẤU TRÚC DẠNG CÂU HỎI TÍCH HỢP TRONG ĐỀ THI (TỔNG CỘNG ${totalQ} CÂU, TỔNG 10.0 ĐIỂM):
-   - Trắc nghiệm khoanh đáp án đúng (lựa chọn 1 đáp án A/B/C/D): ${mcq} câu.
-   - Trắc nghiệm lựa chọn Đúng / Sai (mỗi câu gồm 4 ý a, b, c, d): ${trueFalse} câu.
-   - Trắc nghiệm điền khuyết (điền từ/cụm từ vào chỗ trống): ${fillBlank} câu.
-   - Trắc nghiệm Nối (ghép vế Cột A với Cột B): ${matching} câu.
-   - Trắc nghiệm trả lời ngắn (điền đáp số/câu trả lời ngắn gọn): ${shortAnswer} câu.
-   - Tự luận (viết đoạn/bài văn, giải toán, bài tập phân tích): ${essay} câu.
+2. CẤU TRÚC DẠNG CÂU HỎI VÀ ĐIỂM SỐ TƯƠNG ỨNG (TỔNG CỘNG ${totalQ} CÂU, TỔNG ${totalExamPoints} ĐIỂM):
+   - Trắc nghiệm khoanh đáp án đúng (1 đáp án A/B/C/D): ${mcq} câu (Mỗi câu ${mcqPts} điểm -> Tổng ${totalMcqPts} điểm).
+   ${trueFalse > 0 ? `- Trắc nghiệm lựa chọn Đúng / Sai (mỗi câu 4 ý a,b,c,d): ${trueFalse} câu (Mỗi câu ${trueFalsePts} điểm -> Tổng ${totalTrueFalsePts} điểm).` : ''}
+   ${fillBlank > 0 ? `- Trắc nghiệm điền khuyết: ${fillBlank} câu (Mỗi câu ${fillBlankPts} điểm -> Tổng ${totalFillBlankPts} điểm).` : ''}
+   ${matching > 0 ? `- Trắc nghiệm Nối (ghép Cột A với B): ${matching} câu (Mỗi câu ${matchingPts} điểm -> Tổng ${totalMatchingPts} điểm).` : ''}
+   ${shortAnswer > 0 ? `- Trắc nghiệm trả lời ngắn: ${shortAnswer} câu (Mỗi câu ${shortAnswerPts} điểm -> Tổng ${totalShortAnswerPts} điểm).` : ''}
+   ${essay > 0 ? `- Tự luận: ${essay} câu (Mỗi câu ${essayPts} điểm -> Tổng ${totalEssayPts} điểm).` : ''}
+
+QUY ĐỊNH GHI ĐIỂM SỐ TRONG ĐỀ THI & MA TRẬN:
+   - Tại mỗi câu hỏi trong Đề thi, BẮT BUỘC ghi rõ số điểm tương ứng trong ngoặc đơn, ví dụ: "Câu 1. (${mcqPts} điểm)...", "Câu 2. (${trueFalsePts} điểm)...", "Câu 1. (${essayPts} điểm)...".
+   - Tại tiêu đề của từng Phần trong Đề thi, BẮT BUỘC ghi rõ tổng điểm phần đó (Ví dụ: "PHẦN I. TRẮC NGHIỆM KHÁCH QUAN (${mcq} câu - ${totalMcqPts} điểm)").
+   - Ma trận và Bảng đặc tả phải phân bổ chính xác tổng điểm ${totalExamPoints} điểm theo đúng các mức điểm từng dạng câu đã thiết lập.
 
 3. CẤU TRÚC XUẤT KẾT QUẢ DỰA TRÊN PHƯƠNG ÁN ĐÃ CHỌN (${outputOption || '3'}):
    ${outputOption === '1' ? `

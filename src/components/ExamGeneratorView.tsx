@@ -48,6 +48,28 @@ export const ExamGeneratorView: React.FC<ExamGeneratorViewProps> = ({
   const [shortAnswerCount, setShortAnswerCount] = useState<number>(0); // Trắc nghiệm trả lời ngắn
   const [essayCount, setEssayCount] = useState<number>(2); // Tự luận
 
+  // Point values per question type (Decimal points like 0.25, 0.5, 1.0...)
+  const [mcqPoints, setMcqPoints] = useState<number>(0.25);
+  const [trueFalsePoints, setTrueFalsePoints] = useState<number>(1.0);
+  const [fillBlankPoints, setFillBlankPoints] = useState<number>(0.5);
+  const [matchingPoints, setMatchingPoints] = useState<number>(0.5);
+  const [shortAnswerPoints, setShortAnswerPoints] = useState<number>(0.25);
+  const [essayPoints, setEssayPoints] = useState<number>(3.5);
+
+  const formatPoints = (num: number) => {
+    return parseFloat(num.toFixed(2)).toString();
+  };
+
+  const totalMcqPts = mcqCount * mcqPoints;
+  const totalTrueFalsePts = trueFalseCount * trueFalsePoints;
+  const totalFillBlankPts = fillBlankCount * fillBlankPoints;
+  const totalMatchingPts = matchingCount * matchingPoints;
+  const totalShortAnswerPts = shortAnswerCount * shortAnswerPoints;
+  const totalEssayPts = essayCount * essayPoints;
+
+  const totalExamQuestions = mcqCount + trueFalseCount + fillBlankCount + matchingCount + shortAnswerCount + essayCount;
+  const totalExamScore = totalMcqPts + totalTrueFalsePts + totalFillBlankPts + totalMatchingPts + totalShortAnswerPts + totalEssayPts;
+
   // Exam details
   const [subject, setSubject] = useState<string>('Ngữ văn');
   const [grade, setGrade] = useState<string>('Khối 8');
@@ -290,36 +312,60 @@ Chủ đề 4: Viết bài văn nghị luận phân tích một tác phẩm văn
   const handleApplyStructurePreset = (preset: 'standard' | 'diverse' | 'thpt' | 'essayOnly') => {
     if (preset === 'standard') {
       setMcqCount(12);
+      setMcqPoints(0.25);
       setTrueFalseCount(0);
+      setTrueFalsePoints(1.0);
       setFillBlankCount(0);
+      setFillBlankPoints(0.5);
       setMatchingCount(0);
+      setMatchingPoints(0.5);
       setShortAnswerCount(0);
+      setShortAnswerPoints(0.25);
       setEssayCount(2);
-      onSuccessToast('Đã áp dụng cấu trúc Chuẩn THCS/THPT (12 MCQ + 2 Tự luận)!');
+      setEssayPoints(3.5);
+      onSuccessToast('Đã áp dụng cấu trúc Chuẩn THCS/THPT (12 MCQ + 2 Tự luận = 10.0đ)!');
     } else if (preset === 'diverse') {
       setMcqCount(8);
+      setMcqPoints(0.25); // 2.0đ
       setTrueFalseCount(2);
+      setTrueFalsePoints(1.0); // 2.0đ
       setFillBlankCount(2);
+      setFillBlankPoints(0.5); // 1.0đ
       setMatchingCount(2);
+      setMatchingPoints(0.5); // 1.0đ
       setShortAnswerCount(2);
+      setShortAnswerPoints(0.5); // 1.0đ
       setEssayCount(1);
-      onSuccessToast('Đã áp dụng cấu trúc Tích hợp Đa dạng 6 dạng câu hỏi!');
+      setEssayPoints(3.0); // 3.0đ
+      onSuccessToast('Đã áp dụng cấu trúc Tích hợp Đa dạng 6 dạng câu hỏi (Tổng 10.0đ)!');
     } else if (preset === 'thpt') {
       setMcqCount(18);
+      setMcqPoints(0.25); // 4.5đ
       setTrueFalseCount(4);
+      setTrueFalsePoints(1.0); // 4.0đ
       setFillBlankCount(0);
+      setFillBlankPoints(0.5);
       setMatchingCount(0);
+      setMatchingPoints(0.5);
       setShortAnswerCount(6);
+      setShortAnswerPoints(0.25); // 1.5đ
       setEssayCount(0);
-      onSuccessToast('Đã áp dụng cấu trúc Mẫu Thi THPT Quốc Gia Mới!');
+      setEssayPoints(3.5);
+      onSuccessToast('Đã áp dụng cấu trúc Mẫu Thi THPT Quốc Gia Mới (10.0đ)!');
     } else if (preset === 'essayOnly') {
       setMcqCount(0);
+      setMcqPoints(0.25);
       setTrueFalseCount(0);
+      setTrueFalsePoints(1.0);
       setFillBlankCount(0);
+      setFillBlankPoints(0.5);
       setMatchingCount(0);
+      setMatchingPoints(0.5);
       setShortAnswerCount(0);
+      setShortAnswerPoints(0.25);
       setEssayCount(4);
-      onSuccessToast('Đã áp dụng cấu trúc 100% Tự luận (4 câu)!');
+      setEssayPoints(2.5); // 10.0đ
+      onSuccessToast('Đã áp dụng cấu trúc 100% Tự luận (4 câu x 2.5đ = 10.0đ)!');
     }
   };
 
@@ -747,11 +793,17 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
           additionalNotes,
           questionStructure: {
             mcqCount,
+            mcqPoints,
             trueFalseCount,
+            trueFalsePoints,
             fillBlankCount,
+            fillBlankPoints,
             matchingCount,
+            matchingPoints,
             shortAnswerCount,
+            shortAnswerPoints,
             essayCount,
+            essayPoints,
           },
         }),
       });
@@ -817,10 +869,10 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
         const qType = (i - 1) % 5;
 
         if (qType === 0) {
-          qText = `Câu ${i}. (0.25 điểm) Phương thức biểu đạt chính được sử dụng trong ngữ liệu/đoạn trích trên là gì?`;
+          qText = `Câu ${i}. (${mcqPoints} điểm) Phương thức biểu đạt chính được sử dụng trong ngữ liệu/đoạn trích trên là gì?`;
           options = ['A. Miêu tả kết hợp tự sự và biểu cảm', 'B. Thuyết minh khoa học', 'C. Nghị luận xã hội', 'D. Hành chính - công vụ'];
         } else if (qType === 1) {
-          qText = `Câu ${i}. (0.25 điểm) Dựa vào đoạn trích, chi tiết "${shortPhrase.slice(0, 60)}..." thể hiện nội dung gì?`;
+          qText = `Câu ${i}. (${mcqPoints} điểm) Dựa vào đoạn trích, chi tiết "${shortPhrase.slice(0, 60)}..." thể hiện nội dung gì?`;
           options = [
             `A. Tái hiện sinh động hình ảnh/nội dung: ${shortPhrase.slice(0, 40)}...`,
             `B. Diễn tả sự việc trái ngược với ngữ liệu thực tế`,
@@ -828,7 +880,7 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
             `D. Đưa ra nhận định mang tính giả thuyết`
           ];
         } else if (qType === 2) {
-          qText = `Câu ${i}. (0.25 điểm) Trong câu văn: "${shortPhrase.slice(0, 65)}...", cách sử dụng từ ngữ/biện pháp nghệ thuật nổi bật là gì?`;
+          qText = `Câu ${i}. (${mcqPoints} điểm) Trong câu văn: "${shortPhrase.slice(0, 65)}...", cách sử dụng từ ngữ/biện pháp nghệ thuật nổi bật là gì?`;
           options = [
             `A. Biện pháp so sánh/nhân hóa/ẩn dụ giàu giá trị biểu cảm`,
             `B. Thuật ngữ mượn tiếng nước ngoài`,
@@ -836,7 +888,7 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
             `D. Biện pháp nói giảm nói tránh`
           ];
         } else if (qType === 3) {
-          qText = `Câu ${i}. (0.25 điểm) Chủ đề trọng tâm bao trùm ngữ liệu đính kèm là gì?`;
+          qText = `Câu ${i}. (${mcqPoints} điểm) Chủ đề trọng tâm bao trùm ngữ liệu đính kèm là gì?`;
           options = [
             `A. ${primaryTopic.slice(0, 70)}`,
             `B. Phân tích biến đổi khí hậu sinh thái`,
@@ -844,7 +896,7 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
             `D. Tóm tắt các lý thuyết xã hội`
           ];
         } else {
-          qText = `Câu ${i}. (0.25 điểm) Thông điệp/ý nghĩa sâu sắc nhất rút ra từ ngữ liệu đính kèm là gì?`;
+          qText = `Câu ${i}. (${mcqPoints} điểm) Thông điệp/ý nghĩa sâu sắc nhất rút ra từ ngữ liệu đính kèm là gì?`;
           options = [
             `A. Bồi dưỡng tình yêu thiên nhiên, quê hương và đạo lý con người`,
             `B. Phản đối việc tìm hiểu các giá trị truyền thống`,
@@ -870,7 +922,7 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
       for (let i = 1; i <= trueFalseCount; i++) {
         trueFalseQuestions.push({
           num: i,
-          title: `Câu ${i}. (1.0 điểm) Trong các phát biểu sau đây về ngữ liệu gốc, hãy xác định mỗi ý a), b), c), d) là Đúng hay Sai:`,
+          title: `Câu ${i}. (${trueFalsePoints} điểm) Trong các phát biểu sau đây về ngữ liệu gốc, hãy xác định mỗi ý a), b), c), d) là Đúng hay Sai:`,
           items: [
             { label: 'a)', text: `Văn bản/ngữ liệu gốc tập trung thể hiện nội dung "${primaryTopic.slice(0, 60)}".` },
             { label: 'b)', text: `Tác giả sử dụng các từ ngữ và hình ảnh chân thực, giàu sức gợi tả.` },
@@ -888,7 +940,7 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
         const pSnippet = textParagraphs[i % (textParagraphs.length || 1)] || primaryTopic;
         fillBlankQuestions.push({
           num: i,
-          title: `Câu ${i}. (0.5 điểm) Chọn từ/cụm từ thích hợp từ ngữ liệu gốc để điền vào chỗ trống (...):`,
+          title: `Câu ${i}. (${fillBlankPoints} điểm) Chọn từ/cụm từ thích hợp từ ngữ liệu gốc để điền vào chỗ trống (...):`,
           excerpt: `"${pSnippet.slice(0, 80)} ... (1) ... ${pSnippet.slice(80, 160)} ... (2) ... "`
         });
       }
@@ -900,7 +952,7 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
       for (let i = 1; i <= matchingCount; i++) {
         matchingQuestions.push({
           num: i,
-          title: `Câu ${i}. (0.5 điểm) Ghép thông tin ở Cột A tương ứng với Cột B dựa trên ngữ liệu gốc:`,
+          title: `Câu ${i}. (${matchingPoints} điểm) Ghép thông tin ở Cột A tương ứng với Cột B dựa trên ngữ liệu gốc:`,
           colA: ['1. Chi tiết / Từ ngữ nổi bật', '2. Biện pháp / Phương thức', '3. Ý nghĩa / Thông điệp'],
           colB: ['a. Bồi dưỡng tư tưởng và cảm xúc nhân văn', 'b. Tái hiện không gian và hình ảnh chân thực', 'c. Thể hiện tư tưởng chủ đạo của tác phẩm']
         });
@@ -913,7 +965,7 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
       for (let i = 1; i <= shortAnswerCount; i++) {
         shortAnswerQuestions.push({
           num: i,
-          title: `Câu ${i}. (0.25 điểm) Dựa vào ngữ liệu gốc, hãy trả lời ngắn gọn (trong 1-2 câu) nội dung chính hoặc bài học cốt lõi.`
+          title: `Câu ${i}. (${shortAnswerPoints} điểm) Dựa vào ngữ liệu gốc, hãy trả lời ngắn gọn (trong 1-2 câu) nội dung chính hoặc bài học cốt lõi.`
         });
       }
     }
@@ -921,17 +973,21 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
     // 6. Essay Questions
     const essayQuestionsList: { num: number; points: number; text: string }[] = [];
     if (essayCount > 0) {
-      essayQuestionsList.push({
-        num: 1,
-        points: 3.0,
-        text: `Từ nội dung dữ liệu gốc trong tài liệu "${primaryTopic}", em hãy viết một đoạn văn (khoảng 10-12 câu) phân tích ý nghĩa cốt lõi và bài học thực tiễn rút ra cho bản thân.`
-      });
-      if (essayCount >= 2) {
-        essayQuestionsList.push({
-          num: 2,
-          points: 4.0,
-          text: `Phân tích toàn diện ngữ liệu/đề bài trong tài liệu tải lên (${primaryTopic}). Chỉ rõ các giá trị nội dung, nghệ thuật/phương pháp biểu đạt và liên hệ thực tế.`
-        });
+      const ptsPerEssay = essayCount === 1 ? essayPoints : parseFloat((essayPoints).toFixed(2));
+      for (let i = 1; i <= essayCount; i++) {
+        if (i === 1) {
+          essayQuestionsList.push({
+            num: 1,
+            points: ptsPerEssay,
+            text: `Từ nội dung dữ liệu gốc trong tài liệu "${primaryTopic}", em hãy viết một đoạn văn (khoảng 10-12 câu) phân tích ý nghĩa cốt lõi và bài học thực tiễn rút ra cho bản thân.`
+          });
+        } else {
+          essayQuestionsList.push({
+            num: i,
+            points: ptsPerEssay,
+            text: `Phân tích toàn diện ngữ liệu/đề bài trong tài liệu tải lên (${primaryTopic}). Chỉ rõ các giá trị nội dung, nghệ thuật/phương pháp biểu đạt và liên hệ thực tế.`
+          });
+        }
       }
     }
 
@@ -1615,15 +1671,24 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
             </div>
           </div>
 
-          {/* Question 3: Integrated Question Structure Configuration */}
+          {/* Question 3: Integrated Question Structure & Point Configuration */}
           <div className="space-y-3 pt-2 border-t border-slate-100">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <label className="block text-xs font-bold text-slate-800">
-                3. Lựa chọn tích hợp dạng câu hỏi: <span className="text-rose-600">*</span>
+                3. Lựa chọn tích hợp dạng câu hỏi & Thiết lập điểm: <span className="text-rose-600">*</span>
               </label>
-              <span className="text-[11px] font-black px-2 py-0.5 bg-rose-100 text-rose-800 rounded-lg">
-                Tổng: {mcqCount + trueFalseCount + fillBlankCount + matchingCount + shortAnswerCount + essayCount} câu
-              </span>
+              <div className="flex items-center space-x-2">
+                <span className="text-[11px] font-black px-2 py-0.5 bg-slate-200 text-slate-800 rounded-lg">
+                  Tổng: {totalExamQuestions} câu
+                </span>
+                <span className={`text-[11px] font-black px-2.5 py-0.5 rounded-lg border ${
+                  Math.abs(totalExamScore - 10) < 0.01 
+                    ? 'bg-emerald-100 text-emerald-800 border-emerald-300' 
+                    : 'bg-amber-100 text-amber-900 border-amber-300'
+                }`}>
+                  {formatPoints(totalExamScore)} điểm {Math.abs(totalExamScore - 10) >= 0.01 && '(Khuyên dùng: 10đ)'}
+                </span>
+              </div>
             </div>
 
             {/* Structure Presets Bar */}
@@ -1633,240 +1698,432 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
                 onClick={() => handleApplyStructurePreset('standard')}
                 className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-[10px] font-bold text-slate-700 rounded-lg border border-slate-200 transition cursor-pointer"
               >
-                Mẫu Chuẩn (12 MCQ + 2 TL)
+                Mẫu Chuẩn (12 MCQ + 2 TL = 10đ)
               </button>
               <button
                 type="button"
                 onClick={() => handleApplyStructurePreset('diverse')}
                 className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-[10px] font-bold text-amber-800 rounded-lg border border-amber-200 transition cursor-pointer"
               >
-                Đa dạng 6 dạng
+                Đa dạng 6 dạng (10đ)
               </button>
               <button
                 type="button"
                 onClick={() => handleApplyStructurePreset('thpt')}
                 className="px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-[10px] font-bold text-indigo-800 rounded-lg border border-indigo-200 transition cursor-pointer"
               >
-                Mẫu Thi THPT Mới
+                Mẫu Thi THPT Mới (10đ)
               </button>
               <button
                 type="button"
                 onClick={() => handleApplyStructurePreset('essayOnly')}
                 className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-[10px] font-bold text-rose-800 rounded-lg border border-rose-200 transition cursor-pointer"
               >
-                100% Tự luận
+                100% Tự luận (10đ)
               </button>
             </div>
 
             <div className="space-y-2 bg-slate-50/80 p-3 rounded-2xl border border-slate-200">
               
               {/* 1. MCQ */}
-              <div className="flex items-center justify-between p-2 bg-white rounded-xl border border-slate-200 shadow-2xs">
+              <div className="p-2.5 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-2 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
                 <div className="flex items-center space-x-2">
-                  <div className="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">🎯</div>
+                  <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs shrink-0">🎯</div>
                   <div>
                     <div className="text-xs font-bold text-slate-900">Trắc nghiệm khoanh đáp án đúng</div>
                     <div className="text-[10px] text-slate-500">Lựa chọn 1 đáp án A, B, C hoặc D</div>
                   </div>
                 </div>
-                <div className="flex items-center space-x-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setMcqCount(Math.max(0, mcqCount - 1))}
-                    className="w-6 h-6 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer"
-                  >
-                    -
-                  </button>
-                  <input
-                    type="number"
-                    min={0}
-                    max={50}
-                    value={mcqCount}
-                    onChange={e => setMcqCount(Math.max(0, parseInt(e.target.value) || 0))}
-                    className="w-10 text-center text-xs font-extrabold text-slate-900 bg-slate-50 border border-slate-200 rounded py-0.5"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setMcqCount(mcqCount + 1)}
-                    className="w-6 h-6 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer"
-                  >
-                    +
-                  </button>
+
+                <div className="flex flex-wrap items-center gap-2 pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+                  {/* Số câu */}
+                  <div className="flex items-center space-x-1 bg-slate-50 p-1 rounded-lg border border-slate-200">
+                    <span className="text-[10px] font-semibold text-slate-500 mr-0.5 pl-1">Số câu:</span>
+                    <button
+                      type="button"
+                      onClick={() => setMcqCount(Math.max(0, mcqCount - 1))}
+                      className="w-5 h-5 rounded bg-white hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer shadow-xs"
+                    >-</button>
+                    <input
+                      type="number"
+                      min={0}
+                      max={50}
+                      value={mcqCount}
+                      onChange={e => setMcqCount(Math.max(0, parseInt(e.target.value) || 0))}
+                      className="w-9 text-center text-xs font-extrabold text-slate-900 bg-white border border-slate-200 rounded py-0.5"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setMcqCount(mcqCount + 1)}
+                      className="w-5 h-5 rounded bg-white hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer shadow-xs"
+                    >+</button>
+                  </div>
+
+                  {/* Điểm/câu */}
+                  <div className="flex items-center space-x-1 bg-slate-50 p-1 rounded-lg border border-slate-200">
+                    <span className="text-[10px] font-semibold text-slate-500 mr-0.5 pl-1">Điểm/câu:</span>
+                    <button
+                      type="button"
+                      onClick={() => setMcqPoints(Math.max(0, parseFloat((mcqPoints - 0.25).toFixed(2))))}
+                      className="w-5 h-5 rounded bg-white hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer shadow-xs"
+                    >-</button>
+                    <input
+                      type="number"
+                      step={0.25}
+                      min={0}
+                      max={10}
+                      value={mcqPoints}
+                      onChange={e => setMcqPoints(Math.max(0, parseFloat(e.target.value) || 0))}
+                      className="w-12 text-center text-xs font-extrabold text-indigo-950 bg-white border border-slate-200 rounded py-0.5 font-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setMcqPoints(parseFloat((mcqPoints + 0.25).toFixed(2)))}
+                      className="w-5 h-5 rounded bg-white hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer shadow-xs"
+                    >+</button>
+                  </div>
+
+                  {/* Tổng điểm dạng */}
+                  <div className="min-w-[60px] text-right">
+                    <span className="inline-block px-2 py-1 bg-emerald-50 text-emerald-900 border border-emerald-200 rounded-lg text-[11px] font-black font-mono">
+                      {formatPoints(totalMcqPts)}đ
+                    </span>
+                  </div>
                 </div>
               </div>
 
               {/* 2. True / False */}
-              <div className="flex items-center justify-between p-2 bg-white rounded-xl border border-slate-200 shadow-2xs">
+              <div className="p-2.5 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-2 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
                 <div className="flex items-center space-x-2">
-                  <div className="w-6 h-6 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center font-bold text-xs">⚖️</div>
+                  <div className="w-7 h-7 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center font-bold text-xs shrink-0">⚖️</div>
                   <div>
                     <div className="text-xs font-bold text-slate-900">Trắc nghiệm lựa chọn đúng sai</div>
                     <div className="text-[10px] text-slate-500">Xác định Đúng/Sai cho 4 ý a, b, c, d</div>
                   </div>
                 </div>
-                <div className="flex items-center space-x-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setTrueFalseCount(Math.max(0, trueFalseCount - 1))}
-                    className="w-6 h-6 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer"
-                  >
-                    -
-                  </button>
-                  <input
-                    type="number"
-                    min={0}
-                    max={20}
-                    value={trueFalseCount}
-                    onChange={e => setTrueFalseCount(Math.max(0, parseInt(e.target.value) || 0))}
-                    className="w-10 text-center text-xs font-extrabold text-slate-900 bg-slate-50 border border-slate-200 rounded py-0.5"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setTrueFalseCount(trueFalseCount + 1)}
-                    className="w-6 h-6 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer"
-                  >
-                    +
-                  </button>
+
+                <div className="flex flex-wrap items-center gap-2 pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+                  {/* Số câu */}
+                  <div className="flex items-center space-x-1 bg-slate-50 p-1 rounded-lg border border-slate-200">
+                    <span className="text-[10px] font-semibold text-slate-500 mr-0.5 pl-1">Số câu:</span>
+                    <button
+                      type="button"
+                      onClick={() => setTrueFalseCount(Math.max(0, trueFalseCount - 1))}
+                      className="w-5 h-5 rounded bg-white hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer shadow-xs"
+                    >-</button>
+                    <input
+                      type="number"
+                      min={0}
+                      max={20}
+                      value={trueFalseCount}
+                      onChange={e => setTrueFalseCount(Math.max(0, parseInt(e.target.value) || 0))}
+                      className="w-9 text-center text-xs font-extrabold text-slate-900 bg-white border border-slate-200 rounded py-0.5"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setTrueFalseCount(trueFalseCount + 1)}
+                      className="w-5 h-5 rounded bg-white hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer shadow-xs"
+                    >+</button>
+                  </div>
+
+                  {/* Điểm/câu */}
+                  <div className="flex items-center space-x-1 bg-slate-50 p-1 rounded-lg border border-slate-200">
+                    <span className="text-[10px] font-semibold text-slate-500 mr-0.5 pl-1">Điểm/câu:</span>
+                    <button
+                      type="button"
+                      onClick={() => setTrueFalsePoints(Math.max(0, parseFloat((trueFalsePoints - 0.25).toFixed(2))))}
+                      className="w-5 h-5 rounded bg-white hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer shadow-xs"
+                    >-</button>
+                    <input
+                      type="number"
+                      step={0.25}
+                      min={0}
+                      max={10}
+                      value={trueFalsePoints}
+                      onChange={e => setTrueFalsePoints(Math.max(0, parseFloat(e.target.value) || 0))}
+                      className="w-12 text-center text-xs font-extrabold text-indigo-950 bg-white border border-slate-200 rounded py-0.5 font-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setTrueFalsePoints(parseFloat((trueFalsePoints + 0.25).toFixed(2)))}
+                      className="w-5 h-5 rounded bg-white hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer shadow-xs"
+                    >+</button>
+                  </div>
+
+                  {/* Tổng điểm dạng */}
+                  <div className="min-w-[60px] text-right">
+                    <span className="inline-block px-2 py-1 bg-sky-50 text-sky-900 border border-sky-200 rounded-lg text-[11px] font-black font-mono">
+                      {formatPoints(totalTrueFalsePts)}đ
+                    </span>
+                  </div>
                 </div>
               </div>
 
               {/* 3. Fill in blank */}
-              <div className="flex items-center justify-between p-2 bg-white rounded-xl border border-slate-200 shadow-2xs">
+              <div className="p-2.5 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-2 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
                 <div className="flex items-center space-x-2">
-                  <div className="w-6 h-6 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs">📝</div>
+                  <div className="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs shrink-0">📝</div>
                   <div>
                     <div className="text-xs font-bold text-slate-900">Trắc nghiệm điền khuyết</div>
                     <div className="text-[10px] text-slate-500">Điền từ / cụm từ thích hợp vào chỗ trống</div>
                   </div>
                 </div>
-                <div className="flex items-center space-x-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setFillBlankCount(Math.max(0, fillBlankCount - 1))}
-                    className="w-6 h-6 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer"
-                  >
-                    -
-                  </button>
-                  <input
-                    type="number"
-                    min={0}
-                    max={20}
-                    value={fillBlankCount}
-                    onChange={e => setFillBlankCount(Math.max(0, parseInt(e.target.value) || 0))}
-                    className="w-10 text-center text-xs font-extrabold text-slate-900 bg-slate-50 border border-slate-200 rounded py-0.5"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setFillBlankCount(fillBlankCount + 1)}
-                    className="w-6 h-6 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer"
-                  >
-                    +
-                  </button>
+
+                <div className="flex flex-wrap items-center gap-2 pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+                  {/* Số câu */}
+                  <div className="flex items-center space-x-1 bg-slate-50 p-1 rounded-lg border border-slate-200">
+                    <span className="text-[10px] font-semibold text-slate-500 mr-0.5 pl-1">Số câu:</span>
+                    <button
+                      type="button"
+                      onClick={() => setFillBlankCount(Math.max(0, fillBlankCount - 1))}
+                      className="w-5 h-5 rounded bg-white hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer shadow-xs"
+                    >-</button>
+                    <input
+                      type="number"
+                      min={0}
+                      max={20}
+                      value={fillBlankCount}
+                      onChange={e => setFillBlankCount(Math.max(0, parseInt(e.target.value) || 0))}
+                      className="w-9 text-center text-xs font-extrabold text-slate-900 bg-white border border-slate-200 rounded py-0.5"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setFillBlankCount(fillBlankCount + 1)}
+                      className="w-5 h-5 rounded bg-white hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer shadow-xs"
+                    >+</button>
+                  </div>
+
+                  {/* Điểm/câu */}
+                  <div className="flex items-center space-x-1 bg-slate-50 p-1 rounded-lg border border-slate-200">
+                    <span className="text-[10px] font-semibold text-slate-500 mr-0.5 pl-1">Điểm/câu:</span>
+                    <button
+                      type="button"
+                      onClick={() => setFillBlankPoints(Math.max(0, parseFloat((fillBlankPoints - 0.25).toFixed(2))))}
+                      className="w-5 h-5 rounded bg-white hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer shadow-xs"
+                    >-</button>
+                    <input
+                      type="number"
+                      step={0.25}
+                      min={0}
+                      max={10}
+                      value={fillBlankPoints}
+                      onChange={e => setFillBlankPoints(Math.max(0, parseFloat(e.target.value) || 0))}
+                      className="w-12 text-center text-xs font-extrabold text-indigo-950 bg-white border border-slate-200 rounded py-0.5 font-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setFillBlankPoints(parseFloat((fillBlankPoints + 0.25).toFixed(2)))}
+                      className="w-5 h-5 rounded bg-white hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer shadow-xs"
+                    >+</button>
+                  </div>
+
+                  {/* Tổng điểm dạng */}
+                  <div className="min-w-[60px] text-right">
+                    <span className="inline-block px-2 py-1 bg-indigo-50 text-indigo-900 border border-indigo-200 rounded-lg text-[11px] font-black font-mono">
+                      {formatPoints(totalFillBlankPts)}đ
+                    </span>
+                  </div>
                 </div>
               </div>
 
               {/* 4. Matching */}
-              <div className="flex items-center justify-between p-2 bg-white rounded-xl border border-slate-200 shadow-2xs">
+              <div className="p-2.5 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-2 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
                 <div className="flex items-center space-x-2">
-                  <div className="w-6 h-6 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs">🔗</div>
+                  <div className="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs shrink-0">🔗</div>
                   <div>
                     <div className="text-xs font-bold text-slate-900">Trắc nghiệm Nối</div>
                     <div className="text-[10px] text-slate-500">Ghép vế Cột A tương ứng Cột B</div>
                   </div>
                 </div>
-                <div className="flex items-center space-x-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setMatchingCount(Math.max(0, matchingCount - 1))}
-                    className="w-6 h-6 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer"
-                  >
-                    -
-                  </button>
-                  <input
-                    type="number"
-                    min={0}
-                    max={20}
-                    value={matchingCount}
-                    onChange={e => setMatchingCount(Math.max(0, parseInt(e.target.value) || 0))}
-                    className="w-10 text-center text-xs font-extrabold text-slate-900 bg-slate-50 border border-slate-200 rounded py-0.5"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setMatchingCount(matchingCount + 1)}
-                    className="w-6 h-6 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer"
-                  >
-                    +
-                  </button>
+
+                <div className="flex flex-wrap items-center gap-2 pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+                  {/* Số câu */}
+                  <div className="flex items-center space-x-1 bg-slate-50 p-1 rounded-lg border border-slate-200">
+                    <span className="text-[10px] font-semibold text-slate-500 mr-0.5 pl-1">Số câu:</span>
+                    <button
+                      type="button"
+                      onClick={() => setMatchingCount(Math.max(0, matchingCount - 1))}
+                      className="w-5 h-5 rounded bg-white hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer shadow-xs"
+                    >-</button>
+                    <input
+                      type="number"
+                      min={0}
+                      max={20}
+                      value={matchingCount}
+                      onChange={e => setMatchingCount(Math.max(0, parseInt(e.target.value) || 0))}
+                      className="w-9 text-center text-xs font-extrabold text-slate-900 bg-white border border-slate-200 rounded py-0.5"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setMatchingCount(matchingCount + 1)}
+                      className="w-5 h-5 rounded bg-white hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer shadow-xs"
+                    >+</button>
+                  </div>
+
+                  {/* Điểm/câu */}
+                  <div className="flex items-center space-x-1 bg-slate-50 p-1 rounded-lg border border-slate-200">
+                    <span className="text-[10px] font-semibold text-slate-500 mr-0.5 pl-1">Điểm/câu:</span>
+                    <button
+                      type="button"
+                      onClick={() => setMatchingPoints(Math.max(0, parseFloat((matchingPoints - 0.25).toFixed(2))))}
+                      className="w-5 h-5 rounded bg-white hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer shadow-xs"
+                    >-</button>
+                    <input
+                      type="number"
+                      step={0.25}
+                      min={0}
+                      max={10}
+                      value={matchingPoints}
+                      onChange={e => setMatchingPoints(Math.max(0, parseFloat(e.target.value) || 0))}
+                      className="w-12 text-center text-xs font-extrabold text-indigo-950 bg-white border border-slate-200 rounded py-0.5 font-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setMatchingPoints(parseFloat((matchingPoints + 0.25).toFixed(2)))}
+                      className="w-5 h-5 rounded bg-white hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer shadow-xs"
+                    >+</button>
+                  </div>
+
+                  {/* Tổng điểm dạng */}
+                  <div className="min-w-[60px] text-right">
+                    <span className="inline-block px-2 py-1 bg-amber-50 text-amber-900 border border-amber-200 rounded-lg text-[11px] font-black font-mono">
+                      {formatPoints(totalMatchingPts)}đ
+                    </span>
+                  </div>
                 </div>
               </div>
 
               {/* 5. Short Answer */}
-              <div className="flex items-center justify-between p-2 bg-white rounded-xl border border-slate-200 shadow-2xs">
+              <div className="p-2.5 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-2 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
                 <div className="flex items-center space-x-2">
-                  <div className="w-6 h-6 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-xs">💬</div>
+                  <div className="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-xs shrink-0">💬</div>
                   <div>
                     <div className="text-xs font-bold text-slate-900">Trắc nghiệm trả lời ngắn</div>
                     <div className="text-[10px] text-slate-500">Điền đáp số / câu trả lời vắn tắt</div>
                   </div>
                 </div>
-                <div className="flex items-center space-x-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setShortAnswerCount(Math.max(0, shortAnswerCount - 1))}
-                    className="w-6 h-6 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer"
-                  >
-                    -
-                  </button>
-                  <input
-                    type="number"
-                    min={0}
-                    max={20}
-                    value={shortAnswerCount}
-                    onChange={e => setShortAnswerCount(Math.max(0, parseInt(e.target.value) || 0))}
-                    className="w-10 text-center text-xs font-extrabold text-slate-900 bg-slate-50 border border-slate-200 rounded py-0.5"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShortAnswerCount(shortAnswerCount + 1)}
-                    className="w-6 h-6 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer"
-                  >
-                    +
-                  </button>
+
+                <div className="flex flex-wrap items-center gap-2 pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+                  {/* Số câu */}
+                  <div className="flex items-center space-x-1 bg-slate-50 p-1 rounded-lg border border-slate-200">
+                    <span className="text-[10px] font-semibold text-slate-500 mr-0.5 pl-1">Số câu:</span>
+                    <button
+                      type="button"
+                      onClick={() => setShortAnswerCount(Math.max(0, shortAnswerCount - 1))}
+                      className="w-5 h-5 rounded bg-white hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer shadow-xs"
+                    >-</button>
+                    <input
+                      type="number"
+                      min={0}
+                      max={20}
+                      value={shortAnswerCount}
+                      onChange={e => setShortAnswerCount(Math.max(0, parseInt(e.target.value) || 0))}
+                      className="w-9 text-center text-xs font-extrabold text-slate-900 bg-white border border-slate-200 rounded py-0.5"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShortAnswerCount(shortAnswerCount + 1)}
+                      className="w-5 h-5 rounded bg-white hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer shadow-xs"
+                    >+</button>
+                  </div>
+
+                  {/* Điểm/câu */}
+                  <div className="flex items-center space-x-1 bg-slate-50 p-1 rounded-lg border border-slate-200">
+                    <span className="text-[10px] font-semibold text-slate-500 mr-0.5 pl-1">Điểm/câu:</span>
+                    <button
+                      type="button"
+                      onClick={() => setShortAnswerPoints(Math.max(0, parseFloat((shortAnswerPoints - 0.25).toFixed(2))))}
+                      className="w-5 h-5 rounded bg-white hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer shadow-xs"
+                    >-</button>
+                    <input
+                      type="number"
+                      step={0.25}
+                      min={0}
+                      max={10}
+                      value={shortAnswerPoints}
+                      onChange={e => setShortAnswerPoints(Math.max(0, parseFloat(e.target.value) || 0))}
+                      className="w-12 text-center text-xs font-extrabold text-indigo-950 bg-white border border-slate-200 rounded py-0.5 font-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShortAnswerPoints(parseFloat((shortAnswerPoints + 0.25).toFixed(2)))}
+                      className="w-5 h-5 rounded bg-white hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer shadow-xs"
+                    >+</button>
+                  </div>
+
+                  {/* Tổng điểm dạng */}
+                  <div className="min-w-[60px] text-right">
+                    <span className="inline-block px-2 py-1 bg-purple-50 text-purple-900 border border-purple-200 rounded-lg text-[11px] font-black font-mono">
+                      {formatPoints(totalShortAnswerPts)}đ
+                    </span>
+                  </div>
                 </div>
               </div>
 
               {/* 6. Essay */}
-              <div className="flex items-center justify-between p-2 bg-white rounded-xl border border-slate-200 shadow-2xs">
+              <div className="p-2.5 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-2 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
                 <div className="flex items-center space-x-2">
-                  <div className="w-6 h-6 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center font-bold text-xs">✍️</div>
+                  <div className="w-7 h-7 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center font-bold text-xs shrink-0">✍️</div>
                   <div>
                     <div className="text-xs font-bold text-slate-900">Tự luận</div>
                     <div className="text-[10px] text-slate-500">Viết đoạn / bài văn, phân tích, giải bài tập</div>
                   </div>
                 </div>
-                <div className="flex items-center space-x-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setEssayCount(Math.max(0, essayCount - 1))}
-                    className="w-6 h-6 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer"
-                  >
-                    -
-                  </button>
-                  <input
-                    type="number"
-                    min={0}
-                    max={10}
-                    value={essayCount}
-                    onChange={e => setEssayCount(Math.max(0, parseInt(e.target.value) || 0))}
-                    className="w-10 text-center text-xs font-extrabold text-slate-900 bg-slate-50 border border-slate-200 rounded py-0.5"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setEssayCount(essayCount + 1)}
-                    className="w-6 h-6 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer"
-                  >
-                    +
-                  </button>
+
+                <div className="flex flex-wrap items-center gap-2 pt-1 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+                  {/* Số câu */}
+                  <div className="flex items-center space-x-1 bg-slate-50 p-1 rounded-lg border border-slate-200">
+                    <span className="text-[10px] font-semibold text-slate-500 mr-0.5 pl-1">Số câu:</span>
+                    <button
+                      type="button"
+                      onClick={() => setEssayCount(Math.max(0, essayCount - 1))}
+                      className="w-5 h-5 rounded bg-white hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer shadow-xs"
+                    >-</button>
+                    <input
+                      type="number"
+                      min={0}
+                      max={10}
+                      value={essayCount}
+                      onChange={e => setEssayCount(Math.max(0, parseInt(e.target.value) || 0))}
+                      className="w-9 text-center text-xs font-extrabold text-slate-900 bg-white border border-slate-200 rounded py-0.5"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setEssayCount(essayCount + 1)}
+                      className="w-5 h-5 rounded bg-white hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer shadow-xs"
+                    >+</button>
+                  </div>
+
+                  {/* Điểm/câu */}
+                  <div className="flex items-center space-x-1 bg-slate-50 p-1 rounded-lg border border-slate-200">
+                    <span className="text-[10px] font-semibold text-slate-500 mr-0.5 pl-1">Điểm/câu:</span>
+                    <button
+                      type="button"
+                      onClick={() => setEssayPoints(Math.max(0, parseFloat((essayPoints - 0.25).toFixed(2))))}
+                      className="w-5 h-5 rounded bg-white hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer shadow-xs"
+                    >-</button>
+                    <input
+                      type="number"
+                      step={0.25}
+                      min={0}
+                      max={10}
+                      value={essayPoints}
+                      onChange={e => setEssayPoints(Math.max(0, parseFloat(e.target.value) || 0))}
+                      className="w-12 text-center text-xs font-extrabold text-indigo-950 bg-white border border-slate-200 rounded py-0.5 font-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setEssayPoints(parseFloat((essayPoints + 0.25).toFixed(2)))}
+                      className="w-5 h-5 rounded bg-white hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center cursor-pointer shadow-xs"
+                    >+</button>
+                  </div>
+
+                  {/* Tổng điểm dạng */}
+                  <div className="min-w-[60px] text-right">
+                    <span className="inline-block px-2 py-1 bg-rose-50 text-rose-900 border border-rose-200 rounded-lg text-[11px] font-black font-mono">
+                      {formatPoints(totalEssayPts)}đ
+                    </span>
+                  </div>
                 </div>
               </div>
 
