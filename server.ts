@@ -238,9 +238,9 @@ app.post('/api/gemini/generate-exam', async (req, res) => {
 
 BẮT BUỘC THỰC HIỆN ĐÚNG QUY ĐỊNH CỦA BỘ VỀ XÂY DỰNG HỒ SƠ ĐỀ KIỂM TRA ĐỊNH KÌ:
 
-0. TỐI CAO - QUY TẮC BÁM SÁT 100% NỘI DUNG TẬP TIN / TÀI LIỆU TẢI LÊN:
-   - Nếu phần "Phạm vi kiến thức / Nội dung bài học" có chứa nội dung các tệp đính kèm (Word, PDF, Bài học, Đề cương...), BẠN BẮT BUỘC PHẢI TRÍCH XUẤT VÀ DÙNG CHÍNH XÁC NỘI DUNG KIẾN THỨC, TÁC PHẨM, SỐ LIỆU, DẠNG BÀI VÀ CÂU HỎI TRONG CÁC TỆP NÀY để biên soạn Đề kiểm tra chính thức, Ma trận, Bảng đặc tả và Hướng dẫn chấm.
-   - TUYỆT ĐỐI KHÔNG tự ý sử dụng tác phẩm mẫu hoặc bài học mặc định không liên quan nếu tài liệu đính kèm có nội dung khác.
+0. TỐI CAO - QUY TẮC BÁM SÁT 100% CHUẨN DỮ LIỆU GỐC TẢI LÊN (KHÔNG THÊM, KHÔNG BỚT):
+   - Khi phần "Phạm vi kiến thức / Nội dung bài học" chứa thông tin hoặc nội dung từ các tệp đính kèm tải lên (Word, PDF, Bài học, Đề cương, SGK...), BẠN BẮT BUỘC PHẢI DÙNG CHÍNH XÁC VĂN BẢN, TRÍCH ĐOẠN, TÁC PHẨM, DẠNG BÀI VÀ CÂU HỎI CÓ TRONG TỆP NÀY LÀM NGỮ LIỆU DUY NHẤT để biên soạn Đề kiểm tra chính thức, Ma trận, Bảng đặc tả và Hướng dẫn chấm.
+   - TUYỆT ĐỐI KHÔNG THÊM HOẶC BỚT TÁC PHẨM. TUYỆT ĐỐI KHÔNG TỰ Ý DÙNG CÁC TÁC PHẨM MẶC ĐỊNH LÀM VÍ DỤ (như Hịch tướng sĩ, Nam quốc sơn hà...) NẾU CHÚNG KHÔNG CÓ TRONG FILE TẢI LÊN. MỌI CÂU HỎI TRẮC NGHIỆM VÀ TỰ LUẬN PHẢI HỎI ĐÚNG NỘI DUNG TỪ DỮ LIỆU TẢI LÊN GỐC.
 
 1. PHẠM VI & TÍNH CÂN ĐỐI:
    - Căn cứ theo loại bài kiểm tra (${examType || 'Giữa học kì I'}) và Môn ${subject || 'Ngữ văn'} ${grade || 'Khối 8'}.

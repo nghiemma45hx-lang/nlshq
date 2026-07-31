@@ -88,11 +88,64 @@ Chủ đề 4: Viết bài văn nghị luận phân tích một tác phẩm văn
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const readFileToText = (file: File, fileType: string): Promise<string> => {
+    return new Promise(resolve => {
+      if (fileType === 'word') {
+        file.arrayBuffer().then(async arrayBuffer => {
+          try {
+            const result = await mammoth.extractRawText({ arrayBuffer });
+            if (result && result.value && result.value.trim().length > 10) {
+              resolve(result.value.trim());
+              return;
+            }
+          } catch (err) {
+            console.warn('Mammoth extraction failed:', err);
+          }
+          // Fallback decoder
+          try {
+            const decoder = new TextDecoder('utf-8', { fatal: false });
+            const raw = decoder.decode(arrayBuffer);
+            const cleaned = raw.replace(/[^\x20-\x7E\u00C0-\u024F\u1EA0-\u1EF9\n\r\t]+/g, ' ').replace(/\s+/g, ' ').trim();
+            resolve(cleaned.slice(0, 25000));
+          } catch (e) {
+            resolve(`[Tệp Word đính kèm: ${file.name}]`);
+          }
+        }).catch(() => resolve(`[Tệp Word đính kèm: ${file.name}]`));
+      } else if (fileType === 'pdf') {
+        file.arrayBuffer().then(arrayBuffer => {
+          try {
+            const decoder = new TextDecoder('utf-8', { fatal: false });
+            const rawText = decoder.decode(arrayBuffer);
+            const matches = rawText.match(/[\u0020-\u007E\u00C0-\u024F\u1EA0-\u1EF9]{4,}/g);
+            if (matches && matches.length > 0) {
+              const filtered = matches.filter(m => !m.includes('obj') && !m.includes('endobj') && !m.includes('stream') && !m.includes('PDF')).join(' ');
+              resolve(filtered.slice(0, 25000));
+              return;
+            }
+          } catch (e) {}
+          resolve(`[Tệp PDF đính kèm: ${file.name}]`);
+        }).catch(() => resolve(`[Tệp PDF đính kèm: ${file.name}]`));
+      } else if (fileType === 'image') {
+        resolve(`[Ảnh chụp tài liệu/đề/SGK đính kèm: ${file.name}]`);
+      } else {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const content = (event.target?.result as string) || '';
+          resolve(content.trim());
+        };
+        reader.onerror = () => resolve(`[Tài liệu đính kèm: ${file.name}]`);
+        reader.readAsText(file);
+      }
+    });
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    Array.from(files).forEach(async (file) => {
+    const newAttachedItems: AttachedFileItem[] = [];
+
+    for (const file of Array.from(files)) {
       const sizeKb = (file.size / 1024).toFixed(1);
       const sizeStr = file.size > 1024 * 1024 ? `${(file.size / (1024 * 1024)).toFixed(1)} MB` : `${sizeKb} KB`;
       
@@ -103,76 +156,28 @@ Chủ đề 4: Viết bài văn nghị luận phân tích một tác phẩm văn
       else if (['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(ext)) fileType = 'image';
       else if (['txt', 'md', 'json', 'csv', 'html', 'xml'].includes(ext)) fileType = 'text';
 
+      const extractedContent = await readFileToText(file, fileType);
+
       const newItem: AttachedFileItem = {
         id: Date.now() + Math.random().toString(),
         name: file.name,
         size: sizeStr,
         type: fileType,
-        content: '',
+        content: extractedContent,
       };
 
-      if (fileType === 'word') {
-        try {
-          const arrayBuffer = await file.arrayBuffer();
-          const result = await mammoth.extractRawText({ arrayBuffer });
-          if (result && result.value && result.value.trim().length > 0) {
-            newItem.content = result.value.trim();
-            onSuccessToast(`Đã đọc & trích xuất ${newItem.content.length} ký tự từ file "${file.name}"!`);
-          } else {
-            // Fallback decode
-            const decoder = new TextDecoder('utf-8', { fatal: false });
-            const raw = decoder.decode(arrayBuffer);
-            const cleaned = raw.replace(/[^\x20-\x7E\u00C0-\u024F\u1EA0-\u1EF9\n\r\t]+/g, ' ').replace(/\s+/g, ' ').trim();
-            newItem.content = cleaned.slice(0, 15000);
-            onSuccessToast(`Đã đọc nội dung văn bản từ file "${file.name}"!`);
-          }
-        } catch (err) {
-          console.warn('Mammoth extraction fallback:', err);
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            const raw = (event.target?.result as string) || '';
-            newItem.content = raw.replace(/[^\x20-\x7E\u00C0-\u024F\u1EA0-\u1EF9\n\r\t]+/g, ' ').replace(/\s+/g, ' ').slice(0, 15000);
-            onSuccessToast(`Đã nhận file "${file.name}"!`);
-          };
-          reader.readAsText(file);
-        }
-      } else if (fileType === 'pdf') {
-        try {
-          const arrayBuffer = await file.arrayBuffer();
-          const decoder = new TextDecoder('utf-8', { fatal: false });
-          const rawText = decoder.decode(arrayBuffer);
-          const matches = rawText.match(/[\u0020-\u007E\u00C0-\u024F\u1EA0-\u1EF9]{4,}/g);
-          if (matches && matches.length > 0) {
-            const filtered = matches.filter(m => !m.includes('obj') && !m.includes('endobj') && !m.includes('stream') && !m.includes('PDF')).join(' ');
-            newItem.content = filtered.slice(0, 15000);
-            onSuccessToast(`Đã đọc & trích xuất văn bản từ PDF "${file.name}"!`);
-          } else {
-            newItem.content = `[Nội dung từ file PDF: ${file.name}]`;
-            onSuccessToast(`Đã đính kèm file PDF "${file.name}"!`);
-          }
-        } catch (e) {
-          newItem.content = `[Nội dung từ file PDF: ${file.name}]`;
-          onSuccessToast(`Đã đính kèm file PDF "${file.name}"!`);
-        }
-      } else if (fileType === 'image') {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          newItem.content = `[Ảnh đính kèm chụp đề/SGK: ${file.name}]`;
-          onSuccessToast(`Đã đính kèm ảnh "${file.name}"!`);
-        };
-        reader.readAsDataURL(file);
-      } else {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          newItem.content = (event.target?.result as string) || '';
-          onSuccessToast(`Đã đọc nội dung từ file "${file.name}"!`);
-        };
-        reader.readAsText(file);
-      }
+      newAttachedItems.push(newItem);
+    }
 
-      setAttachedFiles(prev => [...prev, newItem]);
-    });
+    setAttachedFiles(prev => [...prev, ...newAttachedItems]);
 
+    // Automatically replace default placeholder text in topicScope if present
+    if (topicScope.includes('Chủ đề 1: Thơ vần bằng') || topicScope.includes('Hịch tướng sĩ')) {
+      const summaryText = newAttachedItems.map(f => `• Tệp đính kèm gốc: ${f.name} (${f.size})`).join('\n');
+      setTopicScope(`[SỬ DỤNG CHUẨN DỮ LIỆU GỐC TỪ TỆP ĐÍNH KÈM]\n${summaryText}`);
+    }
+
+    onSuccessToast(`Đã đọc & trích xuất thành công ${newAttachedItems.length} tệp tài liệu gốc!`);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -338,14 +343,15 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
     let fullTopicScopePayload = '';
 
     if (attachedFiles.length > 0) {
-      fullTopicScopePayload += `====================================================\n`;
-      fullTopicScopePayload += `YÊU CẦU QUAN TRỌNG NHẤT: BÁM SÁT 100% NỘI DUNG TỪ TỆP DỮ LIỆU ĐỊNH KÈM NÀY ĐỂ RA ĐỀ THI, MA TRẬN & ĐÁP ÁN.\n`;
-      fullTopicScopePayload += `BẠN BẮT BUỘC DÙNG DỮ LIỆU KIẾN THỨC, CÂU HỎI VÀ TÁC PHẨM TRONG TỆP ĐÃ TẢI LÊN. KHÔNG DÙNG CÁC TÁC PHẨM VÀ BÀI HỌC VÍ DỤ KHÔNG CÓ TRONG TỆP!\n`;
-      fullTopicScopePayload += `====================================================\n\n`;
+      fullTopicScopePayload += `========================================================================\n`;
+      fullTopicScopePayload += `YÊU CẦU QUAN TRỌNG NHẤT: BÁM SÁT 100% TÀI LIỆU/TỆP ĐÍNH KÈM TẢI LÊN DƯỚI ĐÂY (LẤY CHUẨN DỮ LIỆU GỐC, KHÔNG THÊM, KHÔNG BỚT).\n`;
+      fullTopicScopePayload += `BẠN BẮT BUỘC CHỈ ĐƯỢC LẤY KIẾN THỨC, TRÍCH ĐOẠN VĂN BẢN, TÁC PHẨM, SỐ LIỆU VÀ CÂU HỎI TRONG NỘI DUNG TỆP NÀY ĐỂ XÂY DỰNG ĐỀ THI, MA TRẬN, BẢNG ĐẶC TẢ VÀ HƯỚNG DẪN CHẤM.\n`;
+      fullTopicScopePayload += `TUYỆT ĐỐI KHÔNG DÙNG CÁC TÁC PHẨM MẶC ĐỊNH KHÁC (NHƯ HỊCH TƯỚNG SĨ, NAM QUỐC SƠN HÀ...) HOẶC TỰ Ý BỔ SUNG TÁC PHẨM KHÔNG CÓ TRONG TỆP TẢI LÊN!\n`;
+      fullTopicScopePayload += `========================================================================\n\n`;
 
       attachedFiles.forEach((f, idx) => {
-        fullTopicScopePayload += `--- TỆP ĐÍNH KÈM #${idx + 1}: ${f.name} (${f.type.toUpperCase()}, Dung lượng: ${f.size}) ---\n`;
-        fullTopicScopePayload += `${f.content || 'Nội dung file: ' + f.name}\n\n`;
+        fullTopicScopePayload += `--- TỆP TẢI LÊN GỐC #${idx + 1}: ${f.name} (${f.type.toUpperCase()}, Dung lượng: ${f.size}) ---\n`;
+        fullTopicScopePayload += `NỘI DUNG VĂN BẢN/BÀI HỌC TRONG TỆP:\n${f.content || '(Tệp: ' + f.name + ')'}\n\n`;
       });
     }
 
@@ -357,7 +363,10 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
       fullTopicScopePayload += `\n`;
     }
 
-    fullTopicScopePayload += `--- PHẠM VI BÀI HỌC BỔ SUNG KHÁC ---:\n${topicScope}`;
+    const isDefaultPresetText = topicScope.includes('Chủ đề 1: Thơ vần bằng') || topicScope.includes('Hịch tướng sĩ');
+    if (!isDefaultPresetText || attachedFiles.length === 0) {
+      fullTopicScopePayload += `--- PHẠM VI BÀI HỌC VÀ GHI CHÚ BỔ SUNG ---:\n${topicScope}`;
+    }
 
     try {
       setTimeout(() => setProgressStep('Đang thiết lập Ma trận đề & Tỉ lệ phần trăm (40% NB - 30% TH - 30% VD)...'), 1200);
