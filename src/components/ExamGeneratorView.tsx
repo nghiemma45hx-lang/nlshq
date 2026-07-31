@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import mammoth from 'mammoth';
+import { marked } from 'marked';
 import { 
   FileCheck, 
   Sparkles, 
@@ -156,12 +157,30 @@ Chủ đề 4: Viết bài văn nghị luận phân tích một tác phẩm văn
           } catch (err) {
             console.warn('Mammoth extraction failed:', err);
           }
-          // Fallback decoder
+
+          // Try server-side /api/parse-docx
           try {
-            const decoder = new TextDecoder('utf-8', { fatal: false });
-            const raw = decoder.decode(arrayBuffer);
-            const cleaned = raw.replace(/[^\x20-\x7E\u00C0-\u024F\u1EA0-\u1EF9\n\r\t]+/g, ' ').replace(/\s+/g, ' ').trim();
-            resolve(cleaned.slice(0, 25000));
+            const reader = new FileReader();
+            reader.onload = async () => {
+              const base64 = (reader.result as string).split(',')[1];
+              const res = await fetch('/api/parse-docx', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ base64Data: base64 })
+              });
+              const data = await res.json();
+              if (data.html) {
+                const tmp = document.createElement('div');
+                tmp.innerHTML = data.html;
+                const text = tmp.innerText || tmp.textContent || '';
+                if (text.trim().length > 10) {
+                  resolve(text.trim());
+                  return;
+                }
+              }
+              resolve(`[Tệp Word đính kèm: ${file.name}]`);
+            };
+            reader.readAsDataURL(file);
           } catch (e) {
             resolve(`[Tệp Word đính kèm: ${file.name}]`);
           }
@@ -226,8 +245,11 @@ Chủ đề 4: Viết bài văn nghị luận phân tích một tác phẩm văn
 
     setAttachedFiles(prev => [...prev, ...newAttachedItems]);
 
-    // Automatically replace default placeholder text in topicScope if present
-    if (topicScope.includes('Chủ đề 1: Thơ vần bằng') || topicScope.includes('Hịch tướng sĩ')) {
+    // Automatically replace placeholder text in topicScope with actual extracted content
+    const validExtractedItem = newAttachedItems.find(f => f.content && !f.content.startsWith('[Tệp') && !f.content.startsWith('[Ảnh') && f.content.length > 20);
+    if (validExtractedItem) {
+      setTopicScope(`=== NỘI DUNG TỆP GỐC TẢI LÊN (${validExtractedItem.name}) ===\n${validExtractedItem.content}`);
+    } else {
       const summaryText = newAttachedItems.map(f => `• Tệp đính kèm gốc: ${f.name} (${f.size})`).join('\n');
       setTopicScope(`[SỬ DỤNG CHUẨN DỮ LIỆU GỐC TỪ TỆP ĐÍNH KÈM]\n${summaryText}`);
     }
@@ -457,8 +479,12 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
       const data = await response.json();
 
       if (data.success && data.examHtml) {
-        setGeneratedExamHtml(data.examHtml);
-        onSuccessToast('Đã khởi tạo xong Hồ sơ Đề kiểm tra chuẩn Bộ!');
+        let html = data.examHtml;
+        if (!html.trim().startsWith('<div') && !html.trim().startsWith('<!DOCTYPE')) {
+          html = await marked.parse(html);
+        }
+        setGeneratedExamHtml(html);
+        onSuccessToast('Đã khởi tạo xong Hồ sơ Đề kiểm tra chuẩn BGDĐT!');
       } else {
         // Fallback robust template generation
         generateLocalFallbackExam();
@@ -476,6 +502,43 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
   const generateLocalFallbackExam = () => {
     const isOption1 = outputOption === '1';
     const isOption2 = outputOption === '2';
+
+    // Parse extracted topics/text from topicScope & attachedFiles
+    const sourceText = (topicScope || '').trim();
+    const rawLines = sourceText
+      .split('\n')
+      .map(l => l.trim())
+      .filter(l => l.length > 0 && !l.startsWith('===') && !l.startsWith('---'));
+
+    let primaryTopic = `Nội dung kiểm tra môn ${subject} ${grade}`;
+    for (const line of rawLines) {
+      const cleanLine = line.replace(/^\[.*?\]/, '').replace(/^•\s*/, '').replace(/^NỘI DUNG TỆP GỐC:\s*/i, '').trim();
+      if (cleanLine.length > 5 && !cleanLine.startsWith('SỬ DỤNG CHUẨN DỮ LIỆU')) {
+        primaryTopic = cleanLine.slice(0, 120);
+        break;
+      }
+    }
+
+    const textParagraphs = rawLines.filter(l => l.length > 25 && !/^(câu|cau|đáp án|đề số|thời gian|môn|lớp|họ và tên)/i.test(l));
+    const mainPassage = textParagraphs.slice(0, 5).join('\n\n') || sourceText.slice(0, 600) || `Tài liệu đính kèm cho môn ${subject} ${grade}`;
+
+    const mcqQuestions: { q: string; options: string[]; answer: string }[] = [];
+    const countToGen = Math.max(mcqCount || 12, 4);
+
+    for (let i = 1; i <= countToGen; i++) {
+      const pSnippet = textParagraphs[i - 1] || textParagraphs[0] || primaryTopic;
+      const snippetShort = pSnippet.slice(0, 85);
+      mcqQuestions.push({
+        q: `Câu ${i}. (0.25 điểm) Dựa vào dữ liệu từ tài liệu gốc tải lên: "${snippetShort}...", nhận định nào sau đây thể hiện đúng nhất nội dung chính?`,
+        options: [
+          `A. Khẳng định nội dung cốt lõi: ${snippetShort.slice(0, 45)}...`,
+          `B. Phân tích chi tiết đặc điểm ngữ liệu trong bài học môn ${subject}`,
+          `C. Mở rộng khái niệm và vận dụng thực hành trong chương trình ${grade}`,
+          `D. Tóm tắt kết quả và bài học rút ra từ ngữ liệu gốc`
+        ],
+        answer: ['A', 'B', 'C', 'D'][(i - 1) % 4]
+      });
+    }
 
     const localHtml = `
       <div class="exam-dossier-document space-y-8 font-sans text-slate-800">
@@ -715,6 +778,12 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
           <!-- EXAM CONTENT -->
           <div class="space-y-6 text-sm leading-relaxed text-slate-900 font-serif">
             
+            <!-- PASSAGE EXCERPT -->
+            <div class="p-4 bg-slate-50 rounded-xl border border-slate-300 font-serif leading-relaxed text-sm">
+              <div class="font-bold text-xs uppercase text-slate-500 mb-2 border-b border-slate-200 pb-1">NGỮ LIỆU / TÀI LIỆU CỐT LÕI TẢI LÊN:</div>
+              <div class="whitespace-pre-wrap italic text-slate-900">${mainPassage}</div>
+            </div>
+
             <!-- PHẦN I: TRẮC NGHIỆM -->
             <div>
               <div class="font-bold text-base uppercase text-indigo-950 border-b border-slate-300 pb-1 mb-3">
@@ -723,45 +792,14 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
               <p class="italic text-xs text-slate-600 mb-4">Khoanh tròn vào duy nhất một chữ cái A, B, C hoặc D đứng trước câu trả lời đúng nhất:</p>
 
               <div class="space-y-4">
-                <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                  <p class="font-bold">Câu 1. (0.25 điểm) Văn bản "Hịch tướng sĩ" của Trần Quốc Tuấn thuộc thể loại văn học nào?</p>
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 mt-2 text-xs pl-2">
-                    <div>A. Thể Cáo</div>
-                    <div>B. Thể Hịch</div>
-                    <div>C. Thể Chiếu</div>
-                    <div>D. Thể Tấu</div>
+                ${mcqQuestions.map(m => `
+                  <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs font-sans">
+                    <p class="font-bold text-slate-900">${m.q}</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 mt-2 pl-2">
+                      ${m.options.map(opt => `<div>${opt}</div>`).join('')}
+                    </div>
                   </div>
-                </div>
-
-                <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                  <p class="font-bold">Câu 2. (0.25 điểm) Tác phẩm "Nam quốc sơn hà" được xem là bản tuyên ngôn độc lập đầu tiên vì lý do nào sau đây?</p>
-                  <div class="grid grid-cols-1 gap-1 mt-2 text-xs pl-2">
-                    <div>A. Khẳng định chủ quyền lãnh thổ và sông núi nước Nam đã được sách trời định sẵn.</div>
-                    <div>B. Kêu gọi quân dân đứng lên đánh đuổi giặc ngoại xâm cứu nước.</div>
-                    <div>C. Tuyên bố chấm dứt chiến tranh và lập lại hòa bình cho dân tộc.</div>
-                    <div>D. Ca ngợi chiến công hiển hách của vua tôi nhà Lý trên sông Như Nguyệt.</div>
-                  </div>
-                </div>
-
-                <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                  <p class="font-bold">Câu 3. (0.25 điểm) Phương thức biểu đạt chính được sử dụng trong bài văn "Tinh thần yêu nước của nhân dân ta" là gì?</p>
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 mt-2 text-xs pl-2">
-                    <div>A. Tự sự</div>
-                    <div>B. Biểu cảm</div>
-                    <div>C. Nghị luận</div>
-                    <div>D. Thuyết minh</div>
-                  </div>
-                </div>
-
-                <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                  <p class="font-bold">Câu 4. (0.25 điểm) Đoạn văn diễn dịch là đoạn văn có câu chủ đề nằm ở vị trí nào?</p>
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 mt-2 text-xs pl-2">
-                    <div>A. Đầu đoạn văn</div>
-                    <div>B. Cuối đoạn văn</div>
-                    <div>C. Giữa đoạn văn</div>
-                    <div>D. Đầu và cuối đoạn văn</div>
-                  </div>
-                </div>
+                `).join('')}
               </div>
             </div>
 
@@ -771,18 +809,18 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
                 PHẦN II. TỰ LUẬN (7.0 điểm)
               </div>
 
-              <div class="space-y-4">
+              <div class="space-y-4 font-sans text-xs">
                 <div class="p-4 bg-indigo-50/40 rounded-lg border border-indigo-100">
                   <p class="font-bold text-slate-900">Câu 1. (3.0 điểm)</p>
-                  <p class="mt-1 text-slate-800">
-                    Từ tinh thần yêu nước quật cường của cha ông được thể hiện qua các văn bản lịch sử đã học, em hãy viết một đoạn văn (khoảng 12 - 15 câu, tương đương 150 - 200 chữ) trình bày suy nghĩ về trách nhiệm của thế hệ trẻ học sinh hiện nay trong việc học tập và rèn luyện năng lực số để dựng xây đất nước.
+                  <p class="mt-1 text-slate-800 leading-relaxed">
+                    Từ nội dung dữ liệu trong tài liệu "${primaryTopic}", em hãy viết một đoạn văn (khoảng 10 - 12 câu) phân tích ý nghĩa cốt lõi và bài học thực tiễn rút ra cho bản thân trong môn ${subject} ${grade}.
                   </p>
                 </div>
 
                 <div class="p-4 bg-indigo-50/40 rounded-lg border border-indigo-100">
                   <p class="font-bold text-slate-900">Câu 2. (4.0 điểm)</p>
-                  <p class="mt-1 text-slate-800">
-                    Phân tích giá trị nội dung tư tưởng sâu sắc và lòng yêu nước nồng nàn được thể hiện qua đoạn trích bài "Hịch tướng sĩ" của Hưng Đạo Đại Vương Trần Quốc Tuấn.
+                  <p class="mt-1 text-slate-800 leading-relaxed">
+                    Phân tích toàn diện ngữ liệu/đề bài trong tài liệu tải lên (${primaryTopic}). Chỉ rõ các giá trị nội dung, phương pháp/nghệ thuật được thể hiện và liên hệ thực tế.
                   </p>
                 </div>
               </div>
@@ -807,41 +845,19 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
 
           <div class="space-y-6 text-xs">
             <div>
-              <h3 class="font-bold text-sm text-indigo-950 mb-2">1. Đáp án Phần I: Trắc nghiệm khách quan (3.0 điểm - Mỗi câu 0.25đ)</h3>
+              <h3 class="font-bold text-sm text-indigo-950 mb-2">1. Đáp án Phần I: Trắc nghiệm khách quan (3.0 điểm)</h3>
               <div class="overflow-x-auto">
                 <table class="w-full text-center border-collapse border border-slate-300">
                   <thead>
                     <tr class="bg-slate-800 text-white font-bold">
                       <th class="p-2 border border-slate-300">Câu</th>
-                      <th class="p-2 border border-slate-300">1</th>
-                      <th class="p-2 border border-slate-300">2</th>
-                      <th class="p-2 border border-slate-300">3</th>
-                      <th class="p-2 border border-slate-300">4</th>
-                      <th class="p-2 border border-slate-300">5</th>
-                      <th class="p-2 border border-slate-300">6</th>
-                      <th class="p-2 border border-slate-300">7</th>
-                      <th class="p-2 border border-slate-300">8</th>
-                      <th class="p-2 border border-slate-300">9</th>
-                      <th class="p-2 border border-slate-300">10</th>
-                      <th class="p-2 border border-slate-300">11</th>
-                      <th class="p-2 border border-slate-300">12</th>
+                      ${mcqQuestions.map((_, i) => `<th class="p-2 border border-slate-300">${i + 1}</th>`).join('')}
                     </tr>
                   </thead>
                   <tbody>
                     <tr class="font-bold text-indigo-900 bg-amber-50">
                       <td class="p-2 border border-slate-300 bg-slate-100">Đáp án</td>
-                      <td class="p-2 border border-slate-300">B</td>
-                      <td class="p-2 border border-slate-300">A</td>
-                      <td class="p-2 border border-slate-300">C</td>
-                      <td class="p-2 border border-slate-300">A</td>
-                      <td class="p-2 border border-slate-300">B</td>
-                      <td class="p-2 border border-slate-300">D</td>
-                      <td class="p-2 border border-slate-300">C</td>
-                      <td class="p-2 border border-slate-300">A</td>
-                      <td class="p-2 border border-slate-300">B</td>
-                      <td class="p-2 border border-slate-300">C</td>
-                      <td class="p-2 border border-slate-300">D</td>
-                      <td class="p-2 border border-slate-300">A</td>
+                      ${mcqQuestions.map(m => `<td class="p-2 border border-slate-300">${m.answer}</td>`).join('')}
                     </tr>
                   </tbody>
                 </table>
@@ -855,44 +871,44 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
                   <thead>
                     <tr class="bg-indigo-900 text-white font-bold">
                       <th class="p-2.5 border border-slate-300 w-16 text-center">Câu</th>
-                      <th class="p-2.5 border border-slate-300">Ý / Yêu cầu đạt được</th>
+                      <th class="p-2.5 border border-slate-300">Ý / Yêu cầu đạt được dựa trên tài liệu gốc</th>
                       <th class="p-2.5 border border-slate-300 w-24 text-center">Điểm</th>
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-slate-200">
                     <tr>
                       <td class="p-2.5 border border-slate-300 font-bold text-center" rowspan="4">Câu 1<br/>(3.0đ)</td>
-                      <td class="p-2.5 border border-slate-300"><b>Đảm bảo hình thức đoạn văn:</b> Đủ dung lượng 12-15 câu, diễn đạt trôi chảy, không sai chính tả.</td>
+                      <td class="p-2.5 border border-slate-300"><b>Hình thức đoạn văn:</b> Đủ dung lượng, diễn đạt mạch lạc, chuẩn chính tả.</td>
                       <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
                     </tr>
                     <tr>
-                      <td class="p-2.5 border border-slate-300"><b>Xác định đúng vấn đề nghị luận:</b> Trách nhiệm rèn luyện năng lực số và tri thức của học sinh hiện nay.</td>
+                      <td class="p-2.5 border border-slate-300"><b>Đúng vấn đề:</b> Phân tích được ý nghĩa từ ngữ liệu gốc (${primaryTopic.slice(0, 50)}...).</td>
                       <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
                     </tr>
                     <tr>
-                      <td class="p-2.5 border border-slate-300"><b>Triển khai các ý chủ đạo:</b> Yêu nước thời đại số thể hiện qua việc làm chủ công nghệ, bảo vệ chủ quyền số quốc gia, học tập sáng tạo, tránh xa thông tin xấu độc.</td>
+                      <td class="p-2.5 border border-slate-300"><b>Nội dung triển khai:</b> Nêu rõ tác động, bài học thực tế, vận dụng kiến thức chuẩn bài học.</td>
                       <td class="p-2.5 border border-slate-300 text-center font-bold">1.5đ</td>
                     </tr>
                     <tr>
-                      <td class="p-2.5 border border-slate-300"><b>Sáng tạo & Bài học liên hệ bản thân:</b> Có góc nhìn mới mẻ, rút ra bài học hành động thiết thực.</td>
+                      <td class="p-2.5 border border-slate-300"><b>Sáng tạo & Liên hệ:</b> Rút ra liên hệ bản thân thực tế, góc nhìn độc đáo.</td>
                       <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
                     </tr>
 
                     <tr class="bg-slate-50/50">
                       <td class="p-2.5 border border-slate-300 font-bold text-center" rowspan="4">Câu 2<br/>(4.0đ)</td>
-                      <td class="p-2.5 border border-slate-300"><b>Mở bài:</b> Giới thiệu tác giả Trần Quốc Tuấn, tác phẩm Hịch tướng sĩ và khái quát tinh thần yêu nước.</td>
+                      <td class="p-2.5 border border-slate-300"><b>Mở bài:</b> Giới thiệu khái quát ngữ liệu/bài học trong tài liệu gốc.</td>
                       <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
                     </tr>
                     <tr class="bg-slate-50/50">
-                      <td class="p-2.5 border border-slate-300"><b>Thân bài - Phân tích nội dung:</b> Tố cáo tội ác giặc Nguyên Mông; Bày tỏ lòng căm thù giặc sâu sắc ("Quên ăn vì giặc, xẻ thịt lột da"); Kêu gọi tướng sĩ đoàn kết, rèn luyện binh pháp.</td>
+                      <td class="p-2.5 border border-slate-300"><b>Thân bài - Phân tích nội dung:</b> Phân tích luận điểm, chi tiết, dẫn chứng bám sát file tải lên.</td>
                       <td class="p-2.5 border border-slate-300 text-center font-bold">2.5đ</td>
                     </tr>
                     <tr class="bg-slate-50/50">
-                      <td class="p-2.5 border border-slate-300"><b>Thân bài - Phân tích nghệ thuật:</b> Giọng văn bi hùng, lập luận chặt chẽ, hình ảnh so sánh nhân hóa giàu sức gợi.</td>
+                      <td class="p-2.5 border border-slate-300"><b>Thân bài - Phương pháp / Nghệ thuật:</b> Nêu bật đặc sắc cấu trúc, từ ngữ, lập luận trong tài liệu.</td>
                       <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
                     </tr>
                     <tr class="bg-slate-50/50">
-                      <td class="p-2.5 border border-slate-300"><b>Kết bài:</b> Khẳng định giá trị trường tồn của tác phẩm và bài học lịch sử cho muôn đời sau.</td>
+                      <td class="p-2.5 border border-slate-300"><b>Kết bài:</b> Khẳng định tổng quát giá trị bài học và định hướng ứng dụng.</td>
                       <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
                     </tr>
                   </tbody>

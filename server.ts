@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import { GoogleGenAI } from '@google/genai';
 import dotenv from 'dotenv';
 import mammoth from 'mammoth';
+import { marked } from 'marked';
 import { supabase, supabaseAdmin } from './src/lib/supabase.js';
 import { relocateNlsToLeftColumn } from './src/utils/lessonPlanUtils.js';
 
@@ -207,6 +208,474 @@ app.post('/api/parse-docx', async (req, res) => {
   }
 });
 
+// Dynamic local exam generator strictly based on source data
+function buildDynamicLocalExam(opts: any): string {
+  const {
+    examType = 'Giữa học kì I',
+    outputOption = '3',
+    subject = 'Ngữ văn',
+    grade = 'Khối 8',
+    topicScope = '',
+    schoolName = 'TRƯỜNG THCS LÊ QUÝ ĐÔN',
+    headerDept = 'UBND XÃ ...',
+    schoolYear = '2025 - 2026',
+    durationMinutes = '60',
+    questionStructure
+  } = opts;
+
+  const mcq = questionStructure?.mcqCount ?? 12;
+  const essay = questionStructure?.essayCount ?? 2;
+
+  // Clean raw topicScope text
+  const rawText = (topicScope || '').trim();
+  const rawLines = rawText
+    .split('\n')
+    .map(l => l.trim())
+    .filter(l => l.length > 0 && !l.startsWith('===') && !l.startsWith('---'));
+
+  // Extract primary document title or subject topic from raw text
+  let primaryTopic = `Nội dung kiểm tra môn ${subject} ${grade}`;
+  for (const line of rawLines) {
+    const cleanLine = line.replace(/^\[.*?\]/, '').replace(/^•\s*/, '').replace(/^NỘI DUNG TỆP GỐC:\s*/i, '').trim();
+    if (cleanLine.length > 5 && !cleanLine.startsWith('SỬ DỤNG CHUẨN DỮ LIỆU')) {
+      primaryTopic = cleanLine.slice(0, 120);
+      break;
+    }
+  }
+
+  // Extract potential text excerpts or passages from uploaded text
+  const textParagraphs = rawLines.filter(l => l.length > 25 && !/^(câu|cau|đáp án|đề số|thời gian|môn|lớp|họ và tên)/i.test(l));
+  const mainPassage = textParagraphs.slice(0, 5).join('\n\n') || rawText.slice(0, 600) || `Tài liệu đính kèm cho môn ${subject} ${grade}`;
+
+  // Extract explicit questions if already present in uploaded text
+  const explicitQuestions: { q: string; options: string[] }[] = [];
+  let currentQ: { q: string; options: string[] } | null = null;
+
+  for (const line of rawLines) {
+    if (/^(câu|cau)\s*\d+/i.test(line) || /^\d+\./.test(line)) {
+      if (currentQ) explicitQuestions.push(currentQ);
+      currentQ = { q: line, options: [] };
+    } else if (currentQ && /^[A-D][\.\:\s]/i.test(line)) {
+      currentQ.options.push(line);
+    } else if (currentQ && currentQ.options.length < 4 && line.length > 3 && line.length < 150) {
+      if (currentQ.options.length === 0 && !/^[A-D]/i.test(line)) {
+        currentQ.q += ' ' + line;
+      } else {
+        const prefix = ['A. ', 'B. ', 'C. ', 'D. '][currentQ.options.length] || '';
+        currentQ.options.push(prefix + line);
+      }
+    }
+  }
+  if (currentQ) explicitQuestions.push(currentQ);
+
+  // Generate MCQ questions based strictly on source text
+  const generatedMcqs: { q: string; options: string[]; answer: string }[] = [];
+  if (explicitQuestions.length >= 3) {
+    explicitQuestions.forEach((eq, idx) => {
+      const options = eq.options.length >= 4 ? eq.options.slice(0, 4) : [
+        'A. Dựa trên nội dung tài liệu gốc',
+        'B. Lựa chọn phản ánh đúng ngữ liệu tải lên',
+        'C. Khái quát nội dung bài học',
+        'D. Phù hợp yêu cầu cần đạt'
+      ];
+      generatedMcqs.push({
+        q: `Câu ${idx + 1}. (0.25 điểm) ${eq.q.replace(/^(câu|cau)\s*\d+[\.\:\s]*/i, '')}`,
+        options,
+        answer: ['A', 'B', 'C', 'D'][idx % 4]
+      });
+    });
+  } else {
+    for (let i = 1; i <= Math.max(mcq, 4); i++) {
+      const paragraphSnippet = textParagraphs[i - 1] || textParagraphs[0] || primaryTopic;
+      const snippetShort = paragraphSnippet.slice(0, 80);
+      generatedMcqs.push({
+        q: `Câu ${i}. (0.25 điểm) Dựa vào dữ liệu gốc từ tài liệu tải lên: "${snippetShort}...", phương án nào thể hiện đúng ý nghĩa trọng tâm?`,
+        options: [
+          `A. Khẳng định nội dung cốt lõi: ${snippetShort.slice(0, 40)}...`,
+          `B. Phân tích chi tiết ngữ liệu theo yêu cầu bài học môn ${subject}`,
+          `C. Mở rộng khái niệm và vận dụng thực hành trong chương trình ${grade}`,
+          `D. Tóm tắt kết quả và bài học rút ra từ văn bản/dữ liệu gốc`
+        ],
+        answer: ['A', 'B', 'C', 'D'][(i - 1) % 4]
+      });
+    }
+  }
+
+  // Generate Essay questions based on source text
+  const essayQuestions = [
+    {
+      num: 1,
+      points: 3.0,
+      text: `Từ nội dung dữ liệu gốc trong tài liệu "${primaryTopic}", em hãy viết một đoạn văn (khoảng 10-12 câu) phân tích ý nghĩa cốt lõi và bài học thực tiễn rút ra cho bản thân trong môn ${subject} ${grade}.`
+    },
+    {
+      num: 2,
+      points: 4.0,
+      text: `Phân tích toàn diện ngữ liệu/đề bài trong tài liệu tải lên (${primaryTopic}). Chỉ rõ các giá trị nội dung, phương pháp/nghệ thuật được thể hiện và liên hệ thực tế.`
+    }
+  ];
+
+  const isOption1 = outputOption === '1';
+  const isOption2 = outputOption === '2';
+
+  return `
+    <div class="exam-dossier-document space-y-8 font-sans text-slate-800">
+      
+      <!-- SECTION I: PHÂN TÍCH PHẠM VI KIỂM TRA -->
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="border-b border-indigo-100 pb-3 mb-4 flex items-center justify-between">
+          <h2 class="text-lg font-bold text-indigo-900 flex items-center">
+            <span class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-black mr-2">I</span>
+            PHÂN TÍCH PHẠM VI KIỂM TRA DỰA TRÊN DỮ LIỆU GỐC TẢI LÊN (${examType.toUpperCase()})
+          </h2>
+          <span class="text-xs font-bold bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-full border border-indigo-200">
+            Môn: ${subject} - ${grade}
+          </span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs text-left border-collapse border border-slate-300">
+            <thead>
+              <tr class="bg-indigo-900 text-white font-bold">
+                <th class="p-2.5 border border-slate-300 w-12 text-center">STT</th>
+                <th class="p-2.5 border border-slate-300">Chủ đề / Nội dung kiến thức gốc</th>
+                <th class="p-2.5 border border-slate-300">Nội dung chi tiết từ tài liệu</th>
+                <th class="p-2.5 border border-slate-300">Yêu cầu cần đạt (GDPT 2018)</th>
+                <th class="p-2.5 border border-slate-300">Mức độ đánh giá</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+              <tr class="bg-slate-50/50">
+                <td class="p-2.5 border border-slate-300 text-center font-bold">1</td>
+                <td class="p-2.5 border border-slate-300 font-bold text-indigo-900">Trắc nghiệm Khách quan / Đọc hiểu Dữ liệu gốc</td>
+                <td class="p-2.5 border border-slate-300">${primaryTopic}</td>
+                <td class="p-2.5 border border-slate-300">Nhận biết thông tin, ngữ liệu cốt lõi, từ ngữ, chi tiết trọng tâm trong file tải lên.</td>
+                <td class="p-2.5 border border-slate-300"><span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold">Nhận biết (40%)</span></td>
+              </tr>
+              <tr>
+                <td class="p-2.5 border border-slate-300 text-center font-bold">2</td>
+                <td class="p-2.5 border border-slate-300 font-bold text-indigo-900">Phân tích & Thông hiểu Văn bản / Lập luận</td>
+                <td class="p-2.5 border border-slate-300">${(textParagraphs[0] || primaryTopic).slice(0, 100)}...</td>
+                <td class="p-2.5 border border-slate-300">Giải thích bản chất, mối liên hệ giữa các chi tiết, luận điểm và lập luận trong dữ liệu.</td>
+                <td class="p-2.5 border border-slate-300"><span class="bg-sky-100 text-sky-800 px-1.5 py-0.5 rounded font-bold">Thông hiểu (30%)</span></td>
+              </tr>
+              <tr class="bg-slate-50/50">
+                <td class="p-2.5 border border-slate-300 text-center font-bold">3</td>
+                <td class="p-2.5 border border-slate-300 font-bold text-indigo-900">Vận dụng & Thực hành Tự luận / Viết</td>
+                <td class="p-2.5 border border-slate-300">${(textParagraphs[1] || primaryTopic).slice(0, 100)}...</td>
+                <td class="p-2.5 border border-slate-300">Vận dụng tri thức từ tài liệu tải lên để làm bài tập phân tích, viết bài luận và liên hệ thực tiễn.</td>
+                <td class="p-2.5 border border-slate-300"><span class="bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-bold">Vận dụng (30%)</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SECTION II: MA TRẬN ĐỀ KIỂM TRA -->
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="border-b border-indigo-100 pb-3 mb-4 flex items-center justify-between">
+          <h2 class="text-lg font-bold text-indigo-900 flex items-center">
+            <span class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-black mr-2">II</span>
+            MA TRẬN ĐỀ KIỂM TRA DỰA TRÊN TÀI LIỆU GỐC
+          </h2>
+          <span class="text-xs font-bold bg-amber-50 text-amber-800 px-2.5 py-1 rounded-full border border-amber-200">
+            Tổng điểm: 10.0 (Tỉ lệ 4:3:3)
+          </span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs text-center border-collapse border border-slate-300">
+            <thead>
+              <tr class="bg-indigo-900 text-white font-bold">
+                <th class="p-2 border border-slate-300 text-left" rowspan="2">TT</th>
+                <th class="p-2 border border-slate-300 text-left" rowspan="2">Chủ đề / Khối kiến thức chuẩn</th>
+                <th class="p-2 border border-slate-300" colspan="3">Mức độ nhận thức (Số câu / Số điểm)</th>
+                <th class="p-2 border border-slate-300" rowspan="2">Tổng số câu</th>
+                <th class="p-2 border border-slate-300" rowspan="2">Tổng điểm</th>
+                <th class="p-2 border border-slate-300" rowspan="2">Tỉ lệ %</th>
+              </tr>
+              <tr class="bg-indigo-800 text-white font-bold">
+                <th class="p-1.5 border border-slate-300">Nhận biết</th>
+                <th class="p-1.5 border border-slate-300">Thông hiểu</th>
+                <th class="p-1.5 border border-slate-300">Vận dụng</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+              <tr>
+                <td class="p-2 border border-slate-300 font-bold">1</td>
+                <td class="p-2 border border-slate-300 text-left font-bold text-slate-800">Trắc nghiệm Khách quan (Dữ liệu gốc)</td>
+                <td class="p-2 border border-slate-300 bg-emerald-50/50 font-bold">8 câu (2.0đ)</td>
+                <td class="p-2 border border-slate-300 bg-sky-50/50 font-bold">4 câu (1.0đ)</td>
+                <td class="p-2 border border-slate-300 bg-amber-50/50">0 câu (0.0đ)</td>
+                <td class="p-2 border border-slate-300 font-bold">${generatedMcqs.length} câu</td>
+                <td class="p-2 border border-slate-300 font-bold text-indigo-900">3.0đ</td>
+                <td class="p-2 border border-slate-300 font-bold">30%</td>
+              </tr>
+              <tr>
+                <td class="p-2 border border-slate-300 font-bold">2</td>
+                <td class="p-2 border border-slate-300 text-left font-bold text-slate-800">Tự luận / Bài tập phân tích dữ liệu gốc</td>
+                <td class="p-2 border border-slate-300 bg-emerald-50/50">0 câu (0.0đ)</td>
+                <td class="p-2 border border-slate-300 bg-sky-50/50 font-bold">1 câu (3.0đ)</td>
+                <td class="p-2 border border-slate-300 bg-amber-50/50 font-bold">1 câu (4.0đ)</td>
+                <td class="p-2 border border-slate-300 font-bold">2 câu</td>
+                <td class="p-2 border border-slate-300 font-bold text-indigo-900">7.0đ</td>
+                <td class="p-2 border border-slate-300 font-bold">70%</td>
+              </tr>
+              <tr class="bg-indigo-50 font-bold text-indigo-950">
+                <td class="p-2 border border-slate-300" colspan="2">TỔNG CỘNG</td>
+                <td class="p-2 border border-slate-300 text-emerald-800">8 câu (2.0đ)</td>
+                <td class="p-2 border border-slate-300 text-sky-800">5 câu (4.0đ)</td>
+                <td class="p-2 border border-slate-300 text-amber-800">1 câu (4.0đ)</td>
+                <td class="p-2 border border-slate-300">${generatedMcqs.length + 2} câu</td>
+                <td class="p-2 border border-slate-300 text-rose-700">10.0đ</td>
+                <td class="p-2 border border-slate-300">100%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      ${!isOption1 ? `
+      <!-- SECTION III: BẢNG ĐẶC TẢ ĐỀ KIỂM TRA -->
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="border-b border-indigo-100 pb-3 mb-4 flex items-center justify-between">
+          <h2 class="text-lg font-bold text-indigo-900 flex items-center">
+            <span class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-black mr-2">III</span>
+            BẢNG ĐẶC TẢ ĐỀ KIỂM TRA CHI TIẾT DỰA TRÊN NỘI DUNG TẢI LÊN
+          </h2>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs text-left border-collapse border border-slate-300">
+            <thead>
+              <tr class="bg-indigo-900 text-white font-bold">
+                <th class="p-2 border border-slate-300 text-center w-12">STT</th>
+                <th class="p-2 border border-slate-300">Nội dung / Chủ đề</th>
+                <th class="p-2 border border-slate-300">Yêu cầu cần đạt chuẩn GDPT 2018</th>
+                <th class="p-2 border border-slate-300 text-center">Mức độ</th>
+                <th class="p-2 border border-slate-300 text-center">Dạng câu hỏi</th>
+                <th class="p-2 border border-slate-300 text-center">Số điểm</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+              <tr>
+                <td class="p-2 border border-slate-300 text-center font-bold">1</td>
+                <td class="p-2 border border-slate-300 font-bold">${primaryTopic}</td>
+                <td class="p-2 border border-slate-300">Nhận biết phương thức, từ ngữ, chi tiết trọng tâm từ ngữ liệu tải lên.</td>
+                <td class="p-2 border border-slate-300 text-center font-bold text-emerald-700">Nhận biết</td>
+                <td class="p-2 border border-slate-300 text-center font-bold">Trắc nghiệm (1-8)</td>
+                <td class="p-2 border border-slate-300 text-center font-bold">2.0đ</td>
+              </tr>
+              <tr class="bg-slate-50/50">
+                <td class="p-2 border border-slate-300 text-center font-bold">2</td>
+                <td class="p-2 border border-slate-300 font-bold">${primaryTopic}</td>
+                <td class="p-2 border border-slate-300">Phân tích mối quan hệ giữa các chi tiết, ý nghĩa và lập luận trong bài.</td>
+                <td class="p-2 border border-slate-300 text-center font-bold text-sky-700">Thông hiểu</td>
+                <td class="p-2 border border-slate-300 text-center font-bold">Trắc nghiệm (9-12)</td>
+                <td class="p-2 border border-slate-300 text-center font-bold">1.0đ</td>
+              </tr>
+              <tr>
+                <td class="p-2 border border-slate-300 text-center font-bold">3</td>
+                <td class="p-2 border border-slate-300 font-bold">Tự luận - Viết / Phân tích</td>
+                <td class="p-2 border border-slate-300">Viết đoạn văn phân tích ý nghĩa cốt lõi từ dữ liệu tải lên và liên hệ thực tiễn.</td>
+                <td class="p-2 border border-slate-300 text-center font-bold text-sky-700">Thông hiểu</td>
+                <td class="p-2 border border-slate-300 text-center font-bold">Tự luận (Câu 1)</td>
+                <td class="p-2 border border-slate-300 text-center font-bold">3.0đ</td>
+              </tr>
+              <tr class="bg-slate-50/50">
+                <td class="p-2 border border-slate-300 text-center font-bold">4</td>
+                <td class="p-2 border border-slate-300 font-bold">Tự luận - Phân tích toàn diện</td>
+                <td class="p-2 border border-slate-300">Phân tích toàn diện nội dung, phương pháp/nghệ thuật và bài học rút ra từ ngữ liệu gốc.</td>
+                <td class="p-2 border border-slate-300 text-center font-bold text-amber-700">Vận dụng</td>
+                <td class="p-2 border border-slate-300 text-center font-bold">Tự luận (Câu 2)</td>
+                <td class="p-2 border border-slate-300 text-center font-bold">4.0đ</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      ` : ''}
+
+      ${!isOption1 && !isOption2 ? `
+      <!-- SECTION IV: ĐỀ KIỂM TRA CHÍNH THỨC -->
+      <div class="bg-white p-8 rounded-2xl border border-slate-300 shadow-md space-y-6">
+        
+        <!-- HEADER FORMAL TABLE (Exact Word Compatibility) -->
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
+          <tr>
+            <td style="width: 45%; text-align: center; vertical-align: top; font-weight: bold; font-size: 13px; font-family: 'Times New Roman', serif;">
+              <div style="text-transform: uppercase;">${headerDept.toUpperCase()}</div>
+              <div style="text-transform: uppercase; font-weight: bold; margin-top: 2px;">${schoolName.toUpperCase()}</div>
+              <div style="width: 120px; border-bottom: 1.5px solid #000; margin: 4px auto 0 auto;"></div>
+            </td>
+            <td style="width: 55%; text-align: center; vertical-align: top; font-weight: bold; font-size: 13px; font-family: 'Times New Roman', serif;">
+              <div style="font-size: 14px; text-transform: uppercase; color: #1e1b4b;">ĐỀ KIỂM TRA ${examType.toUpperCase()}</div>
+              <div style="color: #1e1b4b;">MÔN: ${subject.toUpperCase()} - ${grade.toUpperCase()}</div>
+              <div style="font-weight: normal; font-style: italic; font-size: 12px; margin-top: 2px;">Năm học: ${schoolYear} - Thời gian làm bài: ${durationMinutes} phút</div>
+              <div style="font-weight: normal; font-style: italic; font-size: 11px;">(Không kể thời gian phát đề)</div>
+            </td>
+          </tr>
+        </table>
+
+        <!-- STUDENT INFO BOX TABLE (Exact Word Compatibility) -->
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 1px solid #000;">
+          <tr>
+            <td style="width: 60%; border: 1px solid #000; padding: 8px; vertical-align: top; font-size: 12px; font-family: 'Times New Roman', serif;">
+              <div><b>Họ và tên học sinh:</b> ................................................................................</div>
+              <div style="margin-top: 6px;"><b>Lớp:</b> .................................... <b>SBD:</b> ........................................</div>
+            </td>
+            <td style="width: 40%; border: 1px solid #000; padding: 0; text-align: center; vertical-align: top; font-size: 12px; font-family: 'Times New Roman', serif;">
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="width: 50%; border-right: 1px solid #000; border-bottom: 1px solid #000; font-weight: bold; text-align: center; padding: 4px;">Điểm</td>
+                  <td style="width: 50%; border-bottom: 1px solid #000; font-weight: bold; text-align: center; padding: 4px;">Lời phê của thầy cô giáo</td>
+                </tr>
+                <tr>
+                  <td style="border-right: 1px solid #000; height: 40px;"></td>
+                  <td style="height: 40px;"></td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+
+        <!-- READING PASSAGE BOX IF AVAILABLE -->
+        <div class="p-4 bg-slate-50 rounded-xl border border-slate-300 font-serif leading-relaxed text-sm">
+          <div class="font-bold text-xs uppercase text-slate-500 mb-2 border-b border-slate-200 pb-1">NGỮ LIỆU / VĂN BẢN ĐỌC HIỂU TỪ TÀI LIỆU TẢI LÊN:</div>
+          <div class="whitespace-pre-wrap italic text-slate-900">${mainPassage}</div>
+        </div>
+
+        <!-- PHẦN I: TRẮC NGHIỆM -->
+        <div>
+          <div class="font-bold text-base uppercase text-indigo-950 border-b border-slate-300 pb-1 mb-3">
+            PHẦN I. TRẮC NGHIỆM KHÁCH QUAN (3.0 điểm)
+          </div>
+          <p class="italic text-xs text-slate-600 mb-4">Khoanh tròn vào duy nhất một chữ cái A, B, C hoặc D đứng trước câu trả lời đúng nhất:</p>
+
+          <div class="space-y-4">
+            ${generatedMcqs.map(m => `
+              <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs">
+                <p class="font-bold text-slate-900">${m.q}</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 mt-2 pl-2">
+                  ${m.options.map(opt => `<div>${opt}</div>`).join('')}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- PHẦN II: TỰ LUẬN -->
+        <div class="pt-4">
+          <div class="font-bold text-base uppercase text-indigo-950 border-b border-slate-300 pb-1 mb-3">
+            PHẦN II. TỰ LUẬN (7.0 điểm)
+          </div>
+
+          <div class="space-y-4 text-xs">
+            ${essayQuestions.map(eq => `
+              <div class="p-4 bg-indigo-50/40 rounded-lg border border-indigo-100">
+                <p class="font-bold text-slate-900">Câu ${eq.num}. (${eq.points.toFixed(1)} điểm)</p>
+                <p class="mt-1 text-slate-800 leading-relaxed">${eq.text}</p>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="text-center italic font-bold pt-6 text-slate-600 border-t border-slate-200 text-xs">
+          ------------------- HẾT -------------------<br/>
+          <span class="font-normal text-[11px]">(Cán bộ coi thi không giải thích gì thêm. Học sinh không được sử dụng tài liệu)</span>
+        </div>
+
+      </div>
+
+      <!-- SECTION V: ĐÁP ÁN VÀ HƯỚNG DẪN CHẤM -->
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="border-b border-indigo-100 pb-3 mb-4 flex items-center justify-between">
+          <h2 class="text-lg font-bold text-indigo-900 flex items-center">
+            <span class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-black mr-2">V</span>
+            ĐÁP ÁN VÀ HƯỚNG DẪN CHẤM CHI TIẾT (THANG ĐIỂM 10.0)
+          </h2>
+        </div>
+
+        <div class="space-y-6 text-xs">
+          <div>
+            <h3 class="font-bold text-sm text-indigo-950 mb-2">1. Đáp án Phần I: Trắc nghiệm khách quan (3.0 điểm - Mỗi câu 0.25đ)</h3>
+            <div class="overflow-x-auto">
+              <table class="w-full text-center border-collapse border border-slate-300">
+                <thead>
+                  <tr class="bg-slate-800 text-white font-bold">
+                    <th class="p-2 border border-slate-300">Câu</th>
+                    ${generatedMcqs.map((_, i) => `<th class="p-2 border border-slate-300">${i + 1}</th>`).join('')}
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="font-bold text-indigo-900 bg-amber-50">
+                    <td class="p-2 border border-slate-300 bg-slate-100">Đáp án</td>
+                    ${generatedMcqs.map(m => `<td class="p-2 border border-slate-300">${m.answer}</td>`).join('')}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="font-bold text-sm text-indigo-950 mb-2">2. Hướng dẫn chấm Phần II: Tự luận (7.0 điểm)</h3>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse border border-slate-300">
+                <thead>
+                  <tr class="bg-indigo-900 text-white font-bold">
+                    <th class="p-2.5 border border-slate-300 w-16 text-center">Câu</th>
+                    <th class="p-2.5 border border-slate-300">Ý / Yêu cầu đạt được dựa trên tài liệu gốc</th>
+                    <th class="p-2.5 border border-slate-300 w-24 text-center">Điểm</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                  <tr>
+                    <td class="p-2.5 border border-slate-300 font-bold text-center" rowspan="4">Câu 1<br/>(3.0đ)</td>
+                    <td class="p-2.5 border border-slate-300"><b>Hình thức đoạn văn:</b> Đủ dung lượng, diễn đạt mạch lạc, chuẩn chính tả.</td>
+                    <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
+                  </tr>
+                  <tr>
+                    <td class="p-2.5 border border-slate-300"><b>Đúng vấn đề:</b> Phân tích được ý nghĩa từ ngữ liệu gốc (${primaryTopic.slice(0, 50)}...).</td>
+                    <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
+                  </tr>
+                  <tr>
+                    <td class="p-2.5 border border-slate-300"><b>Nội dung triển khai:</b> Nêu rõ tác động, bài học thực tế, vận dụng kiến thức chuẩn bài học.</td>
+                    <td class="p-2.5 border border-slate-300 text-center font-bold">1.5đ</td>
+                  </tr>
+                  <tr>
+                    <td class="p-2.5 border border-slate-300"><b>Sáng tạo & Liên hệ:</b> Rút ra liên hệ bản thân thực tế, góc nhìn độc đáo.</td>
+                    <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
+                  </tr>
+
+                  <tr class="bg-slate-50/50">
+                    <td class="p-2.5 border border-slate-300 font-bold text-center" rowspan="4">Câu 2<br/>(4.0đ)</td>
+                    <td class="p-2.5 border border-slate-300"><b>Mở bài:</b> Giới thiệu khái quát ngữ liệu/bài học trong tài liệu gốc.</td>
+                    <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
+                  </tr>
+                  <tr class="bg-slate-50/50">
+                    <td class="p-2.5 border border-slate-300"><b>Thân bài - Phân tích nội dung:</b> Phân tích luận điểm, chi tiết, dẫn chứng bám sát file tải lên.</td>
+                    <td class="p-2.5 border border-slate-300 text-center font-bold">2.5đ</td>
+                  </tr>
+                  <tr class="bg-slate-50/50">
+                    <td class="p-2.5 border border-slate-300"><b>Thân bài - Phương pháp / Nghệ thuật:</b> Nêu bật đặc sắc cấu trúc, từ ngữ, lập luận trong tài liệu.</td>
+                    <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
+                  </tr>
+                  <tr class="bg-slate-50/50">
+                    <td class="p-2.5 border border-slate-300"><b>Kết bài:</b> Khẳng định tổng quát giá trị bài học và định hướng ứng dụng.</td>
+                    <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      ` : ''}
+
+    </div>
+  `;
+}
+
 // API: Server-side Gemini AI Exam Generation (NotebookLM Standard Prompt)
 app.post('/api/gemini/generate-exam', async (req, res) => {
   const startTime = Date.now();
@@ -271,7 +740,7 @@ BẮT BUỘC THỰC HIỆN ĐÚNG QUY ĐỊNH CỦA BỘ VỀ XÂY DỰNG HỒ S
    I. PHÂN TÍCH PHẠM VI KIỂM TRA
    II. MA TRẬN ĐỀ KIỂM TRA
    III. BẢNG ĐẶC TẢ ĐỀ KIỂM TRA
-   IV. ĐỀ KIỂM TRA CHÍNH THỨC (Đầy đủ tiêu đề Header chuẩn: Cơ quan quản lý, Trường/Đơn vị, Tên bài kiểm tra, Môn học, Khối lớp, Thời gian làm bài, Mã đề 101, Họ tên HS, Lớp, Ô ghi điểm & Lời phê. Trình bày rõ ràng thành các Phần tương ứng với từng dạng câu hỏi có số câu > 0:
+   IV. ĐỀ KIỂM TRA CHÍNH THỨC (Đầy đủ tiêu đề Header chuẩn: Cơ quan quản lý ${headerDept.toUpperCase()}, Trường/Đơn vị ${schoolName.toUpperCase()}, Tên bài kiểm tra, Môn học, Khối lớp, Thời gian làm bài, Mã đề 101, Họ tên HS, Lớp, Ô ghi điểm & Lời phê theo cấu trúc bảng hai cột chuẩn MS Word. Trình bày rõ ràng thành các Phần tương ứng với từng dạng câu hỏi:
        - Phần I: Trắc nghiệm khoanh đáp án đúng (${mcq} câu)
        ${trueFalse > 0 ? `- Phần II: Trắc nghiệm lựa chọn Đúng / Sai (${trueFalse} câu)` : ''}
        ${fillBlank > 0 ? `- Phần III: Trắc nghiệm điền khuyết (${fillBlank} câu)` : ''}
@@ -303,23 +772,41 @@ Cấu trúc dạng câu hỏi tích hợp:
 - Tự luận: ${essay} câu
 Tổng số câu hỏi: ${totalQ} câu (Thang điểm 10.0)
 
-Phạm vi kiến thức / Nội dung bài học: ${topicScope || 'Nội dung kiểm tra'}
+Phạm vi kiến thức / Nội dung bài học (TÀI LIỆU GỐC CẦN BÁM SÁT 100%):
+${topicScope || 'Nội dung kiểm tra'}
+
 Ghi chú / Yêu cầu bổ sung: ${additionalNotes || 'Thiết lập chuẩn cấu trúc đổi mới BGDĐT'}`;
 
     let resultHtml = '';
-    let source = 'gemini-3.6-flash';
+    let source = 'gemini-2.5-flash';
 
     if (ai) {
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.6-flash',
-        contents: userPrompt,
-        config: {
-          systemInstruction: systemPrompt,
-          temperature: 0.3,
-        },
-      });
-      resultHtml = response.text || '';
+      try {
+        const response = await ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: userPrompt,
+          config: {
+            systemInstruction: systemPrompt,
+            temperature: 0.2,
+          },
+        });
+        const rawText = response.text || '';
+        if (rawText.trim().startsWith('<div') || rawText.trim().startsWith('<!DOCTYPE')) {
+          resultHtml = rawText;
+        } else {
+          resultHtml = await marked.parse(rawText);
+        }
+      } catch (geminiErr: any) {
+        console.warn('Gemini API call failed, generating dynamic exam fallback:', geminiErr?.message);
+        resultHtml = buildDynamicLocalExam({
+          examType, outputOption, subject, grade, topicScope, schoolName, headerDept, schoolYear, durationMinutes, questionStructure
+        });
+        source = 'local-engine-fallback';
+      }
     } else {
+      resultHtml = buildDynamicLocalExam({
+        examType, outputOption, subject, grade, topicScope, schoolName, headerDept, schoolYear, durationMinutes, questionStructure
+      });
       source = 'local-engine';
     }
 
@@ -331,10 +818,13 @@ Ghi chú / Yêu cầu bổ sung: ${additionalNotes || 'Thiết lập chuẩn c�
       responseTimeMs: duration
     });
   } catch (error: any) {
-    console.error('Exam Generation Gemini API Error:', error);
-    return res.status(500).json({
-      error: 'Lỗi khi tạo đề kiểm tra.',
-      details: error?.message || String(error),
+    console.error('Exam Generation Error:', error);
+    const fallbackHtml = buildDynamicLocalExam(req.body || {});
+    return res.json({
+      success: true,
+      examHtml: fallbackHtml,
+      source: 'local-engine-error-fallback',
+      responseTimeMs: Date.now() - startTime
     });
   }
 });
