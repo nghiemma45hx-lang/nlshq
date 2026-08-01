@@ -425,7 +425,7 @@ function AppContent() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <div>
             <span className="font-extrabold text-indigo-700 text-sm">EduNLS AI 2026</span> - Nền tảng Tích Hợp Năng Lực Số & AI Dành Cho Giáo Viên
-            <p className="text-[11px] text-slate-400 mt-0.5">Căn cứ Thông tư 02/2025/TT-BGDĐT, Quyết định 3439/QĐ-BGDĐT & Công văn 5512/BGDĐT-GDTrH</p>
+            <p className="text-[11px] text-slate-400 mt-0.5">Căn cứ TT 32/2018/TT-BGDĐT (Ngữ văn THCS), Thông tư 02/2025/TT-BGDĐT, Quyết định 3439/QĐ-BGDĐT & Công văn 5512/BGDĐT-GDTrH</p>
           </div>
           <div className="text-right text-xs font-semibold text-slate-600 bg-slate-100/80 px-3.5 py-1.5 rounded-full border border-slate-200">
             Bản quyền thuộc về thầy giáo Nghiêm Hồng Quân - 0984839799

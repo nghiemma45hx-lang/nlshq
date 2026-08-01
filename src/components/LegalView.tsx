@@ -64,6 +64,12 @@ const DEFAULT_TAG_MATRIX: TagMatrixItem[] = [
     doc: "QĐ 3439/QĐ-BGDĐT",
     tags: ["[AI-NLc: Prompting]", "[AI-NLd: Model]"],
     position: "Hoạt động 2 & 3 (Dùng ChatGPT/GeoGebra/Quizizz hỗ trợ giải bài)"
+  },
+  {
+    domain: "6. Dạy học Ngữ văn THCS tích hợp NLS & AI",
+    doc: "TT 32/2018 + TT 02/2025 + QĐ 3439",
+    tags: ["[NLS 1.1-a]", "[NLS 2.4-a]", "[NLS 3.1-a]", "[AI-NLa]", "[AI-NLc]"],
+    position: "3 Mạch Đọc - Viết - Nói và Nghe (Tra cứu bối cảnh, Prompting văn học, Sơ đồ tư duy số)"
   }
 ];
 
@@ -301,17 +307,19 @@ export const LegalView: React.FC<LegalViewProps> = ({ onSuccessToast }) => {
       </div>
 
       {/* Legal Documents Cards (Click to open modal, Click outside to close) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {LEGAL_DOCUMENTS.map((doc) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+        {LEGAL_DOCUMENTS.map((doc) => {
+          const IconComp = doc.id === 'qd-3439' ? Sparkles : doc.id === 'tt-32-2018-ngu-van' || doc.id === 'cv-5512' ? BookOpen : FileCheck;
+          return (
           <div
             key={doc.id}
             onClick={() => handleOpenDoc(doc)}
-            className="cursor-pointer bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs hover:shadow-xl hover:border-indigo-400 hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between group relative"
+            className="cursor-pointer bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs hover:shadow-xl hover:border-indigo-400 hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between group relative"
           >
             <div>
               <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-indigo-50 group-hover:bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center text-xl font-bold transition">
-                  <FileCheck className="w-6 h-6 text-indigo-600" />
+                <div className="w-11 h-11 bg-indigo-50 group-hover:bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center text-xl font-bold transition">
+                  <IconComp className="w-5 h-5 text-indigo-600" />
                 </div>
                 <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2.5 py-1 rounded-full flex items-center space-x-1">
                   <Eye className="w-3 h-3" />
@@ -357,7 +365,8 @@ export const LegalView: React.FC<LegalViewProps> = ({ onSuccessToast }) => {
               </div>
             </div>
           </div>
-        ))}
+        );
+        })}
       </div>
 
       {/* FULL ORIGINAL DOCUMENT MODAL (CLICK OUTSIDE TO CLOSE) */}

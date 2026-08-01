@@ -375,6 +375,88 @@ VỤ TRƯỜNG VỤ GIÁO DỤC TRUNG HỌC
         "3. Xuất file Word (.docx) đúng chuẩn font chữ Times New Roman 13pt."
       ]
     }
+  },
+  {
+    id: "tt-32-2018-ngu-van",
+    code: "TT 32/2018/TT-BGDĐT (Ngữ văn THCS)",
+    title: "Chương Trình GDPT 2018 Môn Ngữ Văn THCS & Cơ Sở Pháp Lý Tích Hợp NLS & AI",
+    authority: "Bộ Giáo dục và Đào tạo",
+    date: "26/12/2018 (Cập nhật tích hợp NLS & AI)",
+    summary: "Quy định cơ sở pháp lý Yêu cầu cần đạt môn Ngữ văn cấp THCS (Lớp 6, 7, 8, 9) theo CT GDPT 2018, quy định định hướng ứng dụng CNTT, sử dụng phương tiện phi ngôn ngữ/đa phương tiện, kết hợp Khung Năng lực số (TT 02/2025) và Khung Giáo dục AI (QĐ 3439) trong 3 mạch kỹ năng Đọc - Viết - Nói và Nghe.",
+    keyPoints: [
+      "Căn cứ pháp lý Yêu cầu cần đạt 3 trục kỹ năng: ĐỌC (văn học, nghị luận, thông tin), VIẾT (tự sự, miêu tả, biểu cảm, nghị luận, thuyết minh, nhật dụng) và NÓI VÀ NGHE.",
+      "Định hướng bắt buộc ứng dụng CNTT, học liệu số, đọc mở rộng trên không gian mạng Internet và sử dụng phương tiện phi ngôn ngữ/đa phương tiện trong dạy học Ngữ văn THCS.",
+      "Tích hợp 6 Miền Năng lực số [NLS 1.1 - NLS 6.1] (TT 02/2025) và 4 Mạch Trí tuệ nhân tạo [AI-NLa - AI-NLd] (QĐ 3439) vào Kế hoạch bài dạy Ngữ văn THCS theo CV 5512."
+    ],
+    icon: "BookOpen",
+    badgeColor: "bg-rose-100 text-rose-800",
+    fullText: `CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
+Độc lập - Tự do - Hạnh phúc
+------------------
+BỘ GIÁO DỤC VÀ ĐÀO TẠO
+
+Số: 32/2018/TT-BGDĐT                          Hà Nội, ngày 26 tháng 12 năm 2018
+
+THÔNG TƯ
+BAN HÀNH CHƯƠNG TRÌNH GIÁO DỤC PHỔ THÔNG MÔN NGỮ VĂN CẤP TRUNG HỌC CƠ SỞ (LỚP 6, LỚP 7, LỚP 8, LỚP 9)
+CƠ SỞ PHÁP LÝ & HƯỚNG DẪN TÍCH HỢP NĂNG LỰC SỐ (TT 02/2025) VÀ TRÍ TUỆ NHÂN TẠO AI (QĐ 3439)
+
+Căn cứ Luật Giáo dục ngày 14 tháng 6 năm 2019;
+Căn cứ Nghị định số 86/2022/NĐ-CP ngày 24 tháng 10 năm 2022 của Chính phủ quy định chức năng, nhiệm vụ của Bộ Giáo dục và Đào tạo;
+Căn cứ Thông tư số 02/2025/TT-BGDĐT ngày 24 tháng 01 năm 2025 ban hành Khung Năng lực số cho người học trong hệ thống giáo dục quốc dân;
+Căn cứ Quyết định số 3439/QĐ-BGDĐT ngày 15 tháng 12 năm 2025 ban hành Khung Thí điểm Giáo dục Trí tuệ Nhân tạo (AI) trong Giáo dục Phổ thông;
+Căn cứ Công văn số 5512/BGDĐT-GDTrH ngày 18 tháng 12 năm 2020 về Hướng dẫn xây dựng Kế hoạch bài dạy;
+
+Bộ Giáo dục và Đào tạo quy định Yêu cầu cơ sở pháp lý cho việc tích hợp Năng lực số (NLS) và Trí tuệ nhân tạo (AI) trong bộ môn Ngữ văn cấp THCS như sau:
+
+I. CĂN CỨ PHÁP LÝ BẮT BỘC & YÊU CẦU CẦN ĐẠT MÔN NGỮ VĂN THCS (CT GDPT 2018)
+
+1. MẠCH ĐỌC (Đọc hiểu văn bản văn học, văn bản nghị luận, văn bản thông tin):
+- Lớp 6 & Lớp 7:
+  + Nhận biết đề tài, chủ đề, chi tiết tiêu biểu, nhân vật, cốt truyện, yếu tố nghệ thuật (thơ lục bát, truyện dân gian, truyện ngắn, ngụ ngôn, khoa học viễn tưởng, tản văn, tùy bút).
+  + Đọc mở rộng: Đọc tối thiểu 35 văn bản văn học, 9 văn bản nghị luận, 18 văn bản thông tin (bao gồm văn bản hướng dẫn đọc trên mạng Internet và học liệu số).
+- Lớp 8 & Lớp 9:
+  + Phân tích chủ đề, tư tưởng, thông điệp, kịch bản, tiểu thuyết, truyện thơ Nôm, thơ thất ngôn bát cú, tứ tuyệt, bi kịch, hài kịch.
+  + Đọc hiểu văn bản thông tin đa phương tiện: Phân tích cước chú, tài liệu tham khảo, số liệu, phương tiện phi ngôn ngữ (hình ảnh, biểu đồ, sơ đồ).
+- TÍCH HỢP NLS & AI TRONG MẠCH ĐỌC:
+  + [NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số]: Học sinh sử dụng thiết bị số tra cứu văn bản gốc, tác giả, tác phẩm, bối cảnh lịch sử văn học trên không gian mạng.
+  + [NLS 1.2-b: Đánh giá tính xác thực thông tin số]: Học sinh thẩm định độ tin cậy của các bài phân tích, bình giảng văn học trên mạng Internet.
+  + [AI-NLc: Prompt Engineering]: Học sinh thực hành nhập câu lệnh Prompt cho trợ lý AI (ChatGPT / Gemini) để giải nghĩa từ Hán Việt, từ cổ, nhân vật lịch sử, trích dẫn thơ văn.
+  + [AI-NLd: Kiểm chứng kết quả AI]: Học sinh đối chiếu trực tiếp phản hồi của AI với văn bản SGK/ngữ liệu gốc để phát hiện và chỉnh sửa các lỗi sai sót (ảo giác AI) trong phân tích văn học.
+
+2. MẠCH VIẾT (Tạo lập văn bản tự sự, miêu tả, biểu cảm, nghị luận, thuyết minh, nhật dụng):
+- Lớp 6 & Lớp 7: Viết bài văn kể lại trải nghiệm, truyện cổ tích/truyền thuyết; bài văn tả cảnh sinh hoạt; bài văn biểu cảm; bài văn nghị luận về một hiện tượng đời sống; bài văn thuyết minh thuật lại sự kiện / giới thiệu luật lệ trò chơi; biên bản ghi chép.
+- Lớp 8 & Lớp 9: Viết bài văn kể lại chuyến đi / hoạt động xã hội; viết bài văn phân tích tác phẩm văn học; bài văn nghị luận xã hội; thuyết minh giải thích hiện tượng tự nhiên; giới thiệu cuốn sách; bản kiến nghị.
+- TÍCH HỢP NLS & AI TRONG MẠCH VIẾT:
+  + [NLS 3.1-a: Phát triển & chỉnh sửa nội dung số]: Sử dụng phần mềm soạn thảo số, sơ đồ tư duy số (Mindmap / Canva / Padlet) để lập dàn ý và biên tập bài viết.
+  + [AI-NLa: Tư duy lấy con người làm trung tâm]: Học sinh dùng AI như công cụ gợi mở ý tưởng dàn ý và từ vựng phong phú; học sinh giữ vai trò chủ thể quyết định cảm xúc và tư duy nghệ thuật.
+  + [AI-NLb: Đạo đức AI & Bản quyền văn học]: Tuân thủ tính trung thực học thuật, trích dẫn đúng quy cách, tuyệt đối không chép nguyên văn đoạn văn do AI sinh ra để làm bài nộp.
+
+3. MẠCH NÓI VÀ NGHE (Nói, Nghe, Nói nghe tương tác):
+- Yêu cầu: Trình bày ý kiến về một vấn đề đời sống/xã hội, giới thiệu cuốn sách, kể chuyện sinh động; nghe tóm tắt nội dung; tham gia thảo luận nhóm nhỏ.
+- TÍCH HỢP NLS & AI TRONG MẠCH NÓI VÀ NGHE:
+  + [NLS 2.1-b: Giao tiếp trên môi trường số]: Sử dụng bài trình chiếu slide số, hình ảnh, video clip minh họa khi thuyết trình trước lớp.
+  + [NLS 2.4-a: Hợp tác qua công nghệ số]: Thảo luận nhóm trực tuyến, góp ý bài làm của bạn trên Padlet, Google Classroom.
+  + [NLS 2.5-c: Quy tắc ứng xử Netiquette]: Thực hành văn hóa giao tiếp tôn trọng, lịch sự khi nhận xét bài nói, bài viết của đồng học trên không gian mạng.
+
+II. HƯỚNG DẪN DÀNH CHO GIÁO VIÊN VÀ CÁC CƠ SỞ GIÁO DỤC THCS
+
+1. Giáo viên Ngữ văn THCS căn cứ Yêu cầu cần đạt của bài dạy (theo khối lớp 6, 7, 8, 9) để lựa chọn ít nhất 2 - 3 chỉ báo NLS ([NLS 1.1-a], [NLS 2.4-a], [NLS 3.1-a]) và 1 mạch AI ([AI-NLa], [AI-NLc]) chèn trực tiếp vào Kế hoạch bài dạy CV 5512.
+2. Thiết kế Phiếu học tập / Nhiệm vụ học tập số kết hợp khai thác văn bản ngữ liệu gốc chuẩn xác, hỗ trợ học sinh hình thành tư duy phản biện và năng lực số toàn diện.`,
+    details: {
+      scope: "Áp dụng bắt buộc cho toàn bộ Giáo viên Ngữ văn cấp THCS (Lớp 6, 7, 8, 9) trên toàn quốc.",
+      targetAudience: "Cán bộ quản lý chuyên môn, Giáo viên Ngữ văn THCS và Học sinh THCS.",
+      structure: [
+        { name: "Mạch ĐỌC (Văn học, Nghị luận, Thông tin)", desc: "Khai thác văn bản số, tra cứu bối cảnh, thực hành Prompting từ vựng/Hán Việt và kiểm chứng kết quả AI.", tags: ["[NLS 1.1-a]", "[NLS 1.2-b]", "[AI-NLc]", "[AI-NLd]"] },
+        { name: "Mạch VIẾT (Tự sự, Biểu cảm, Nghị luận, Thuyết minh)", desc: "Lập dàn ý bằng sơ đồ tư duy số, dùng AI gợi ý từ vựng, cam kết Đạo đức AI và Bản quyền tác giả.", tags: ["[NLS 3.1-a]", "[AI-NLa]", "[AI-NLb]", "[NLS 3.3-a]"] },
+        { name: "Mạch NÓI VÀ NGHE (Thuyết trình & Thảo luận)", desc: "Sử dụng slide đa phương tiện, thảo luận nhóm trực tuyến Padlet và văn hóa Netiquette.", tags: ["[NLS 2.1-b]", "[NLS 2.4-a]", "[NLS 2.5-c]"] }
+      ],
+      implementationGuide: [
+        "1. Xác định đúng Yêu cầu cần đạt bộ môn Ngữ văn THCS theo khối lớp (Lớp 6, 7, 8, 9).",
+        "2. Đưa mã chỉ báo [NLS x.x] và [AI-NLx] vào Mục tiêu Năng lực bài dạy và Tiến trình 4 hoạt động CV 5512.",
+        "3. Sử dụng công cụ AI (Gemini, ChatGPT) trợ giúp soạn ngữ liệu, thiết kế Phiếu học tập và đáp án tách biệt."
+      ]
+    }
   }
 ];
 
