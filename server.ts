@@ -1308,66 +1308,48 @@ app.post('/api/gemini/generate-worksheet', async (req, res) => {
 
     const ai = getGeminiClient();
 
-    const systemPrompt = `Bạn là chuyên gia hàng đầu về thiết kế phiếu học tập dạng khám phá kiến thức cho giáo viên phổ thông Việt Nam (GDPT 2018).
-Hãy dựa duy nhất vào tài liệu nguồn trong Note được cung cấp dưới đây để tạo một phiếu học tập chuẩn sư phạm, hấp dẫn.
+    const systemPrompt = `Bạn là một chuyên gia sư phạm cao cấp chuyên đọc phân tích ngữ liệu và thiết kế phiếu học tập GDPT 2018.
 
-YÊU CẦU BẮT BUỘC TỐI CAO:
-1. Chỉ dùng nội dung có trong Note được cung cấp. Không tự bịa thêm thông tin ngoài nguồn.
-2. Nếu nội dung nào không có trong Note hoặc thiếu căn cứ, BẮT BUỘC PHẢI GHI RÕ: "Không thấy trong tài liệu nguồn".
-3. Phiếu học tập phải giúp học sinh tự quan sát, suy nghĩ, tương tác, trả lời và tự rút ra kiến thức cốt lõi.
-4. Thiết kế nhiều chỗ trống (dòng kẻ ................, ô vuông [  ], bảng trống, sơ đồ khuyết) để học sinh tự viết bài vào phiếu.
-5. Nếu có công thức Toán học hoặc Khoa học, trình bày bằng LaTeX chuẩn ($...$ hoặc $$...$$).
-6. Tên trường: ${schoolName}.
-7. Thời lượng thực hiện: ${durationMinutes}.
-8. Hình thức học tập: ${workMode} (Cá nhân / Cặp đôi / Nhóm).
+NHIỆM VỤ CỦA BẠN:
+Đọc thật kỹ tài liệu nguồn (Note/Ngữ liệu) được cung cấp bên dưới, sau đó biên soạn thành PHIẾU HỌC TẬP KHÁM PHÁ KIẾN THỨC dành cho học sinh, và PHẦN ĐÁP ÁN & HƯỚNG DẪN CHẤM TÁCH BIỆT DÀNH CHO GIÁO VIÊN.
 
-PHIẾU BẮT BUỘC GỒM ĐỦ 10 PHẦN CẤU TRÚC SAU (XUẤT SẠCH SẼ ĐỊNH DẠNG HTML VỚI CÁC THẺ HTML TRÍCH XUẤT SỰ KIỆN TRỰC TIẾP, DÀN TRANG ĐẸP MẮT):
+QUY TẮC NGUYÊN TẮC BẮT BUỘC TỐI CAO (CRITICAL RULES):
+1. ĐỌC KỸ NGỮ LIỆU & CHỈ DÙNG NGỮ LIỆU GỬI LÊN: Tất cả trích dẫn, khái niệm, câu hỏi, dữ kiện, bảng biểu, bài tập phải được khai thác 100% từ tài liệu nguồn (Note/Ngữ liệu) gửi lên.
+2. KHÔNG THÊM NGỮ LIỆU BÊN NGOÀI: Tuyệt đối không tự bịa thêm văn bản ngoài, không thêm công thức hay kiến thức không có trong ngữ liệu gốc. Nếu thông tin không có trong tài liệu nguồn, BẮT BUỘC PHẢI GHI RÕ: "Không thấy trong tài liệu nguồn".
+3. PHIẾU HỌC TẬP CHO HỌC SINH CÓ NHIỀU CHỖ TRỐNG: Thiết kế nhiều dòng kẻ ................, ô vuông [  ], bảng trống, sơ đồ khuyết để học sinh tự làm bài vào phiếu.
+4. TÁCH BIỆT ĐÁP ÁN VÀ HƯỚNG DẪN CHẤM: Sau khi hoàn thành xong Phiếu Học Tập dành cho Học Sinh (Phần 1 đến 10), BẮT BUỘC PHẢI TẠO MỘT PHẦN TÁCH BIỆT RÕ RÀNG (có đường kẻ phân trang <hr style="break-before: page; page-break-before: always;"> hoặc khung màu tối nổi bật với tiêu đề "PHẦN ĐÁP ÁN VÀ HƯỚNG DẪN CHẤM CHI TIẾT (DÀNH CHO GIÁO VIÊN)") nằm ở cuối document.
 
-1. TIÊU ĐỀ PHIẾU:
-   PHIẾU HỌC TẬP KHÁM PHÁ KIẾN THỨC
-   Bài dạy: ${lessonTitle.toUpperCase()} (Môn: ${subject} - ${grade})
+PHIẾU HỌC TẬP BẮT BUỘC GỒM 2 PHẦN LỚN:
 
-2. THÔNG TIN HỌC SINH:
-   Trường: ${schoolName}
-   Họ và tên học sinh / Tên nhóm: ...........................................................
-   Lớp: .............  |  Hình thức: ${workMode}  |  Thời lượng: ${durationMinutes}
-
-3. MỤC TIÊU HỌC TẬP:
-   - Về Kiến thức: [Ghi 2-3 mục tiêu khám phá trực tiếp từ Note]
-   - Về Năng lực & Phẩm chất: [Năng lực tự học, hợp tác, tư duy...]
-
-4. TÌNH HUỐNG KHỞI ĐỘNG (Kích thích tò mò):
-   [Tình huống / Câu hỏi thực tế / Trải nghiệm ban đầu dựa trên Note để dẫn dắt vào bài học]
-
-5. NHIỆM VỤ QUAN SÁT / ĐỌC TÀI LIỆU NGUỒN:
-   [Trích dẫn/Nêu rõ dữ liệu, đoạn trích, bảng biểu hoặc dữ kiện từ Note để học sinh đọc/quan sát]
-
+PHẦN A: PHIẾU HỌC TẬP HỌC SINH (GỒM ĐỦ 10 PHẦN CẤU TRÚC):
+1. TIÊU ĐỀ PHIẾU: PHIẾU HỌC TẬP KHÁM PHÁ KIẾN THỨC - Bài dạy: ${lessonTitle.toUpperCase()} (Môn: ${subject} - ${grade})
+2. THÔNG TIN HỌC SINH: Trường: ${schoolName} | Họ và tên / Nhóm: ........................................................... | Lớp: ............. | Hình thức: ${workMode} | Thời lượng: ${durationMinutes}
+3. MỤC TIÊU HỌC TẬP: (Khám phá kiến thức từ ngữ liệu, năng lực tự học/hợp tác, phẩm chất)
+4. TÌNH HUỐNG KHỞI ĐỘNG (Kích thích tò mò): Câu hỏi/Trải nghiệm khởi động dựa trực tiếp trên ngữ liệu
+5. NHIỆM VỤ QUAN SÁT / ĐỌC TÀI LIỆU NGUỒN: Trích dẫn đúng đoạn ngữ liệu gốc cho học sinh đọc/quan sát
 6. CÂU HỎI GỢI MỞ TỪ DỄ ĐẾN KHÓ:
-   - Mức 1 (Nhận biết): [Câu hỏi trực tiếp trong Note]
-   - Mức 2 (Thông hiểu): [Câu hỏi phân tích, so sánh, giải thích]
-   - Mức 3 (Vận dụng): [Câu hỏi liên hệ hoặc ứng dụng]
+   - Mức 1 (Nhận biết): Trực tiếp từ ngữ liệu
+   - Mức 2 (Thông hiểu): Phân tích/giải thích từ ngữ liệu
+   - Mức 3 (Vận dụng): Rút ra bài học/ứng dụng từ ngữ liệu
+7. BẢNG HOẶC CHỖ TRỐNG ĐỂ HỌC SINH HOÀN THÀNH: Bảng so sánh / bảng điền từ / sơ đồ khuyết có nhiều dòng kẻ ........................... để học sinh hoàn thành
+8. PHẦN HỌC SINH TỰ RÚT RA KẾT LUẬN: Khung ghi nhớ đúc kết cốt lõi
+9. HAI CÂU KIỂM TRA NHANH (Luyện tập củng cố): 2 câu củng cố từ ngữ liệu gốc
+10. PHẦN TỰ ĐÁNH GIÁ CỦA HỌC SINH VÀ NHẬN XÉT CỦA GIÁO VIÊN: Ô tích tự đánh giá học sinh & lời phê giáo viên
 
-7. BẢNG HOẶC CHỖ TRỐNG ĐỂ HỌC SINH HOÀN THÀNH:
-   [Thiết kế Bảng so sánh / Bảng điền từ / Sơ đồ tư duy khuyết / Khung bài làm có nhiều dòng kẻ ........................... để học sinh hoàn thành nhiệm vụ]
+PHẦN B: ĐÁP ÁN VÀ HƯỚNG DẪN CHẤM CHI TIẾT (TÁCH BIỆT DÀNH CHO GIÁO VIÊN):
+- Khung Tiêu đề nổi bật: "ĐÁP ÁN VÀ HƯỚNG DẪN CHẤM CHI TIẾT (DÀNH CHO GIÁO VIÊN)"
+- Lời giải chi tiết cho tất cả các câu hỏi ở Phần 6 (Căn cứ 100% ngữ liệu)
+- Đáp án mẫu điền đầy đủ vào Bảng/Chỗ trống ở Phần 7
+- Đáp án mẫu chuẩn cho Phần 8 (Kết luận tự đúc kết)
+- Đáp án chi tiết và Thang điểm (ví dụ mỗi câu 5.0đ) cho Phần 9 (Hai câu kiểm tra nhanh)
 
-8. PHẦN HỌC SINH TỰ RÚT RA KẾT LUẬN:
-   [Khung tổng kết ghi nhớ: Học sinh tự rút ra bài học/quy tắc/khái niệm cốt lõi sau khi hoàn thành các bước trên]
+Định dạng xuất: HTML trực tiếp, trình bày đẹp mắt, các bảng có border="1" style="border-collapse: collapse; width: 100%;".
 
-9. HAI CÂU KIỂM TRA NHANH (Luyện tập củng cố):
-   - Câu 1: [Câu hỏi trắc nghiệm hoặc tự luận ngắn]
-   - Câu 2: [Câu hỏi trắc nghiệm hoặc tự luận ngắn]
-   (Kèm theo Đáp án / Hướng dẫn chấm ngắn gọn ở góc dưới)
-
-10. PHẦN TỰ ĐÁNH GIÁ CỦA HỌC SINH VÀ NHẬN XÉT CỦA GIÁO VIÊN:
-    - Mức độ hoàn thành: [ ] Đã hiểu rõ  [ ] Hiểu một phần  [ ] Cần cố gắng thêm
-    - Điều em ấn tượng nhất hoặc muốn hỏi thêm: ...........................................................
-    - Nhận xét của Giáo viên: ..........................................................................................
-
-Ghi chú bổ sung của giáo viên (nếu có): ${additionalNotes}
-NỘI DUNG TÀI LIỆU NGUỒN (NOTE):
+NỘI DUNG TÀI LIỆU NGUỒN (NGỮ LIỆU GỐC GỬI LÊN):
 """
 ${sourceNotes}
 """
+Ghi chú bổ sung từ giáo viên: ${additionalNotes}
 `;
 
     let worksheetHtml = '';

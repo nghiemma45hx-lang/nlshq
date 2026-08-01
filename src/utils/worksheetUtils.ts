@@ -274,6 +274,79 @@ export function buildDynamicLocalWorksheet(params: WorksheetParams): string {
     </div>
   </div>
 
+  <!-- PHẦN TÁCH BIỆT: ĐÁP ÁN VÀ HƯỚNG DẪN CHẤM CHI TIẾT (DÀNH CHO GIÁO VIÊN) -->
+  <div class="mt-12 pt-8 border-t-4 border-dashed border-indigo-900 font-sans" style="page-break-before: always;">
+    <div class="bg-indigo-950 text-amber-300 p-4 rounded-xl mb-6 shadow text-center">
+      <div class="text-xs font-bold uppercase tracking-widest text-indigo-200">DÀNH CHO GIÁO VIÊN BIÊN SOẠN & GIẢNG DẠY</div>
+      <h2 class="text-lg sm:text-xl font-black uppercase tracking-wide mt-1">
+        ĐÁP ÁN VÀ HƯỚNG DẪN CHẤM CHI TIẾT
+      </h2>
+      <p class="text-xs text-indigo-200 italic mt-0.5">
+        (Căn cứ duy nhất trên ngữ liệu gốc gửi lên - Tách biệt hoàn toàn khỏi phiếu học tập của học sinh)
+      </p>
+    </div>
+
+    <div class="space-y-4 text-xs sm:text-sm text-slate-900 leading-relaxed">
+      
+      <!-- Lời giải cho Câu hỏi gợi mở -->
+      <div class="bg-slate-50 border border-slate-300 rounded-lg p-4">
+        <h4 class="font-bold text-indigo-950 uppercase border-b border-indigo-200 pb-1.5 mb-2">
+          1. Lời giải chi tiết phần Câu hỏi gợi mở (Mức 1 - Mức 3)
+        </h4>
+        <ul class="space-y-2 list-disc list-inside text-slate-800">
+          <li><strong>Mức 1 (Nhận biết):</strong> Từ khóa/Khái niệm chính rút ra trực tiếp từ tài liệu gốc gửi lên: <em>"${noteSnippet.slice(0, 120)}..."</em></li>
+          <li><strong>Mức 2 (Thông hiểu):</strong> Học sinh giải thích vai trò, nguyên lý theo đúng luận điểm có trong tài liệu nguồn.</li>
+          <li><strong>Mức 3 (Vận dụng):</strong> Học sinh vận dụng các bước hoặc nguyên lý từ tài liệu nguồn để thực hiện bài tập.</li>
+        </ul>
+      </div>
+
+      <!-- Đáp án hoàn chỉnh cho Bảng tổng hợp -->
+      <div class="bg-slate-50 border border-slate-300 rounded-lg p-4">
+        <h4 class="font-bold text-indigo-950 uppercase border-b border-indigo-200 pb-1.5 mb-2">
+          2. Đáp án mẫu điền Bảng tổng hợp & Hoàn thành nhiệm vụ
+        </h4>
+        <div class="overflow-x-auto">
+          <table class="w-full border-collapse border border-slate-700 text-xs text-left">
+            <thead>
+              <tr class="bg-indigo-100 text-indigo-950 font-bold">
+                <th class="border border-slate-700 p-2 w-12 text-center">STT</th>
+                <th class="border border-slate-700 p-2 w-1/3">Tiêu chí</th>
+                <th class="border border-slate-700 p-2">Nội dung đáp án chuẩn từ tài liệu nguồn</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="border border-slate-700 p-2 text-center font-bold">1</td>
+                <td class="border border-slate-700 p-2 font-bold bg-slate-100">Đặc điểm / Khái niệm chính</td>
+                <td class="border border-slate-700 p-2">Được tổng hợp chính xác từ trích đoạn ngữ liệu nguồn gửi lên.</td>
+              </tr>
+              <tr>
+                <td class="border border-slate-700 p-2 text-center font-bold">2</td>
+                <td class="border border-slate-700 p-2 font-bold bg-slate-100">Biểu hiện / Quy tắc cốt lõi</td>
+                <td class="border border-slate-700 p-2">Căn cứ đúng theo các luận điểm/công thức có trong văn bản nguồn.</td>
+              </tr>
+              <tr>
+                <td class="border border-slate-700 p-2 text-center font-bold">3</td>
+                <td class="border border-slate-700 p-2 font-bold bg-slate-100">Ứng dụng / Bài học đúc kết</td>
+                <td class="border border-slate-700 p-2">Đúc kết thông điệp chính hoặc nguyên lý hoạt động từ tài liệu gốc.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Đáp án & Thang điểm cho 2 câu kiểm tra nhanh -->
+      <div class="bg-slate-50 border border-slate-300 rounded-lg p-4">
+        <h4 class="font-bold text-indigo-950 uppercase border-b border-indigo-200 pb-1.5 mb-2">
+          3. Đáp án & Thang điểm 2 câu Kiểm tra nhanh
+        </h4>
+        <p class="mb-1.5"><strong>Câu 1 (Trắc nghiệm):</strong> Đáp án đúng là <strong>A</strong> (Căn cứ trực tiếp theo văn bản ngữ liệu gửi lên). <em>(Thang điểm: 5.0 điểm)</em></p>
+        <p><strong>Câu 2 (Tự luận ngắn):</strong> Học sinh giải thích ngắn gọn trong 2-3 dòng đúng các ý chính từ bài học, không thêm chi tiết ngoài ngữ liệu gốc. <em>(Thang điểm: 5.0 điểm)</em></p>
+      </div>
+
+    </div>
+  </div>
+
 </div>
   `.trim();
 }

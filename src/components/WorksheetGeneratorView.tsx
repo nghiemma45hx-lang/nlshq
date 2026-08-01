@@ -464,19 +464,23 @@ export const WorksheetGeneratorView: React.FC<WorksheetGeneratorViewProps> = ({
           <div className="bg-indigo-50/80 border border-indigo-200 rounded-2xl p-3.5 text-xs text-indigo-950 space-y-1.5">
             <div className="font-extrabold flex items-center text-indigo-900">
               <Info className="w-4 h-4 mr-1.5 text-indigo-700 shrink-0" />
-              Quy Chuẩn 10 Phần Bắt Buộc Dành Cho Giáo Viên:
+              Quy Chuẩn Biên Soạn Phiếu Học Tập & Đáp Án:
+            </div>
+            <div className="bg-amber-100/70 border border-amber-300 rounded-lg p-2 text-[11px] font-bold text-amber-950 mb-1">
+              📌 Nguyên tắc: Đọc kỹ 100% ngữ liệu gửi lên. Tuyệt đối không thêm ngữ liệu ngoài. Đơn lập & Tách biệt Đáp án / Hướng dẫn chấm ở cuối phiếu.
             </div>
             <ol className="list-decimal list-inside text-[11px] text-indigo-900 space-y-0.5 pl-1 leading-snug">
-              <li>Tiêu đề phiếu bài dạy</li>
-              <li>Thông tin học sinh & Trường THCS Hồng Quang</li>
+              <li>Tiêu đề phiếu bài dạy & Trường THCS Hồng Quang</li>
+              <li>Thông tin học sinh / nhóm & hình thức học tập</li>
               <li>Mục tiêu học tập (Kiến thức, Năng lực, Phẩm chất)</li>
-              <li>Tình huống khởi động</li>
+              <li>Tình huống khởi động dẫn dắt từ ngữ liệu</li>
               <li>Nhiệm vụ quan sát / Đọc tài liệu nguồn</li>
-              <li>Câu hỏi gợi mở từ dễ đến khó</li>
-              <li>Bảng hoặc chỗ trống hoàn thành nhiệm vụ</li>
+              <li>Câu hỏi gợi mở từ dễ đến khó (Mức 1 - Mức 3)</li>
+              <li>Bảng hoặc chỗ trống điền từ / sơ đồ khuyết</li>
               <li>Phần học sinh tự rút ra kết luận</li>
               <li>Hai câu kiểm tra nhanh củng cố</li>
-              <li>Phần tự đánh giá học sinh & Nhận xét giáo viên</li>
+              <li>Tự đánh giá học sinh & Lời phê giáo viên</li>
+              <li className="font-bold text-indigo-950">PHẦN TÁCH BIỆT: Đáp án & Hướng dẫn chấm chi tiết dành cho Giáo viên</li>
             </ol>
           </div>
 
