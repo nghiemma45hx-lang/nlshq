@@ -100,23 +100,26 @@ export const RepositoryView: React.FC<RepositoryViewProps> = ({
     );
   }
 
-  // Filter lessons belonging to the current logged-in user or guest/local session
+  const [adminViewAll, setAdminViewAll] = useState(false);
+
+  // Strictly filter lessons belonging to the logged-in user
   const userOwnLessons = lessons.filter(l => {
-    // Exact user match
+    // Exact user match by UID or Email
     const matchUid = Boolean(l.userId && l.userId === currentUser.uid);
     const matchEmail = Boolean(l.ownerEmail && currentUser.email && l.ownerEmail.toLowerCase() === currentUser.email.toLowerCase());
     if (matchUid || matchEmail) return true;
 
-    // Local / guest / unassigned lessons created in current session
-    if (!l.userId || !l.ownerEmail || l.userId.startsWith('guest') || l.userId === 'anonymous-teacher' || l.ownerEmail === '') {
+    // Admin option: if admin toggles 'adminViewAll', allow viewing all lessons
+    if (isAdmin && adminViewAll) {
       return true;
     }
 
-    // Admin user access
-    if (isAdmin) {
+    // Unassigned or guest items created in current session
+    if ((!l.userId || l.userId.startsWith('guest') || l.userId === 'anonymous-teacher') && (!l.ownerEmail || l.ownerEmail === '')) {
       return true;
     }
 
+    // Do NOT show lessons belonging to other registered accounts
     return false;
   });
 
@@ -183,11 +186,11 @@ export const RepositoryView: React.FC<RepositoryViewProps> = ({
       <div className="bg-gradient-to-r from-indigo-950 via-slate-900 to-indigo-900 text-white p-4 rounded-2xl shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border border-indigo-800/80">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 rounded-xl bg-indigo-600/80 border border-indigo-400/40 flex items-center justify-center text-white font-extrabold text-base shrink-0 shadow-sm">
-            {currentUser.displayName.charAt(0).toUpperCase()}
+            {currentUser.displayName ? currentUser.displayName.charAt(0).toUpperCase() : 'U'}
           </div>
           <div>
             <div className="flex items-center space-x-2">
-              <span className="font-extrabold text-sm text-white">{currentUser.displayName}</span>
+              <span className="font-extrabold text-sm text-white">{currentUser.displayName || 'Giáo viên'}</span>
               <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-[10px] font-extrabold px-2 py-0.5 rounded-full flex items-center">
                 <ShieldCheck className="w-3 h-3 mr-1 text-emerald-400" />
                 Kho Cá Nhân Phân Quyền
@@ -198,9 +201,25 @@ export const RepositoryView: React.FC<RepositoryViewProps> = ({
             </p>
           </div>
         </div>
-        <div className="text-xs text-indigo-200 bg-white/10 px-3.5 py-1.5 rounded-xl border border-white/10 flex items-center shrink-0">
-          <Lock className="w-3.5 h-3.5 mr-1.5 text-amber-300 shrink-0" />
-          <span>Chỉ tài khoản <strong className="text-white font-semibold">{currentUser.displayName}</strong> mới xem được kho này</span>
+
+        <div className="flex flex-wrap items-center gap-2">
+          {isAdmin && (
+            <button
+              onClick={() => setAdminViewAll(!adminViewAll)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition flex items-center space-x-1.5 cursor-pointer ${
+                adminViewAll 
+                  ? 'bg-amber-500/20 text-amber-200 border-amber-400/50' 
+                  : 'bg-white/10 text-white border-white/20 hover:bg-white/20'
+              }`}
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-amber-300" />
+              <span>{adminViewAll ? 'Đang xem: Tất cả hệ thống (Admin)' : 'Xem toàn bộ hệ thống (Admin)'}</span>
+            </button>
+          )}
+          <div className="text-xs text-indigo-200 bg-white/10 px-3.5 py-1.5 rounded-xl border border-white/10 flex items-center shrink-0">
+            <Lock className="w-3.5 h-3.5 mr-1.5 text-amber-300 shrink-0" />
+            <span>Chỉ tài khoản <strong className="text-white font-semibold">{currentUser.displayName || currentUser.email}</strong> mới xem được kho này</span>
+          </div>
         </div>
       </div>
 

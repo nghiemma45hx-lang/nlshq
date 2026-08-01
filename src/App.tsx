@@ -146,6 +146,59 @@ function AppContent() {
     }
   }, [exams]);
 
+  // Claim guest items when a teacher logs in so they belong strictly to their personal account
+  useEffect(() => {
+    if (currentUser?.uid) {
+      const userUid = currentUser.uid;
+      const userEmail = currentUser.email || '';
+      const userName = currentUser.displayName || 'Giáo viên';
+
+      setLessons(prev => {
+        let changed = false;
+        const updated = prev.map(l => {
+          if (!l.userId || l.userId.startsWith('guest') || l.userId === 'anonymous-teacher' || !l.ownerEmail) {
+            changed = true;
+            const claimed = {
+              ...l,
+              userId: userUid,
+              ownerEmail: userEmail,
+              authorName: userName
+            };
+            saveLessonToSupabase(claimed, userUid);
+            return claimed;
+          }
+          return l;
+        });
+        if (changed) {
+          saveAllLessonsToStorage(updated);
+        }
+        return updated;
+      });
+
+      setExams(prev => {
+        let changed = false;
+        const updated = prev.map(e => {
+          if (!e.userId || e.userId.startsWith('guest') || e.userId === 'anonymous-teacher' || !e.ownerEmail) {
+            changed = true;
+            const claimed = {
+              ...e,
+              userId: userUid,
+              ownerEmail: userEmail,
+              authorName: userName
+            };
+            saveExamToSupabase(claimed, userUid);
+            return claimed;
+          }
+          return e;
+        });
+        if (changed) {
+          saveAllExamsToStorage(updated);
+        }
+        return updated;
+      });
+    }
+  }, [currentUser?.uid, currentUser?.email, currentUser?.displayName]);
+
   // Selected sample or saved lesson plan for studio
   const [activeSample, setActiveSample] = useState<LessonPlanItem | null>(null);
 

@@ -95,18 +95,20 @@ export const ExamRepositoryView: React.FC<ExamRepositoryViewProps> = ({
     );
   }
 
-  // PRIVACY FILTER:
-  // Non-admin: ONLY see exams created by currentUser.uid / email / local guest session
-  // Admin: Sees ALL exams created by all teachers!
-  const userOwnExams = exams.filter(item => {
-    if (isAdmin) return true; // Admin can view all exams
+  const [adminViewAll, setAdminViewAll] = useState(false);
 
+  // PRIVACY FILTER:
+  // Non-admin: ONLY see exams created by currentUser.uid / email / local session
+  // Admin: Sees own exams by default, or all if adminViewAll is toggled
+  const userOwnExams = exams.filter(item => {
     const matchUid = Boolean(item.userId && item.userId === currentUser.uid);
     const matchEmail = Boolean(item.ownerEmail && currentUser.email && item.ownerEmail.toLowerCase() === currentUser.email.toLowerCase());
     if (matchUid || matchEmail) return true;
 
-    // Guest/local session exams
-    if (!item.userId || !item.ownerEmail || item.userId.startsWith('guest') || item.userId === 'anonymous-teacher' || item.ownerEmail === '') {
+    if (isAdmin && adminViewAll) return true;
+
+    // Guest/local session exams created in current browser session
+    if ((!item.userId || item.userId.startsWith('guest') || item.userId === 'anonymous-teacher') && (!item.ownerEmail || item.ownerEmail === '')) {
       return true;
     }
 
@@ -209,31 +211,37 @@ export const ExamRepositoryView: React.FC<ExamRepositoryViewProps> = ({
       <div className="bg-gradient-to-r from-slate-950 via-rose-950 to-indigo-950 text-white p-4 rounded-2xl shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border border-rose-900/60">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 rounded-xl bg-rose-600/80 border border-rose-400/40 flex items-center justify-center text-white font-extrabold text-base shrink-0 shadow-sm">
-            {currentUser.displayName.charAt(0).toUpperCase()}
+            {currentUser.displayName ? currentUser.displayName.charAt(0).toUpperCase() : 'U'}
           </div>
           <div>
             <div className="flex items-center space-x-2">
-              <span className="font-extrabold text-sm text-white">{currentUser.displayName}</span>
-              {isAdmin ? (
-                <span className="bg-amber-400 text-slate-950 text-[10px] font-extrabold px-2 py-0.5 rounded-full flex items-center">
-                  <ShieldCheck className="w-3 h-3 mr-1 text-slate-950" />
-                  ADMIN - XEM TOÀN BỘ KHO ĐỀ
-                </span>
-              ) : (
-                <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-[10px] font-extrabold px-2 py-0.5 rounded-full flex items-center">
-                  <ShieldCheck className="w-3 h-3 mr-1 text-emerald-400" />
-                  Kho Đề Cá Nhân
-                </span>
-              )}
+              <span className="font-extrabold text-sm text-white">{currentUser.displayName || 'Giáo viên'}</span>
+              <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-[10px] font-extrabold px-2 py-0.5 rounded-full flex items-center">
+                <ShieldCheck className="w-3 h-3 mr-1 text-emerald-400" />
+                Kho Đề Cá Nhân Bảo Mật
+              </span>
             </div>
             <p className="text-[11px] text-rose-200/80 font-mono">
-              Email: {currentUser.email} • {isAdmin ? 'Quyền Admin (Có thể xem & hỗ trợ tất cả giáo viên)' : 'Đề kiểm tra lưu riêng biệt, không lưu vào kho giáo án'}
+              Email: {currentUser.email} • ID: {currentUser.uid}
             </p>
           </div>
         </div>
 
-        <div className="text-right shrink-0">
-          <div className="text-xl font-black text-rose-300">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          {isAdmin && (
+            <button
+              onClick={() => setAdminViewAll(!adminViewAll)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition flex items-center space-x-1.5 cursor-pointer ${
+                adminViewAll 
+                  ? 'bg-amber-500/20 text-amber-200 border-amber-400/50' 
+                  : 'bg-white/10 text-white border-white/20 hover:bg-white/20'
+              }`}
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-amber-300" />
+              <span>{adminViewAll ? 'Đang xem: Tất cả kho đề (Admin)' : 'Xem toàn bộ kho đề (Admin)'}</span>
+            </button>
+          )}
+          <div className="text-xl font-black text-rose-300 bg-white/10 px-3 py-1 rounded-xl border border-white/10">
             {filteredExams.length} <span className="text-xs font-normal text-slate-300">đề kiểm tra</span>
           </div>
         </div>
