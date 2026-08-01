@@ -21,7 +21,8 @@ import {
   Trash2,
   Image,
   ExternalLink,
-  Upload
+  Upload,
+  Lock
 } from 'lucide-react';
 import { LessonPlanItem, ExamItem } from '../types';
 import { useAuth } from '../context/AuthContext';
@@ -39,7 +40,7 @@ export const ExamGeneratorView: React.FC<ExamGeneratorViewProps> = ({
   onSuccessToast,
   onSwitchView
 }) => {
-  const { currentUser } = useAuth();
+  const { currentUser, isAdmin } = useAuth();
   // Step 0: Initializing questions according to PDF standard
   const [examType, setExamType] = useState<string>('Giữa học kì I');
   const [outputOption, setOutputOption] = useState<string>('3'); // 1: Matrix only, 2: Matrix+Spec, 3: Full dossier
@@ -78,8 +79,8 @@ export const ExamGeneratorView: React.FC<ExamGeneratorViewProps> = ({
   const [subject, setSubject] = useState<string>('Ngữ văn');
   const [grade, setGrade] = useState<string>('Khối 8');
   const [durationMinutes, setDurationMinutes] = useState<string>('60');
-  const [schoolName, setSchoolName] = useState<string>('TRƯỜNG THCS LÊ QUÝ ĐÔN');
-  const [headerDept, setHeaderDept] = useState<string>('UBND XÃ PHÚ THỦY');
+  const [schoolName, setSchoolName] = useState<string>('TRƯỜNG THCS HỒNG QUANG');
+  const [headerDept, setHeaderDept] = useState<string>('UBND XÃ HÒA XÁ');
   const [schoolYear, setSchoolYear] = useState<string>('2025 - 2026');
 
   // Custom Subject and Grade Management
@@ -846,14 +847,35 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
       .map(l => l.trim())
       .filter(l => l.length > 0 && !l.startsWith('===') && !l.startsWith('---'));
 
-    let primaryTopic = `Nội dung kiểm tra môn ${subject} ${grade}`;
+    // Helper function to clean section headings, scores, and quotes from topic titles
+    const cleanTopicTitle = (str: string): string => {
+      if (!str) return '';
+      const cleaned = str
+        .replace(/^===.*?===/g, '')
+        .replace(/\[Tệp.*?\]/g, '')
+        .replace(/^NỘI DUNG TỆP GỐC:\s*/i, '')
+        .replace(/^PHẦN\s+[I|V|X\d]+\.?\s*(ĐỌC\s+HIỂU|VIẾT|TỰ\ LUẬN)?/gi, '')
+        .replace(/\(\s*\d+[\.,]?\d*\s*đ(?:iểm)?\s*\)/gi, '') // Removes (5,0 điểm), (5.0 điểm), (5đ)...
+        .replace(/^[\"\“\”\'\:\-\–\—\s\.\,]+|[\"\“\”\'\:\-\–\—\s\.\,]+$/g, '')
+        .trim();
+      
+      if (/^(đọc hiểu|tự luận|trắc nghiệm|phần i|phần ii|ngữ liệu|đề bài|ngữ liệu gốc)$/i.test(cleaned)) {
+        return '';
+      }
+      return cleaned;
+    };
+
+    let primaryTopic = '';
     for (const line of rawLines) {
       const cleanLine = line.replace(/^\[.*?\]/, '').replace(/^•\s*/, '').replace(/^NỘI DUNG TỆP GỐC:\s*/i, '').trim();
-      if (cleanLine.length > 5 && !cleanLine.startsWith('SỬ DỤNG CHUẨN DỮ LIỆU')) {
-        primaryTopic = cleanLine.slice(0, 120);
+      const topicCandidate = cleanTopicTitle(cleanLine);
+      if (topicCandidate.length > 5 && !cleanLine.startsWith('SỬ DỤNG CHUẨN DỮ LIỆU')) {
+        primaryTopic = topicCandidate.slice(0, 120);
         break;
       }
     }
+
+    const displayTopic = cleanTopicTitle(primaryTopic);
 
     const textParagraphs = rawLines.filter(l => l.length > 25 && !/^(câu|cau|đáp án|đề số|thời gian|môn|lớp|họ và tên)/i.test(l));
     const mainPassage = textParagraphs.slice(0, 5).join('\n\n') || sourceText.slice(0, 600) || `Tài liệu đính kèm cho môn ${subject} ${grade}`;
@@ -983,13 +1005,17 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
           essayQuestionsList.push({
             num: 1,
             points: ptsPerEssay,
-            text: `Từ nội dung dữ liệu gốc trong tài liệu "${primaryTopic}", em hãy viết một đoạn văn (khoảng 10-12 câu) phân tích ý nghĩa cốt lõi và bài học thực tiễn rút ra cho bản thân.`
+            text: displayTopic
+              ? `Từ nội dung dữ liệu gốc trong tài liệu "${displayTopic}", em hãy viết một đoạn văn (khoảng 10-12 câu) phân tích ý nghĩa cốt lõi và bài học thực tiễn rút ra cho bản thân.`
+              : `Từ nội dung dữ liệu gốc trong tài liệu đính kèm, em hãy viết một đoạn văn (khoảng 10-12 câu) phân tích ý nghĩa cốt lõi và bài học thực tiễn rút ra cho bản thân.`
           });
         } else {
           essayQuestionsList.push({
             num: i,
             points: ptsPerEssay,
-            text: `Phân tích toàn diện ngữ liệu/đề bài trong tài liệu tải lên (${primaryTopic}). Chỉ rõ các giá trị nội dung, nghệ thuật/phương pháp biểu đạt và liên hệ thực tế.`
+            text: displayTopic
+              ? `Phân tích toàn diện ngữ liệu/đề bài trong tài liệu tải lên (${displayTopic}). Chỉ rõ các giá trị nội dung, nghệ thuật/phương pháp biểu đạt và liên hệ thực tế.`
+              : `Phân tích toàn diện ngữ liệu/đề bài trong tài liệu tải lên. Chỉ rõ các giá trị nội dung, nghệ thuật/phương pháp biểu đạt và liên hệ thực tế.`
           });
         }
       }
@@ -1564,7 +1590,7 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
                         <td class="p-2.5 border border-slate-300 text-center font-bold">0.5đ</td>
                       </tr>
                       <tr>
-                        <td class="p-2.5 border border-slate-300"><b>Nội dung đáp ứng câu hỏi:</b> Trả lời trực tiếp và trọn vẹn yêu cầu của đề: "${eq.text.length > 80 ? eq.text.slice(0, 80) + '...' : eq.text}". Nêu đủ các luận điểm, phân tích chi tiết và trích dẫn bằng chứng thuyết phục từ ngữ liệu gốc (${primaryTopic.slice(0, 50)}...).</td>
+                        <td class="p-2.5 border border-slate-300"><b>Nội dung đáp ứng câu hỏi:</b> Trả lời trực tiếp và trọn vẹn yêu cầu của đề: "${eq.text.length > 80 ? eq.text.slice(0, 80) + '...' : eq.text}". Nêu đủ các luận điểm, phân tích chi tiết và trích dẫn bằng chứng thuyết phục từ ngữ liệu gốc${displayTopic ? ` (${displayTopic})` : ''}.</td>
                         <td class="p-2.5 border border-slate-300 text-center font-bold">${formatPts(Math.max(0.5, eq.points - 1.0))}đ</td>
                       </tr>
                       <tr>
@@ -1583,7 +1609,7 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
                     <div class="p-3 bg-white rounded-lg border border-indigo-100">
                       <p class="font-bold text-indigo-950 mb-1">Câu ${eq.num} (${formatPts(eq.points)} điểm): "${eq.text}"</p>
                       <ul class="list-disc pl-5 space-y-1 text-slate-700">
-                        <li><b>Mở bài/đoạn:</b> Giới thiệu trực tiếp vấn đề cần giải quyết trong câu hỏi dựa trên ngữ liệu gốc (${primaryTopic.slice(0, 50)}...).</li>
+                        <li><b>Mở bài/đoạn:</b> Giới thiệu trực tiếp vấn đề cần giải quyết trong câu hỏi dựa trên ngữ liệu gốc${displayTopic ? ` (${displayTopic})` : ''}.</li>
                         <li><b>Thân bài/đoạn:</b> Phân tích chi tiết 2 - 3 luận điểm cốt lõi, trích dẫn dẫn chứng tiêu biểu từ văn bản đính kèm, liên hệ tác động thực tiễn.</li>
                         <li><b>Kết bài/đoạn & Bài học:</b> Khẳng định tổng quát thông điệp và rút ra bài học nhận thức, hành động bản thân.</li>
                       </ul>
@@ -2351,8 +2377,15 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
 
           {/* Header Title Information Panel */}
           <div className="space-y-3 p-3 bg-slate-50/80 rounded-2xl border border-slate-200">
-            <div className="text-xs font-extrabold text-indigo-950 flex items-center justify-between border-b border-slate-200 pb-1.5">
-              <span>Khung Tiêu Đề (Header) Đề Kiểm Tra:</span>
+            <div className="text-xs font-extrabold text-indigo-950 flex flex-wrap items-center justify-between gap-1 border-b border-slate-200 pb-1.5">
+              <span className="flex items-center gap-1.5 flex-wrap">
+                Khung Tiêu Đề (Header) Đề Kiểm Tra:
+                {!isAdmin && (
+                  <span className="text-[10px] text-amber-800 bg-amber-100 font-bold px-2 py-0.5 rounded-md border border-amber-300 flex items-center gap-1">
+                    <Lock className="w-3 h-3 text-amber-700 inline" /> Chỉ Admin mới có quyền thay đổi
+                  </span>
+                )}
+              </span>
               <span className="text-[10px] text-slate-500 font-normal">Xuất chuẩn Word 2 cột</span>
             </div>
 
@@ -2364,36 +2397,62 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
               <input
                 type="text"
                 value={headerDept}
-                onChange={e => setHeaderDept(e.target.value)}
-                placeholder="Ví dụ: UBND XÃ PHÚ THỦY, PHÒNG GD&ĐT..."
-                className="w-full p-2 text-xs font-bold text-slate-900 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-rose-500"
+                onChange={e => isAdmin && setHeaderDept(e.target.value)}
+                disabled={!isAdmin}
+                readOnly={!isAdmin}
+                placeholder="Ví dụ: UBND XÃ HÒA XÁ, PHÒNG GD&ĐT..."
+                className={`w-full p-2 text-xs font-bold border rounded-xl ${
+                  isAdmin 
+                    ? 'text-slate-900 bg-white border-slate-300 focus:ring-2 focus:ring-rose-500' 
+                    : 'text-slate-600 bg-slate-100 border-slate-200 cursor-not-allowed opacity-90'
+                }`}
               />
               <div className="flex flex-wrap gap-1 mt-1">
                 <button
                   type="button"
-                  onClick={() => setHeaderDept('UBND XÃ PHÚ THỦY')}
-                  className="px-1.5 py-0.5 bg-slate-200/80 hover:bg-slate-300 text-[10px] font-semibold text-slate-800 rounded transition cursor-pointer"
+                  disabled={!isAdmin}
+                  onClick={() => isAdmin && setHeaderDept('UBND XÃ HÒA XÁ')}
+                  className={`px-1.5 py-0.5 text-[10px] font-semibold rounded transition ${
+                    isAdmin 
+                      ? 'bg-slate-200/80 hover:bg-slate-300 text-slate-800 cursor-pointer' 
+                      : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                  }`}
                 >
-                  + UBND Xã Phú Thủy
+                  + UBND Xã Hòa Xá
                 </button>
                 <button
                   type="button"
-                  onClick={() => setHeaderDept('UBND XÃ ...')}
-                  className="px-1.5 py-0.5 bg-slate-200/80 hover:bg-slate-300 text-[10px] font-semibold text-slate-800 rounded transition cursor-pointer"
+                  disabled={!isAdmin}
+                  onClick={() => isAdmin && setHeaderDept('UBND XÃ ...')}
+                  className={`px-1.5 py-0.5 text-[10px] font-semibold rounded transition ${
+                    isAdmin 
+                      ? 'bg-slate-200/80 hover:bg-slate-300 text-slate-800 cursor-pointer' 
+                      : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                  }`}
                 >
                   + UBND Xã...
                 </button>
                 <button
                   type="button"
-                  onClick={() => setHeaderDept('PHÒNG GIÁO DỤC VÀ ĐÀO TẠO')}
-                  className="px-1.5 py-0.5 bg-slate-200/80 hover:bg-slate-300 text-[10px] font-semibold text-slate-800 rounded transition cursor-pointer"
+                  disabled={!isAdmin}
+                  onClick={() => isAdmin && setHeaderDept('PHÒNG GIÁO DỤC VÀ ĐÀO TẠO')}
+                  className={`px-1.5 py-0.5 text-[10px] font-semibold rounded transition ${
+                    isAdmin 
+                      ? 'bg-slate-200/80 hover:bg-slate-300 text-slate-800 cursor-pointer' 
+                      : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                  }`}
                 >
                   + Phòng GD&ĐT
                 </button>
                 <button
                   type="button"
-                  onClick={() => setHeaderDept('SỞ GIÁO DỤC VÀ ĐÀO TẠO')}
-                  className="px-1.5 py-0.5 bg-slate-200/80 hover:bg-slate-300 text-[10px] font-semibold text-slate-800 rounded transition cursor-pointer"
+                  disabled={!isAdmin}
+                  onClick={() => isAdmin && setHeaderDept('SỞ GIÁO DỤC VÀ ĐÀO TẠO')}
+                  className={`px-1.5 py-0.5 text-[10px] font-semibold rounded transition ${
+                    isAdmin 
+                      ? 'bg-slate-200/80 hover:bg-slate-300 text-slate-800 cursor-pointer' 
+                      : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                  }`}
                 >
                   + Sở GD&ĐT
                 </button>
@@ -2407,9 +2466,15 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
                 <input
                   type="text"
                   value={schoolName}
-                  onChange={e => setSchoolName(e.target.value)}
-                  placeholder="TRƯỜNG THCS..."
-                  className="w-full p-2 text-xs font-bold text-slate-900 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-rose-500"
+                  onChange={e => isAdmin && setSchoolName(e.target.value)}
+                  disabled={!isAdmin}
+                  readOnly={!isAdmin}
+                  placeholder="TRƯỜNG THCS HỒNG QUANG"
+                  className={`w-full p-2 text-xs font-bold border rounded-xl ${
+                    isAdmin 
+                      ? 'text-slate-900 bg-white border-slate-300 focus:ring-2 focus:ring-rose-500' 
+                      : 'text-slate-600 bg-slate-100 border-slate-200 cursor-not-allowed opacity-90'
+                  }`}
                 />
               </div>
 
