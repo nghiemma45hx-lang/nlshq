@@ -22,7 +22,8 @@ import {
   Image,
   ExternalLink,
   Upload,
-  Lock
+  Lock,
+  FolderCheck
 } from 'lucide-react';
 import { LessonPlanItem, ExamItem } from '../types';
 import { useAuth } from '../context/AuthContext';
@@ -821,14 +822,15 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
           html = await marked.parse(html);
         }
         setGeneratedExamHtml(html);
-        onSuccessToast('Đã khởi tạo xong Hồ sơ Đề kiểm tra chuẩn BGDĐT!');
+        await autoSaveToRepository(html);
+        onSuccessToast('Đã khởi tạo xong & tự động lưu vào Kho Đề Kiểm Tra!');
       } else {
         // Fallback robust template generation
-        generateLocalFallbackExam();
+        await generateLocalFallbackExam();
       }
     } catch (err) {
       console.warn('API call error, using local fallback:', err);
-      generateLocalFallbackExam();
+      await generateLocalFallbackExam();
     } finally {
       setIsGenerating(false);
       setProgressStep('');
@@ -836,7 +838,7 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
   };
 
   // Local Fallback Generator in case of offline/network limits
-  const generateLocalFallbackExam = () => {
+  const generateLocalFallbackExam = async () => {
     const isOption1 = outputOption === '1';
     const isOption2 = outputOption === '2';
 
@@ -1628,13 +1630,13 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
     `;
 
     setGeneratedExamHtml(localHtml);
-    onSuccessToast('Đã khởi tạo Hồ sơ Đề kiểm tra chuẩn Bộ (Offline Engine)!');
+    await autoSaveToRepository(localHtml);
+    onSuccessToast('Đã khởi tạo Hồ sơ Đề kiểm tra & tự động lưu vào Kho Đề!');
   };
 
-  // Save to Kho Đề Kiểm Tra & durable IndexedDB/Supabase storage
-  const handleSaveToRepository = async () => {
-    if (!generatedExamHtml) return;
-
+  // Helper auto-save to repository
+  const autoSaveToRepository = async (html: string) => {
+    if (!html) return;
     const newExam: ExamItem = {
       id: 'exam-' + Date.now(),
       title: generatedTitle || `Đề kiểm tra ${examType} ${subject} ${grade}`,
@@ -1648,16 +1650,21 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
       framework: 'TT 02/2025 + QĐ 3439',
       template: 'Mẫu Đề Kiểm Tra Chuẩn BGDĐT 2018',
       originalContent: topicScope,
-      integratedContent: generatedExamHtml,
+      integratedContent: html,
       createdAt: Date.now(),
       dateString: new Date().toLocaleDateString('vi-VN') + ' - ' + new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
       userId: currentUser?.uid || 'guest-teacher',
       ownerEmail: currentUser?.email || '',
       authorName: currentUser?.displayName || 'Giáo viên'
     };
-
     await onSaveExam(newExam);
-    onSuccessToast('Đã lưu thành công Đề kiểm tra vào Kho Đề Kiểm Tra riêng biệt (không lưu vào Kho Giáo Án)!');
+  };
+
+  // Save to Kho Đề Kiểm Tra & durable IndexedDB/Supabase storage
+  const handleSaveToRepository = async () => {
+    if (!generatedExamHtml) return;
+    await autoSaveToRepository(generatedExamHtml);
+    onSuccessToast('Đã lưu thành công Đề kiểm tra vào Kho Đề Kiểm Tra!');
   };
 
   // Export Word document (.docx compatible format)
@@ -2712,10 +2719,19 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
                 <button
                   onClick={handleSaveToRepository}
                   className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-xs transition flex items-center space-x-1 cursor-pointer"
-                  title="Lưu hồ sơ này vào CSDL Kho Giáo Án & Đề Kiểm Tra"
+                  title="Lưu hồ sơ này vào CSDL Kho Đề Kiểm Tra"
                 >
                   <Save className="w-3.5 h-3.5" />
                   <span>Lưu Kho Đề</span>
+                </button>
+
+                <button
+                  onClick={() => onSwitchView('exam-repo')}
+                  className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-extrabold text-xs rounded-xl shadow-xs transition flex items-center space-x-1 cursor-pointer"
+                  title="Đi tới màn hình Kho Đề Kiểm Tra"
+                >
+                  <FolderCheck className="w-3.5 h-3.5" />
+                  <span>Xem Kho Đề</span>
                 </button>
 
                 <button
@@ -2815,12 +2831,21 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
                   </div>
                 </div>
 
-                <button
-                  onClick={handleSaveToRepository}
-                  className="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs rounded-xl shadow-md transition whitespace-nowrap cursor-pointer shrink-0"
-                >
-                  LƯU VÀO KHO ĐỀ KIỂM TRA
-                </button>
+                <div className="flex items-center space-x-2 shrink-0">
+                  <button
+                    onClick={handleSaveToRepository}
+                    className="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs rounded-xl shadow-md transition whitespace-nowrap cursor-pointer"
+                  >
+                    LƯU VÀO KHO ĐỀ
+                  </button>
+                  <button
+                    onClick={() => onSwitchView('exam-repo')}
+                    className="px-4 py-2.5 bg-purple-700 hover:bg-purple-800 text-white font-extrabold text-xs rounded-xl shadow-md transition whitespace-nowrap cursor-pointer flex items-center space-x-1"
+                  >
+                    <FolderCheck className="w-4 h-4 mr-1" />
+                    <span>XEM KHO ĐỀ</span>
+                  </button>
+                </div>
               </div>
 
             </div>

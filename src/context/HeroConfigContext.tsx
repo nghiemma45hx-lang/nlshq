@@ -110,7 +110,7 @@ export const HeroConfigProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         return {
           ...DEFAULT_HERO_CONFIG,
           ...parsed,
-          navCards: parsed.navCards && parsed.navCards.some((c: any) => c.id === 'exam')
+          navCards: parsed.navCards && parsed.navCards.some((c: any) => c.id === 'exam-repo')
             ? parsed.navCards 
             : DEFAULT_HERO_CONFIG.navCards
         };
