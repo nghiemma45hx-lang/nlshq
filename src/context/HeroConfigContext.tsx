@@ -42,10 +42,19 @@ export const DEFAULT_HERO_CONFIG: HeroBannerConfig = {
       isHot: true
     },
     {
+      id: 'exam-repo',
+      title: 'Kho Đề Kiểm Tra',
+      sub: 'Lưu trữ & Bảo mật đề',
+      badge: 'Kho Đề',
+      badgeColor: 'bg-rose-500/20 text-rose-300 border-rose-500/30',
+      cardBgColor: 'bg-slate-900/90',
+      textColor: 'text-white',
+    },
+    {
       id: 'repository',
       title: 'Kho Giáo Án',
-      sub: 'Lưu trữ Supabase DB',
-      badge: 'Kho bài',
+      sub: 'Kế hoạch bài dạy NLS',
+      badge: 'Kho Giáo Án',
       badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
       cardBgColor: 'bg-slate-900/90',
       textColor: 'text-white',

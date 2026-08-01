@@ -23,19 +23,23 @@ import {
   ExternalLink,
   Upload
 } from 'lucide-react';
-import { LessonPlanItem } from '../types';
+import { LessonPlanItem, ExamItem } from '../types';
+import { useAuth } from '../context/AuthContext';
 
 interface ExamGeneratorViewProps {
-  onSaveLesson: (lesson: Partial<LessonPlanItem>) => Promise<void>;
+  onSaveLesson?: (lesson: Partial<LessonPlanItem>) => Promise<void>;
+  onSaveExam: (exam: ExamItem) => Promise<void>;
   onSuccessToast: (msg: string) => void;
   onSwitchView: (view: string) => void;
 }
 
 export const ExamGeneratorView: React.FC<ExamGeneratorViewProps> = ({
   onSaveLesson,
+  onSaveExam,
   onSuccessToast,
   onSwitchView
 }) => {
+  const { currentUser } = useAuth();
   // Step 0: Initializing questions according to PDF standard
   const [examType, setExamType] = useState<string>('Giữa học kì I');
   const [outputOption, setOutputOption] = useState<string>('3'); // 1: Matrix only, 2: Matrix+Spec, 3: Full dossier
@@ -1601,25 +1605,33 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
     onSuccessToast('Đã khởi tạo Hồ sơ Đề kiểm tra chuẩn Bộ (Offline Engine)!');
   };
 
-  // Save to repository & durable IndexedDB/Supabase storage
+  // Save to Kho Đề Kiểm Tra & durable IndexedDB/Supabase storage
   const handleSaveToRepository = async () => {
     if (!generatedExamHtml) return;
 
-    const newLesson: Partial<LessonPlanItem> = {
+    const newExam: ExamItem = {
       id: 'exam-' + Date.now(),
       title: generatedTitle || `Đề kiểm tra ${examType} ${subject} ${grade}`,
       subject,
       grade,
+      examType,
+      durationMinutes,
+      schoolName,
+      headerDept,
+      schoolYear,
       framework: 'TT 02/2025 + QĐ 3439',
       template: 'Mẫu Đề Kiểm Tra Chuẩn BGDĐT 2018',
       originalContent: topicScope,
       integratedContent: generatedExamHtml,
       createdAt: Date.now(),
-      dateString: new Date().toLocaleDateString('vi-VN') + ' - ' + new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+      dateString: new Date().toLocaleDateString('vi-VN') + ' - ' + new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+      userId: currentUser?.uid || 'guest-teacher',
+      ownerEmail: currentUser?.email || '',
+      authorName: currentUser?.displayName || 'Giáo viên'
     };
 
-    await onSaveLesson(newLesson);
-    onSuccessToast('Đã lưu Hồ sơ Đề kiểm tra vào Kho bài dạy & CSDL Supabase!');
+    await onSaveExam(newExam);
+    onSuccessToast('Đã lưu thành công Đề kiểm tra vào Kho Đề Kiểm Tra riêng biệt (không lưu vào Kho Giáo Án)!');
   };
 
   // Export Word document (.docx compatible format)
@@ -2727,22 +2739,22 @@ Phonics: Intonation on questions & lists. Reading comprehension & Writing transf
               />
 
               {/* BOTTOM SAVE CALLOUT */}
-              <div className="p-4 bg-gradient-to-r from-emerald-50 to-indigo-50 rounded-2xl border border-emerald-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="p-4 bg-gradient-to-r from-rose-50 via-indigo-50 to-emerald-50 rounded-2xl border border-rose-200 flex flex-col sm:flex-row items-center justify-between gap-3">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm font-extrabold">
-                    <Save className="w-5 h-5" />
+                  <div className="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center shrink-0 shadow-sm font-extrabold">
+                    <FileCheck className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-extrabold text-slate-900">Lưu trữ không lo mất dữ liệu</h4>
-                    <p className="text-[11px] text-slate-600">Đã kích hoạt đồng bộ IndexedDB & CSDL Supabase cloud.</p>
+                    <h4 className="text-xs font-extrabold text-slate-900">Lưu trữ Kho Đề Kiểm Tra riêng biệt</h4>
+                    <p className="text-[11px] text-slate-600">Đề được tự động bảo mật theo tài khoản tạo đề (không lưu đè vào Kho Giáo Án).</p>
                   </div>
                 </div>
 
                 <button
                   onClick={handleSaveToRepository}
-                  className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-md transition whitespace-nowrap cursor-pointer shrink-0"
+                  className="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs rounded-xl shadow-md transition whitespace-nowrap cursor-pointer shrink-0"
                 >
-                  LƯU VÀO KHO BÀI DẠY
+                  LƯU VÀO KHO ĐỀ KIỂM TRA
                 </button>
               </div>
 

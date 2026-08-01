@@ -1,5 +1,5 @@
 import { supabase, supabaseAdmin } from './supabase';
-import { LessonPlanItem, AdminStats, UserProfile } from '../types';
+import { LessonPlanItem, ExamItem, AdminStats, UserProfile } from '../types';
 import { SAMPLE_LESSONS } from '../data/competencyData';
 
 /**
@@ -37,6 +37,48 @@ export const mapLessonToDb = (lesson: LessonPlanItem, userId?: string) => ({
   is_featured: lesson.isFeatured || false,
   user_id: userId || lesson.userId || 'anonymous-teacher',
   owner_email: lesson.ownerEmail || '',
+});
+
+export const mapDbToExam = (row: any): ExamItem => ({
+  id: row.id,
+  title: row.title || 'Đề kiểm tra chưa đặt tên',
+  subject: row.subject || 'Ngữ văn',
+  grade: row.grade || 'THCS/THPT',
+  examType: row.exam_type || row.examType || 'Giữa học kì I',
+  durationMinutes: row.duration_minutes || row.durationMinutes || '60',
+  schoolName: row.school_name || row.schoolName || '',
+  headerDept: row.header_dept || row.headerDept || '',
+  schoolYear: row.school_year || row.schoolYear || '2025 - 2026',
+  framework: row.framework || 'TT 02/2025 + QĐ 3439',
+  template: row.template || 'Mẫu Đề Kiểm Tra Chuẩn BGDĐT 2018',
+  originalContent: row.original_content || row.originalContent || '',
+  integratedContent: row.integrated_content || row.integratedContent || '',
+  createdAt: typeof row.created_at === 'number' ? row.created_at : new Date(row.created_at || Date.now()).getTime(),
+  dateString: row.date_string || row.dateString || new Date().toLocaleDateString('vi-VN'),
+  userId: row.user_id || row.userId || '',
+  ownerEmail: row.owner_email || row.ownerEmail || '',
+  authorName: row.author_name || row.authorName || '',
+});
+
+export const mapExamToDb = (exam: ExamItem, userId?: string) => ({
+  id: exam.id,
+  title: exam.title,
+  subject: exam.subject,
+  grade: exam.grade,
+  exam_type: exam.examType,
+  duration_minutes: exam.durationMinutes || '60',
+  school_name: exam.schoolName || '',
+  header_dept: exam.headerDept || '',
+  school_year: exam.schoolYear || '2025 - 2026',
+  framework: exam.framework,
+  template: exam.template,
+  original_content: exam.originalContent,
+  integrated_content: exam.integratedContent,
+  created_at: exam.createdAt || Date.now(),
+  date_string: exam.dateString || new Date().toLocaleDateString('vi-VN'),
+  user_id: userId || exam.userId || 'anonymous-teacher',
+  owner_email: exam.ownerEmail || '',
+  author_name: exam.authorName || '',
 });
 
 /**
@@ -104,6 +146,73 @@ export const deleteLessonFromSupabase = async (id: string): Promise<boolean> => 
     return true;
   } catch (err) {
     console.error('Error deleting lesson from Supabase:', err);
+    return false;
+  }
+};
+
+/**
+ * Exams Supabase CRUD Services (Kho Đề Kiểm Tra)
+ */
+export const fetchExamsFromSupabase = async (): Promise<ExamItem[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('exams')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.warn('Supabase fetch exams warning (will rely on IndexedDB):', error.message);
+      return [];
+    }
+
+    if (data && data.length > 0) {
+      return data.map(mapDbToExam);
+    }
+    return [];
+  } catch (err) {
+    console.warn('Error fetching exams from Supabase:', err);
+    return [];
+  }
+};
+
+export const saveExamToSupabase = async (exam: ExamItem, userId?: string): Promise<boolean> => {
+  try {
+    const dbPayload = mapExamToDb(exam, userId);
+    const { error } = await supabase
+      .from('exams')
+      .upsert(dbPayload, { onConflict: 'id' });
+
+    if (error) {
+      console.warn('Supabase save exam warning:', error.message);
+      const { error: adminErr } = await supabaseAdmin
+        .from('exams')
+        .upsert(dbPayload, { onConflict: 'id' });
+      if (adminErr) {
+        console.warn('Supabase admin save exam warning:', adminErr.message);
+        return false;
+      }
+    }
+    return true;
+  } catch (err) {
+    console.warn('Error saving exam to Supabase:', err);
+    return false;
+  }
+};
+
+export const deleteExamFromSupabase = async (id: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('exams')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.warn('Supabase delete exam warning:', error.message);
+      await supabaseAdmin.from('exams').delete().eq('id', id);
+    }
+    return true;
+  } catch (err) {
+    console.warn('Error deleting exam from Supabase:', err);
     return false;
   }
 };

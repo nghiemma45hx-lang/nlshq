@@ -7,6 +7,7 @@ import { AuthModal } from './components/AuthModal';
 import { LandingView } from './components/LandingView';
 import { StudioView } from './components/StudioView';
 import { ExamGeneratorView } from './components/ExamGeneratorView';
+import { ExamRepositoryView } from './components/ExamRepositoryView';
 import { RepositoryView } from './components/RepositoryView';
 import { LibraryView } from './components/LibraryView';
 import { LegalView } from './components/LegalView';
@@ -14,19 +15,26 @@ import { AdminDashboard } from './components/AdminDashboard';
 import { CompetencyDetailModal } from './components/CompetencyDetailModal';
 import { UserProfileModal } from './components/UserProfileModal';
 import { SAMPLE_LESSONS } from './data/competencyData';
-import { LessonPlanItem, CompetencyDomain } from './types';
+import { LessonPlanItem, ExamItem, CompetencyDomain } from './types';
 import { CheckCircle2 } from 'lucide-react';
 import { 
   fetchLessonsFromSupabase, 
   saveLessonToSupabase, 
   deleteLessonFromSupabase, 
-  seedSampleDataToSupabase 
+  seedSampleDataToSupabase,
+  fetchExamsFromSupabase,
+  saveExamToSupabase,
+  deleteExamFromSupabase
 } from './lib/supabaseService';
 import {
   saveLessonToStorage,
   saveAllLessonsToStorage,
   deleteLessonFromStorage,
-  loadAllLessonsFromStorage
+  loadAllLessonsFromStorage,
+  saveExamToStorage,
+  saveAllExamsToStorage,
+  deleteExamFromStorage,
+  loadAllExamsFromStorage
 } from './lib/storageService';
 
 function AppContent() {
@@ -59,16 +67,28 @@ function AppContent() {
     return SAMPLE_LESSONS;
   });
 
+  // Saved exams state (stored in Kho Đề Kiểm Tra riêng biệt)
+  const [exams, setExams] = useState<ExamItem[]>(() => {
+    const saved = localStorage.getItem('edunls_exams');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  });
+
   // Durable initial load: Load IndexedDB master cache first, then merge with Supabase
   useEffect(() => {
     const loadDurableData = async () => {
-      // 1. Load from IndexedDB
+      // 1. Load Lessons from IndexedDB & Supabase
       const localDurableLessons = await loadAllLessonsFromStorage();
       if (localDurableLessons && localDurableLessons.length > 0) {
         setLessons(localDurableLessons);
       }
 
-      // 2. Fetch remote lessons from Supabase and merge
       try {
         const remoteLessons = await fetchLessonsFromSupabase();
         if (remoteLessons && remoteLessons.length > 0) {
@@ -86,6 +106,28 @@ function AppContent() {
       } catch (err) {
         console.warn('Supabase initial fetch failed, relying on IndexedDB local cache:', err);
       }
+
+      // 2. Load Exams from IndexedDB & Supabase
+      const localDurableExams = await loadAllExamsFromStorage();
+      if (localDurableExams && localDurableExams.length > 0) {
+        setExams(localDurableExams);
+      }
+
+      try {
+        const remoteExams = await fetchExamsFromSupabase();
+        if (remoteExams && remoteExams.length > 0) {
+          setExams(prev => {
+            const map = new Map<string, ExamItem>();
+            remoteExams.forEach(e => map.set(e.id, e));
+            prev.forEach(e => map.set(e.id, e));
+            const merged = Array.from(map.values()).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+            saveAllExamsToStorage(merged);
+            return merged;
+          });
+        }
+      } catch (err) {
+        console.warn('Supabase exams initial fetch failed, relying on IndexedDB local cache:', err);
+      }
     };
 
     loadDurableData();
@@ -98,8 +140,52 @@ function AppContent() {
     }
   }, [lessons]);
 
+  useEffect(() => {
+    if (exams && exams.length > 0) {
+      saveAllExamsToStorage(exams);
+    }
+  }, [exams]);
+
   // Selected sample or saved lesson plan for studio
   const [activeSample, setActiveSample] = useState<LessonPlanItem | null>(null);
+
+  const handleSaveExam = async (examData: ExamItem) => {
+    const examId = examData.id || 'exam-' + Date.now();
+    const newExam: ExamItem = {
+      ...examData,
+      id: examId,
+      userId: currentUser?.uid || examData.userId || 'guest-teacher',
+      ownerEmail: currentUser?.email || examData.ownerEmail || '',
+      authorName: currentUser?.displayName || examData.authorName || 'Giáo viên'
+    };
+
+    setExams(prev => {
+      const exists = prev.some(e => e.id === examId);
+      if (exists) {
+        return prev.map(e => e.id === examId ? newExam : e);
+      }
+      return [newExam, ...prev];
+    });
+
+    await saveExamToStorage(newExam);
+    await saveExamToSupabase(newExam, currentUser?.uid || currentUser?.email);
+  };
+
+  const handleDeleteExam = async (id: string) => {
+    setExams(prev => prev.filter(e => e.id !== id));
+    await deleteExamFromStorage(id);
+    await deleteExamFromSupabase(id);
+    showToast('Đã xóa đề kiểm tra khỏi Kho Đề Kiểm Tra riêng.');
+  };
+
+  const handleUpdateExamTitle = (id: string, newTitle: string) => {
+    setExams(prev => {
+      const updated = prev.map(e => e.id === id ? { ...e, title: newTitle } : e);
+      saveAllExamsToStorage(updated);
+      return updated;
+    });
+    showToast('Đã cập nhật tên đề kiểm tra!');
+  };
 
   const handleSaveLesson = async (lessonData: Partial<LessonPlanItem> & Omit<LessonPlanItem, 'createdAt' | 'dateString'>) => {
     const now = new Date();
@@ -224,8 +310,20 @@ function AppContent() {
         {currentView === 'exam' && (
           <ExamGeneratorView
             onSaveLesson={handleSaveLesson}
+            onSaveExam={handleSaveExam}
             onSuccessToast={showToast}
             onSwitchView={setCurrentView}
+          />
+        )}
+
+        {currentView === 'exam-repo' && (
+          <ExamRepositoryView
+            exams={exams}
+            onDeleteExam={handleDeleteExam}
+            onUpdateExamTitle={handleUpdateExamTitle}
+            onSwitchView={setCurrentView}
+            onSuccessToast={showToast}
+            onOpenAuth={() => setIsAuthOpen(true)}
           />
         )}
 

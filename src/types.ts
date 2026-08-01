@@ -15,6 +15,27 @@ export interface LessonPlanItem {
   ownerEmail?: string;
 }
 
+export interface ExamItem {
+  id: string;
+  title: string;
+  subject: string;
+  grade: string;
+  examType: string;
+  durationMinutes?: string;
+  schoolName?: string;
+  headerDept?: string;
+  schoolYear?: string;
+  framework: string;
+  template: string;
+  originalContent: string;
+  integratedContent: string;
+  createdAt: number;
+  dateString: string;
+  userId: string;
+  ownerEmail: string;
+  authorName?: string;
+}
+
 export interface CompetencyComponent {
   code: string;
   title: string;
