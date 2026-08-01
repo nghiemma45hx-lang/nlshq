@@ -7,6 +7,7 @@ import mammoth from 'mammoth';
 import { marked } from 'marked';
 import { supabase, supabaseAdmin } from './src/lib/supabase.js';
 import { relocateNlsToLeftColumn } from './src/utils/lessonPlanUtils.js';
+import { buildDynamicLocalWorksheet } from './src/utils/worksheetUtils.js';
 
 dotenv.config();
 
@@ -1284,6 +1285,145 @@ Ghi chú / Yêu cầu bổ sung: ${additionalNotes || 'Thiết lập chuẩn c�
     return res.json({
       success: true,
       examHtml: fallbackHtml,
+      source: 'local-engine-error-fallback',
+      responseTimeMs: Date.now() - startTime
+    });
+  }
+});
+
+// API: Server-side Gemini AI Worksheet (Phiếu Học Tập) Generation
+app.post('/api/gemini/generate-worksheet', async (req, res) => {
+  const startTime = Date.now();
+  try {
+    const {
+      schoolName = 'Trường THCS Hồng Quang',
+      durationMinutes = '20 phút',
+      workMode = 'Nhóm',
+      subject = 'Ngữ văn',
+      grade = 'Khối 8',
+      lessonTitle = 'Bài học khám phá',
+      sourceNotes = '',
+      additionalNotes = ''
+    } = req.body;
+
+    const ai = getGeminiClient();
+
+    const systemPrompt = `Bạn là chuyên gia hàng đầu về thiết kế phiếu học tập dạng khám phá kiến thức cho giáo viên phổ thông Việt Nam (GDPT 2018).
+Hãy dựa duy nhất vào tài liệu nguồn trong Note được cung cấp dưới đây để tạo một phiếu học tập chuẩn sư phạm, hấp dẫn.
+
+YÊU CẦU BẮT BUỘC TỐI CAO:
+1. Chỉ dùng nội dung có trong Note được cung cấp. Không tự bịa thêm thông tin ngoài nguồn.
+2. Nếu nội dung nào không có trong Note hoặc thiếu căn cứ, BẮT BUỘC PHẢI GHI RÕ: "Không thấy trong tài liệu nguồn".
+3. Phiếu học tập phải giúp học sinh tự quan sát, suy nghĩ, tương tác, trả lời và tự rút ra kiến thức cốt lõi.
+4. Thiết kế nhiều chỗ trống (dòng kẻ ................, ô vuông [  ], bảng trống, sơ đồ khuyết) để học sinh tự viết bài vào phiếu.
+5. Nếu có công thức Toán học hoặc Khoa học, trình bày bằng LaTeX chuẩn ($...$ hoặc $$...$$).
+6. Tên trường: ${schoolName}.
+7. Thời lượng thực hiện: ${durationMinutes}.
+8. Hình thức học tập: ${workMode} (Cá nhân / Cặp đôi / Nhóm).
+
+PHIẾU BẮT BUỘC GỒM ĐỦ 10 PHẦN CẤU TRÚC SAU (XUẤT SẠCH SẼ ĐỊNH DẠNG HTML VỚI CÁC THẺ HTML TRÍCH XUẤT SỰ KIỆN TRỰC TIẾP, DÀN TRANG ĐẸP MẮT):
+
+1. TIÊU ĐỀ PHIẾU:
+   PHIẾU HỌC TẬP KHÁM PHÁ KIẾN THỨC
+   Bài dạy: ${lessonTitle.toUpperCase()} (Môn: ${subject} - ${grade})
+
+2. THÔNG TIN HỌC SINH:
+   Trường: ${schoolName}
+   Họ và tên học sinh / Tên nhóm: ...........................................................
+   Lớp: .............  |  Hình thức: ${workMode}  |  Thời lượng: ${durationMinutes}
+
+3. MỤC TIÊU HỌC TẬP:
+   - Về Kiến thức: [Ghi 2-3 mục tiêu khám phá trực tiếp từ Note]
+   - Về Năng lực & Phẩm chất: [Năng lực tự học, hợp tác, tư duy...]
+
+4. TÌNH HUỐNG KHỞI ĐỘNG (Kích thích tò mò):
+   [Tình huống / Câu hỏi thực tế / Trải nghiệm ban đầu dựa trên Note để dẫn dắt vào bài học]
+
+5. NHIỆM VỤ QUAN SÁT / ĐỌC TÀI LIỆU NGUỒN:
+   [Trích dẫn/Nêu rõ dữ liệu, đoạn trích, bảng biểu hoặc dữ kiện từ Note để học sinh đọc/quan sát]
+
+6. CÂU HỎI GỢI MỞ TỪ DỄ ĐẾN KHÓ:
+   - Mức 1 (Nhận biết): [Câu hỏi trực tiếp trong Note]
+   - Mức 2 (Thông hiểu): [Câu hỏi phân tích, so sánh, giải thích]
+   - Mức 3 (Vận dụng): [Câu hỏi liên hệ hoặc ứng dụng]
+
+7. BẢNG HOẶC CHỖ TRỐNG ĐỂ HỌC SINH HOÀN THÀNH:
+   [Thiết kế Bảng so sánh / Bảng điền từ / Sơ đồ tư duy khuyết / Khung bài làm có nhiều dòng kẻ ........................... để học sinh hoàn thành nhiệm vụ]
+
+8. PHẦN HỌC SINH TỰ RÚT RA KẾT LUẬN:
+   [Khung tổng kết ghi nhớ: Học sinh tự rút ra bài học/quy tắc/khái niệm cốt lõi sau khi hoàn thành các bước trên]
+
+9. HAI CÂU KIỂM TRA NHANH (Luyện tập củng cố):
+   - Câu 1: [Câu hỏi trắc nghiệm hoặc tự luận ngắn]
+   - Câu 2: [Câu hỏi trắc nghiệm hoặc tự luận ngắn]
+   (Kèm theo Đáp án / Hướng dẫn chấm ngắn gọn ở góc dưới)
+
+10. PHẦN TỰ ĐÁNH GIÁ CỦA HỌC SINH VÀ NHẬN XÉT CỦA GIÁO VIÊN:
+    - Mức độ hoàn thành: [ ] Đã hiểu rõ  [ ] Hiểu một phần  [ ] Cần cố gắng thêm
+    - Điều em ấn tượng nhất hoặc muốn hỏi thêm: ...........................................................
+    - Nhận xét của Giáo viên: ..........................................................................................
+
+Ghi chú bổ sung của giáo viên (nếu có): ${additionalNotes}
+NỘI DUNG TÀI LIỆU NGUỒN (NOTE):
+"""
+${sourceNotes}
+"""
+`;
+
+    let worksheetHtml = '';
+    let source = 'local-engine';
+
+    if (ai && sourceNotes && sourceNotes.trim().length > 0) {
+      try {
+        const response = await ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: [{ role: 'user', parts: [{ text: systemPrompt }] }],
+          config: {
+            temperature: 0.2,
+          }
+        });
+        const rawText = response.text || '';
+        if (rawText.trim().length > 100) {
+          // Convert Markdown to HTML or use marked
+          const htmlOutput = marked.parse(rawText) as string;
+          worksheetHtml = `
+            <div class="worksheet-container font-serif max-w-4xl mx-auto p-6 sm:p-8 bg-white text-slate-900 border-2 border-slate-900 rounded-xl shadow-lg my-4 text-sm leading-relaxed" id="worksheet-print-area">
+              ${htmlOutput}
+            </div>
+          `;
+          source = 'gemini-2.5-flash';
+        }
+      } catch (geminiError) {
+        console.warn('Gemini worksheet call failed, using local engine:', geminiError);
+      }
+    }
+
+    if (!worksheetHtml) {
+      worksheetHtml = buildDynamicLocalWorksheet({
+        schoolName,
+        durationMinutes,
+        workMode,
+        subject,
+        grade,
+        lessonTitle,
+        sourceNotes,
+        additionalNotes
+      });
+    }
+
+    const duration = Date.now() - startTime;
+    return res.json({
+      success: true,
+      worksheetHtml,
+      source,
+      responseTimeMs: duration
+    });
+  } catch (error: any) {
+    console.error('Worksheet Generation Error:', error);
+    const fallbackHtml = buildDynamicLocalWorksheet(req.body || {});
+    return res.json({
+      success: true,
+      worksheetHtml: fallbackHtml,
       source: 'local-engine-error-fallback',
       responseTimeMs: Date.now() - startTime
     });

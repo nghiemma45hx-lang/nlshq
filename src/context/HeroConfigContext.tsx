@@ -32,6 +32,16 @@ export const DEFAULT_HERO_CONFIG: HeroBannerConfig = {
       isHot: true
     },
     {
+      id: 'worksheet',
+      title: 'Phiếu Học Tập',
+      sub: 'Chuẩn 10 phần khám phá',
+      badge: 'HOT',
+      badgeColor: 'bg-amber-400 text-slate-950 font-extrabold',
+      cardBgColor: 'bg-gradient-to-br from-indigo-950 to-amber-950',
+      textColor: 'text-amber-300',
+      isHot: true
+    },
+    {
       id: 'exam',
       title: 'Tạo Đề Kiểm Tra',
       sub: 'Ma trận & Đặc tả chuẩn',

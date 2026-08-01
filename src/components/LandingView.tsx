@@ -7,6 +7,7 @@ import {
   BookOpen, 
   Wand2, 
   FileCheck, 
+  FileSpreadsheet,
   ShieldCheck, 
   CheckCircle2, 
   ArrowRight,
@@ -64,11 +65,19 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSwitchView, onLoadSa
             </button>
 
             <button
+              onClick={() => onSwitchView('worksheet')}
+              className="px-5 py-3 bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-600 hover:to-indigo-700 text-white font-black text-sm rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer flex items-center space-x-2 border border-amber-300/40"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-amber-200" />
+              <span>TẠO PHIẾU HỌC TẬP KHÁM PHÁ (MỚI)</span>
+            </button>
+
+            <button
               onClick={() => onSwitchView('exam')}
               className="px-5 py-3 bg-gradient-to-r from-rose-600 to-purple-600 hover:from-rose-700 hover:to-purple-700 text-white font-black text-sm rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer flex items-center space-x-2 border border-rose-400/40"
             >
               <FileCheck className="w-4 h-4 text-rose-200" />
-              <span>TẠO ĐỀ KIỂM TRA & MA TRẬN (MỚI)</span>
+              <span>TẠO ĐỀ KIỂM TRA & MA TRẬN</span>
             </button>
           </div>
         </div>

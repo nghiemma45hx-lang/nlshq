@@ -8,7 +8,8 @@ import {
   LayoutDashboard,
   CheckCircle2,
   FileCheck,
-  FolderCheck
+  FolderCheck,
+  FileSpreadsheet
 } from 'lucide-react';
 import { useHeroConfig } from '../context/HeroConfigContext';
 
@@ -20,6 +21,7 @@ interface NavigationCardsProps {
 const ICON_MAP: Record<string, React.ElementType> = {
   landing: House,
   studio: Wand2,
+  worksheet: FileSpreadsheet,
   exam: FileCheck,
   'exam-repo': FolderCheck,
   repository: FolderOpen,
@@ -31,6 +33,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
 const DEFAULT_ICON_BG: Record<string, string> = {
   landing: 'bg-indigo-500/20 text-indigo-300',
   studio: 'bg-amber-400/20 text-amber-300',
+  worksheet: 'bg-amber-400/20 text-amber-300',
   exam: 'bg-rose-500/20 text-rose-300',
   'exam-repo': 'bg-rose-500/20 text-rose-300',
   repository: 'bg-emerald-500/20 text-emerald-300',
