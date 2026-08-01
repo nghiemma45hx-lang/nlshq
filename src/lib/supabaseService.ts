@@ -152,25 +152,53 @@ export const deleteLessonFromSupabase = async (id: string): Promise<boolean> => 
 
 /**
  * Exams Supabase CRUD Services (Kho Đề Kiểm Tra)
+ * Syncs with public.exams table or falls back to public.lessons with framework='KHO_DE_KIEM_TRA'
  */
 export const fetchExamsFromSupabase = async (): Promise<ExamItem[]> => {
   try {
-    const { data, error } = await supabase
+    // 1. Try querying primary 'exams' table first
+    const { data: examData, error: examError } = await supabase
       .from('exams')
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.warn('Supabase fetch exams warning (will rely on IndexedDB):', error.message);
-      return [];
+    if (!examError && examData && examData.length > 0) {
+      return examData.map(mapDbToExam);
     }
 
-    if (data && data.length > 0) {
-      return data.map(mapDbToExam);
+    // 2. If 'exams' table is not present in schema cache or empty, fallback to 'lessons' table with framework 'KHO_DE_KIEM_TRA'
+    const { data: lessonExamData, error: lessonErr } = await supabase
+      .from('lessons')
+      .select('*')
+      .or('framework.eq.KHO_DE_KIEM_TRA,id.ilike.exam-%')
+      .order('created_at', { ascending: false });
+
+    if (!lessonErr && lessonExamData && lessonExamData.length > 0) {
+      return lessonExamData.map(row => ({
+        id: row.id,
+        title: row.title || 'Đề kiểm tra',
+        subject: row.subject || 'Ngữ văn',
+        grade: row.grade || 'THCS/THPT',
+        examType: row.status || 'Giữa học kì I',
+        durationMinutes: '60',
+        schoolName: '',
+        headerDept: '',
+        schoolYear: '2025 - 2026',
+        framework: 'TT 02/2025 + QĐ 3439',
+        template: row.template || 'Mẫu Đề BGDĐT',
+        originalContent: row.original_content || '',
+        integratedContent: row.integrated_content || '',
+        createdAt: typeof row.created_at === 'number' ? row.created_at : new Date(row.created_at || Date.now()).getTime(),
+        dateString: row.date_string || new Date().toLocaleDateString('vi-VN'),
+        userId: row.user_id || '',
+        ownerEmail: '',
+        authorName: 'Giáo viên',
+      }));
     }
+
     return [];
   } catch (err) {
-    console.warn('Error fetching exams from Supabase:', err);
+    console.info('Using local IndexedDB storage for exams:', err);
     return [];
   }
 };
@@ -178,19 +206,45 @@ export const fetchExamsFromSupabase = async (): Promise<ExamItem[]> => {
 export const saveExamToSupabase = async (exam: ExamItem, userId?: string): Promise<boolean> => {
   try {
     const dbPayload = mapExamToDb(exam, userId);
-    const { error } = await supabase
+    
+    // Attempt 1: Save to dedicated 'exams' table
+    const { error: primaryErr } = await supabase
       .from('exams')
       .upsert(dbPayload, { onConflict: 'id' });
 
-    if (error) {
-      console.warn('Supabase save exam warning:', error.message);
-      const { error: adminErr } = await supabaseAdmin
-        .from('exams')
-        .upsert(dbPayload, { onConflict: 'id' });
-      if (adminErr) {
-        console.warn('Supabase admin save exam warning:', adminErr.message);
-        return false;
-      }
+    if (!primaryErr) return true;
+
+    // Try admin client for 'exams' table
+    const { error: primaryAdminErr } = await supabaseAdmin
+      .from('exams')
+      .upsert(dbPayload, { onConflict: 'id' });
+
+    if (!primaryAdminErr) return true;
+
+    // Fallback: If 'exams' table doesn't exist in schema cache, save into 'lessons' table with framework='KHO_DE_KIEM_TRA'
+    const fallbackPayload = {
+      id: exam.id,
+      title: exam.title,
+      subject: exam.subject,
+      grade: exam.grade,
+      framework: 'KHO_DE_KIEM_TRA',
+      template: exam.template || 'Mẫu Đề Kiểm Tra Chuẩn BGDĐT 2018',
+      status: exam.examType || 'Giữa học kì I',
+      original_content: exam.originalContent,
+      integrated_content: exam.integratedContent,
+      created_at: exam.createdAt || Date.now(),
+      date_string: exam.dateString || new Date().toLocaleDateString('vi-VN'),
+      is_featured: false,
+      user_id: userId || exam.userId || 'anonymous-teacher',
+    };
+
+    const { error: fallbackErr } = await supabaseAdmin
+      .from('lessons')
+      .upsert(fallbackPayload, { onConflict: 'id' });
+
+    if (fallbackErr) {
+      console.warn('Supabase fallback save exam error:', fallbackErr.message);
+      return false;
     }
     return true;
   } catch (err) {
@@ -201,15 +255,9 @@ export const saveExamToSupabase = async (exam: ExamItem, userId?: string): Promi
 
 export const deleteExamFromSupabase = async (id: string): Promise<boolean> => {
   try {
-    const { error } = await supabase
-      .from('exams')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      console.warn('Supabase delete exam warning:', error.message);
-      await supabaseAdmin.from('exams').delete().eq('id', id);
-    }
+    await supabase.from('exams').delete().eq('id', id);
+    await supabaseAdmin.from('exams').delete().eq('id', id);
+    await supabaseAdmin.from('lessons').delete().eq('id', id);
     return true;
   } catch (err) {
     console.warn('Error deleting exam from Supabase:', err);

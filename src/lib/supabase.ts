@@ -36,12 +36,20 @@ export const SUPABASE_SERVICE_ROLE_KEY = getEnvVar(
 );
 
 // Public Supabase client for browser and API queries
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    storageKey: 'edunls_supabase_auth_token',
+  },
+});
 
 // Service role Supabase client for administrative/server-side operations
 export const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   auth: {
     autoRefreshToken: false,
     persistSession: false,
+    detectSessionInUrl: false,
   },
 });

@@ -124,6 +124,86 @@ app.delete('/api/lessons/:id', async (req, res) => {
   }
 });
 
+// API: Exams CRUD with Supabase (Kho Đề Kiểm Tra)
+app.get('/api/exams', async (req, res) => {
+  try {
+    const { data: examData, error: examError } = await supabaseAdmin
+      .from('exams')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (!examError && examData && examData.length > 0) {
+      return res.json({ success: true, exams: examData });
+    }
+
+    // Fallback to lessons table
+    const { data: fallbackData } = await supabaseAdmin
+      .from('lessons')
+      .select('*')
+      .or('framework.eq.KHO_DE_KIEM_TRA,id.ilike.exam-%')
+      .order('created_at', { ascending: false });
+
+    return res.json({ success: true, exams: fallbackData || [] });
+  } catch (err: any) {
+    return res.status(500).json({ error: err?.message || String(err) });
+  }
+});
+
+app.post('/api/exams', async (req, res) => {
+  try {
+    const examData = req.body;
+    // 1. Try upserting to primary 'exams' table
+    const { data, error } = await supabaseAdmin
+      .from('exams')
+      .upsert(examData, { onConflict: 'id' })
+      .select();
+
+    if (!error) {
+      return res.json({ success: true, exam: data?.[0] || examData });
+    }
+
+    // 2. Fallback upserting to 'lessons' table
+    const fallbackPayload = {
+      id: examData.id,
+      title: examData.title,
+      subject: examData.subject,
+      grade: examData.grade,
+      framework: 'KHO_DE_KIEM_TRA',
+      template: examData.template || 'Mẫu Đề BGDĐT 2018',
+      status: examData.exam_type || examData.examType || 'Giữa học kì I',
+      original_content: examData.original_content || examData.originalContent,
+      integrated_content: examData.integrated_content || examData.integratedContent,
+      created_at: examData.created_at || examData.createdAt || Date.now(),
+      date_string: examData.date_string || examData.dateString || new Date().toLocaleDateString('vi-VN'),
+      is_featured: false,
+      user_id: examData.user_id || examData.userId || 'anonymous-teacher',
+    };
+
+    const { data: fbData, error: fbError } = await supabaseAdmin
+      .from('lessons')
+      .upsert(fallbackPayload, { onConflict: 'id' })
+      .select();
+
+    if (fbError) {
+      return res.status(400).json({ error: fbError.message });
+    }
+    return res.json({ success: true, exam: fbData?.[0] || fallbackPayload });
+  } catch (err: any) {
+    return res.status(500).json({ error: err?.message || String(err) });
+  }
+});
+
+app.delete('/api/exams/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await supabaseAdmin.from('exams').delete().eq('id', id);
+    await supabaseAdmin.from('lessons').delete().eq('id', id);
+    return res.json({ success: true, id });
+  } catch (err: any) {
+    return res.status(500).json({ error: err?.message || String(err) });
+  }
+});
+
 // API: Admin Login
 app.post('/api/admin/login', (req, res) => {
   const { username, password } = req.body;
