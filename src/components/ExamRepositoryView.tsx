@@ -50,6 +50,7 @@ export const ExamRepositoryView: React.FC<ExamRepositoryViewProps> = ({
   // Inline title edit state
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitleText, setEditTitleText] = useState('');
+  const [adminViewAll, setAdminViewAll] = useState(false);
 
   const startEditTitle = (eItem: ExamItem, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -94,8 +95,6 @@ export const ExamRepositoryView: React.FC<ExamRepositoryViewProps> = ({
       </div>
     );
   }
-
-  const [adminViewAll, setAdminViewAll] = useState(false);
 
   // PRIVACY FILTER:
   // Non-admin: ONLY see exams created by currentUser.uid / email / local session

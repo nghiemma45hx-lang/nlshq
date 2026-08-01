@@ -55,6 +55,7 @@ export const RepositoryView: React.FC<RepositoryViewProps> = ({
   // Inline title edit state
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitleText, setEditTitleText] = useState('');
+  const [adminViewAll, setAdminViewAll] = useState(false);
 
   const startEditTitle = (l: LessonPlanItem, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -99,8 +100,6 @@ export const RepositoryView: React.FC<RepositoryViewProps> = ({
       </div>
     );
   }
-
-  const [adminViewAll, setAdminViewAll] = useState(false);
 
   // Strictly filter lessons belonging to the logged-in user
   const userOwnLessons = lessons.filter(l => {
