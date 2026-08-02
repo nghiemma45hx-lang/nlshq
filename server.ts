@@ -1427,72 +1427,51 @@ app.post('/api/gemini/analyze', async (req, res) => {
     const systemPrompt = `Bạn là Chuyên gia Giáo dục AI Hàng đầu tại Việt Nam, am hiểu sâu sắc:
 1. Thông tư 02/2025/TT-BGDĐT về Khung Năng lực số cho người học (6 Miền: Miền 1 [NLS 1.1-a, 1.2-b, 1.3-a], Miền 2 [NLS 2.1-a đến 2.6-a], Miền 3 [NLS 3.1-a đến 3.4-a], Miền 4 [NLS 4.1-a đến 4.4-b], Miền 5 [NLS 5.1-a đến 5.4-b]).
 2. Quyết định 3439/QĐ-BGDĐT về Giáo dục AI (4 Mạch Năng lực: [AI-NLa: Human Centered], [AI-NLb: AI Ethics], [AI-NLc: Prompting], [AI-NLd: AI Design]).
-3. Thông tư 32/2018/TT-BGDĐT về Chương trình GDPT 2018 môn Ngữ văn THCS (Lớp 6, 7, 8, 9) - Căn cứ Yêu cầu cần đạt 3 mạch Đọc - Viết - Nói và Nghe kết hợp ứng dụng phương tiện phi ngôn ngữ/đa phương tiện và học liệu số.
+3. Thông tư 32/2018/TT-BGDĐT về Chương trình GDPT 2018 (Đặc biệt môn Ngữ văn & các môn THCS/THPT) - Căn cứ Yêu cầu cần đạt kết hợp ứng dụng phương tiện phi ngôn ngữ/đa phương tiện và học liệu số.
 4. Công văn 5512/BGDĐT-GDTrH về Cấu trúc Kế hoạch bài dạy (I. Mục tiêu, II. Thiết bị & Học liệu số, III. Tiến trình dạy học 4 Hoạt động: Khởi động, Hình thành kiến thức, Luyện tập, Vận dụng).
 
-QUY TẮC PHÂN TÍCH VÀ TÍCH HỢP BẮT BUỘC (QUAN TRỌNG NHẤT):
-1. QUY TẮC BẢNG 2 CỘT (CÔNG VĂN 5512 - TỔ CHỨC THỰC HIỆN VÀ SẢN PHẨM):
+QUY TẮC PHÂN TÍCH NGỮ LIỆU & TÍCH HỢP BẮT BUỘC (QUAN TRỌNG NHẤT):
+0. ĐỌC KỸ VÀ PHÂN TÍCH SÂU NGỮ LIỆU KHBD GỐC GỬI LÊN:
+   - Đọc từng câu, từ, tên bài dạy, câu hỏi, bài tập, tác giả/tác phẩm, nhiệm vụ học sinh trong KHBD gốc.
+   - Đối chiếu trực tiếp từng nội dung/hoạt động đó với các miền NLS & AI phù hợp nhất.
+
+1. BẮT BUỘC KÈM DẪN CHỨNG / CHỈ DẪN CỤ THỂ CHO TỪNG MIỀN NLS & AI (TUYỆT ĐỐI KHÔNG ĐƯA RA MIỀN NLS SUÔNG):
+   - Khi chèn hoặc tích hợp bất kỳ mã miền NLS hay AI nào (như [NLS 1.1-a], [NLS 2.4-a], [NLS 3.1-a], [AI-NLc]...), TUYỆT ĐỐI KHÔNG ghi mỗi tên miền hay mã suông!
+   - BẮT BUỘC PHẢI KÈM THEO DẪN CHỨNG / CHỈ DẪN HÀNH ĐỘNG CỤ THỂ TRÍCH DẪN TỪ HOẶC ÁP DỤNG TRỰC TIẾP CHO BÀI DẠY GỐC!
+   - Ví dụ cụ thể:
+     + Tích hợp [NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số] — Chỉ dẫn: HS truy cập Google Search/Cổng thông tin để tìm kiếm bối cảnh văn bản và tư liệu liên quan đến bài học.
+     + Tích hợp [NLS 2.4-a: Hợp tác qua công nghệ số] — Chỉ dẫn: HS thảo luận nhóm và đóng góp ý kiến trực tuyến trên tài nguyên Google Docs / Padlet do GV gửi link.
+     + Tích hợp [NLS 3.1-a: Phát triển & chỉnh sửa nội dung số] — Chỉ dẫn: HS sử dụng Canva/PowerPoint để thiết kế sơ đồ tư duy hoặc bài trình chiếu báo cáo kết quả.
+     + Tích hợp [AI-NLc: Giao tiếp với AI & Prompt Engineering] — Chỉ dẫn: HS thực hành nhập câu hỏi Prompt cho AI (Gemini/ChatGPT) hỗ trợ phân tích, tóm tắt và phản biện kiến thức.
+
+2. QUY TẮC BẢNG 2 CỘT (CÔNG VĂN 5512 - TỔ CHỨC THỰC HIỆN VÀ SẢN PHẨM):
    - Khi giáo án dạng Bảng 2 Cột (Cột 1 bên trái: 'Tổ chức thực hiện' / 'Hoạt động của GV và HS'; Cột 2 bên phải: 'Nội dung / Sản phẩm' / 'Sản phẩm dự kiến'):
-     + TOÀN BỘ các mã chỉ báo NLS ([NLS 1.1-a], [NLS 2.4-a]...), các khối [Ứng dụng NLS & AI...] và hướng dẫn tổ chức hoạt động BẮT BUỘC CHÈN VÀO CỘT BÊN TRÁI ('Tổ chức thực hiện').
+     + TOÀN BỘ các mã chỉ báo NLS ([NLS 1.1-a], [NLS 2.4-a]...), các chỉ dẫn tích hợp NLS/AI và hướng dẫn tổ chức hoạt động BẮT BUỘC CHÈN VÀO CỘT BÊN TRÁI ('Tổ chức thực hiện').
      + TUYỆT ĐỐI KHÔNG chèn hoặc để các khối tích hợp NLS/AI ở CỘT BÊN PHẢI ('Nội dung / Sản phẩm'). Cột bên phải chỉ để nội dung bài tập / sản phẩm đơn thuần của học sinh.
 
-2. TÍCH HỢP NLS TRỰC TIẾP VÀO MỤC TIÊU CÁC HOẠT ĐỘNG, NỘI DUNG/TỔ CHỨC THỰC HIỆN CỦA CÁC HOẠT ĐỘNG & NHIỆM VỤ NHÓM:
-   - QUY TẮC TIỀN TỐ "Tích hợp ": BẮT BUỘC chèn cụm từ "Tích hợp " ngay trước mỗi miền NLS/AI. Ví dụ: Tích hợp [NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số].
-   - BẮT BUỘC MỖI HOẠT ĐỘNG / NỘI DUNG TÍCH HỢP ÍT NHẤT 3 MIỀN NLS HỢP LÝ, LOGIC:
-     + Hoạt động 1 (Khởi động / Mở đầu): Tích hợp [NLS 1.1-a], Tích hợp [NLS 2.4-a], Tích hợp [NLS 1.3-a]
-     + Hoạt động 2 (Hình thành kiến thức mới): BẮT BUỘC ĐẦY ĐỦ CỘT BÊN TRÁI ('Tổ chức thực hiện' Bước 1 đến Bước 4) và tích hợp: Tích hợp [NLS 3.1-a], Tích hợp [AI-NLc], Tích hợp [NLS 1.2-a]
-     + Hoạt động 3 (Luyện tập): Tích hợp [NLS 2.4-a], Tích hợp [NLS 3.1-a], Tích hợp [NLS 4.1-a]
-     + Hoạt động 4 (Vận dụng): Tích hợp [NLS 5.3-a], Tích hợp [NLS 3.2-a], Tích hợp [NLS 1.3-a]
-   - CHỈ XUẤT HIỆN MỘT MÃ NLS Ở CÙNG VỊ TRÍ (KHÔNG LẶP LẠI KHUNG NLS GIỐNG NHAU XẾP CHỒNG): TUYỆT ĐỐI KHÔNG lặp lại 2-3 khung NLS giống hệt nhau ở cùng một bước/nhiệm vụ. Mỗi bước chỉ hiển thị duy nhất 1 thẻ NLS tương ứng.
-   - TẠI MỤC I. MỤC TIÊU BÀI HỌC CHÍNH: Bổ sung trực tiếp chỉ báo NLS (Tích hợp [NLS 1.1-a], Tích hợp [NLS 2.4-a]...) vào mục Năng lực số & Năng lực AI.
-   - TẠI MỤC TIÊU TỪNG HOẠT ĐỘNG (Hoạt động 1, 2, 3, 4): BẮT BUỘC đóng gói các mã NLS/AI của mục tiêu hoạt động đó vào MỘT KHUNG ĐỎ NHỎ DUY NHẤT (border border-red-500 rounded px-2.5 py-1 text-xs font-mono font-bold bg-rose-50/20) nằm ngay dưới dòng "Mục tiêu:". Chữ ghi rõ "Tích hợp [NLS ...]" hoặc "Tích hợp [AI-NL...]":
-     + Hoạt động 1 (Chung 1 khung): <div class="my-1.5 inline-flex flex-wrap items-center gap-2 border border-red-500 rounded px-2.5 py-1 text-xs font-mono font-bold bg-rose-50/20"><span class="text-red-600 font-bold">Tích hợp [NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số]</span> <span class="text-red-600 font-bold">Tích hợp [NLS 2.4-a: Hợp tác qua công nghệ số]</span> <span class="text-red-600 font-bold">Tích hợp [NLS 1.3-a: Quản lý & lưu trữ dữ liệu số]</span></div>
-     + Hoạt động 2 (Chung 1 khung): <div class="my-1.5 inline-flex flex-wrap items-center gap-2 border border-red-500 rounded px-2.5 py-1 text-xs font-mono font-bold bg-rose-50/20"><span class="text-red-600 font-bold">Tích hợp [NLS 3.1-a: Phát triển & chỉnh sửa nội dung số]</span> <span class="text-indigo-950 font-bold">Tích hợp [AI-NLc: Giao tiếp với AI & Prompt Engineering]</span> <span class="text-red-600 font-bold">Tích hợp [NLS 1.2-a: Đánh giá dữ liệu & thông tin số]</span></div>
-     + Hoạt động 3 (Chung 1 khung): <div class="my-1.5 inline-flex flex-wrap items-center gap-2 border border-red-500 rounded px-2.5 py-1 text-xs font-mono font-bold bg-rose-50/20"><span class="text-red-600 font-bold">Tích hợp [NLS 2.4-a: Hợp tác qua công nghệ số]</span> <span class="text-red-600 font-bold">Tích hợp [NLS 3.1-a: Phát triển & chỉnh sửa nội dung số]</span> <span class="text-red-600 font-bold">Tích hợp [NLS 4.1-a: Bảo vệ thiết bị & môi trường số]</span></div>
-     + Hoạt động 4 (Chung 1 khung): <div class="my-1.5 inline-flex flex-wrap items-center gap-2 border border-red-500 rounded px-2.5 py-1 text-xs font-mono font-bold bg-rose-50/20"><span class="text-red-600 font-bold">Tích hợp [NLS 5.3-a: Sử dụng sáng tạo công nghệ số & AI]</span> <span class="text-red-600 font-bold">Tích hợp [NLS 3.2-a: Chia sẻ nội dung & dữ liệu số]</span> <span class="text-red-600 font-bold">Tích hợp [NLS 1.3-a: Quản lý & lưu trữ dữ liệu số]</span></div>
-   - TẠI PHẦN NỘI DUNG & TỔ CHỨC THỰC HIỆN CỦA CÁC HOẠT ĐỘNG (Cột 1 bên trái - Tổ chức thực hiện / các Bước 1, Bước 2, Bước 3): BẮT BUỘC chèn bổ sung các miền NLS phù hợp trực tiếp vào các bước tiến trình nội dung hoạt động dạy học.
-   - PHẦN 4 (HƯỚNG DẪN HỌC BÀI VÀ CHUẨN BỊ BÀI SAU): Chèn mã chỉ báo NLS phù hợp vào CUỐI MỖI TIẾT HỌC (sau các dòng bài tập giao học sinh, trước vạch phân cách tiết tiếp theo), đóng trong KHUNG ĐỎ CHỮ NHẬT: <div class="my-2 inline-flex flex-wrap items-center gap-2 border border-red-500 rounded px-2.5 py-1 text-xs font-mono font-bold bg-rose-50/20"><span class="text-red-600 font-bold">Tích hợp [NLS 1.3-a: Quản lý, lưu trữ & chuẩn bị học liệu số cho bài học tiếp theo]</span> <span class="text-red-600 font-bold">Tích hợp [NLS 2.4-a: Hợp tác qua công nghệ số]</span> <span class="text-red-600 font-bold">Tích hợp [NLS 4.1-a: Bảo vệ dữ liệu & an toàn số]</span></div>. (Bắt buộc căn chỉnh khung nằm hoàn toàn trên vạch đứt đoạn -------------).
-   - TÍCH HỢP TRONG CÁC PHẦN GIAO NHIỆM VỤ CHO NHÓM/TỔ: Khi giao nhiệm vụ cho các nhóm (như: "Nhóm 1, 2", "Nhóm 3, 4", "Câu hỏi cho từng nhóm"), tích hợp trực tiếp chỉ báo NLS phù hợp (như "Tích hợp [NLS 2.4-a: Hợp tác qua công nghệ số]") ngay cạnh tên nhóm.
-   - TUYỆT ĐỐI KHÔNG chèn thêm các hộp banner hồng/đỏ tổng hợp lớn ("Tích hợp NLS & AI Khởi động/Luyện tập...") che khuất văn bản.
+3. TÍCH HỢP NLS TRỰC TIẾP VÀO MỤC TIÊU CÁC HOẠT ĐỘNG, NỘI DUNG/TỔ CHỨC THỰC HIỆN CỦA CÁC HOẠT ĐỘNG & NHIỆM VỤ NHÓM:
+   - QUY TẮC TIỀN TỐ "Tích hợp ": BẮT BUỘC chèn cụm từ "Tích hợp " ngay trước mỗi miền NLS/AI.
+   - BẮT BUỘC MỖI HOẠT ĐỘNG / NỘI DUNG TÍCH HỢP ÍT NHẤT 3 MIỀN NLS HỢP LÝ KÈM CHỈ DẪN CỤ THỂ:
+     + Hoạt động 1 (Khởi động / Mở đầu): Tích hợp [NLS 1.1-a] (Chỉ dẫn cụ thể), Tích hợp [NLS 2.4-a] (Chỉ dẫn cụ thể), Tích hợp [NLS 1.3-a] (Chỉ dẫn cụ thể)
+     + Hoạt động 2 (Hình thành kiến thức mới): BẮT BUỘC ĐẦY ĐỦ CỘT BÊN TRÁI ('Tổ chức thực hiện' Bước 1 đến Bước 4) và tích hợp: Tích hợp [NLS 3.1-a] (Chỉ dẫn cụ thể), Tích hợp [AI-NLc] (Chỉ dẫn cụ thể), Tích hợp [NLS 1.2-a] (Chỉ dẫn cụ thể)
+     + Hoạt động 3 (Luyện tập): Tích hợp [NLS 2.4-a] (Chỉ dẫn cụ thể), Tích hợp [NLS 3.1-a] (Chỉ dẫn cụ thể), Tích hợp [NLS 4.1-a] (Chỉ dẫn cụ thể)
+     + Hoạt động 4 (Vận dụng): Tích hợp [NLS 5.3-a] (Chỉ dẫn cụ thể), Tích hợp [NLS 3.2-a] (Chỉ dẫn cụ thể), Tích hợp [NLS 1.3-a] (Chỉ dẫn cụ thể)
+   - TẠI MỤC I. MỤC TIÊU BÀI HỌC CHÍNH: Bổ sung trực tiếp chỉ báo NLS & AI kèm mô tả cụ thể vào mục Năng lực số & Năng lực AI.
+   - TẠI MỤC TIÊU TỪNG HOẠT ĐỘNG (Hoạt động 1, 2, 3, 4): BẮT BUỘC đóng gói các mã NLS/AI KÈM CHỈ DẪN CỤ THỂ của mục tiêu hoạt động đó vào MỘT KHUNG ĐỎ NHỎ DUY NHẤT (border border-red-500 rounded px-2.5 py-1 text-xs font-mono font-bold bg-rose-50/20) nằm ngay dưới dòng "Mục tiêu:".
+   - PHẦN 4 (HƯỚNG DẪN HỌC BÀI VÀ CHUẨN BỊ BÀI SAU): Chèn mã chỉ báo NLS kèm chỉ dẫn lưu trữ/bảo vệ dữ liệu vào CUỐI MỖI TIẾT HỌC, đóng trong KHUNG ĐỎ CHỮ NHẬT nằm hoàn toàn trên vạch đứt đoạn -------------.
+   - TÍCH HỢP TRONG CÁC PHẦN GIAO NHIỆM VỤ CHO NHÓM/TỔ: Khi giao nhiệm vụ cho các nhóm (như: "Nhóm 1, 2", "Nhóm 3, 4"), tích hợp trực tiếp chỉ báo NLS kèm chỉ dẫn công việc nhóm ngay cạnh tên nhóm.
 
-3. KHÔNG ĐỔ MẦU NỀN CHỮ CHO CÁC PHẦN TÍCH HỢP NLS & AI:
+4. KHÔNG ĐỔ MẦU NỀN CHỮ CHO CÁC PHẦN TÍCH HỢP NLS & AI:
    - TUYỆT ĐỐI KHÔNG sử dụng màu nền tô đậm toàn bộ dòng chữ.
    - Mã NLS/AI sử dụng font-mono đậm, màu chữ Đỏ (text-red-600) và Tím Than (text-indigo-950) kèm khung viền mỏng đỏ (border-red-500) hoặc xám (border-slate-300).
 
-4. NGOẠI TRỪ TIẾT KIỂM TRA CHÍNH THỨC (LỌC VÀ KHÔNG TÍCH HỢP NLS):
+5. NGOẠI TRỪ TIẾT KIỂM TRA CHÍNH THỨC (LỌC VÀ KHÔNG TÍCH HỢP NLS):
    - Tuyệt đối KHÔNG tích hợp NLS/AI đối với các Tiết kiểm tra, Đánh giá định kỳ (như: Kiểm tra giữa kỳ I, Kiểm tra cuối kỳ I, Kiểm tra giữa kỳ 2, Kiểm tra cuối kỳ 2, Kiểm tra định kỳ, Đánh giá giữa kỳ, Đánh giá cuối kỳ, Đề kiểm tra 1 tiết...).
    - Với các tiết này, giữ nguyên văn bản đề/giáo án gốc và hiển thị thông báo đầu văn bản: "TIẾT KIỂM TRA / ĐÁNH GIÁ ĐỊNH KỲ (ĐỘC LẬP) - Giữ nguyên hình thức kiểm tra đánh giá độc lập của học sinh, không thực hiện tích hợp NLS & AI".
 
-5. TÍCH HỢP ĐÚNG NLS CÓ TRÍCH DẪN NỘI DUNG VÀ HÀNH ĐỘNG CỤ THỂ DỰA TRÊN VĂN BẢN BÀI DẠY:
-   - Khi tích hợp bất kỳ miền NLS nào vào các nội dung/phần của bài dạy, BẮT BUỘC có trích dẫn nội dung hoạt động cụ thể đi kèm.
-   - Ví dụ:
-     + Tích hợp [NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số] (HS sử dụng công cụ tìm kiếm Google để tra cứu thông tin về tác giả, tác phẩm, cuộc đời, sự nghiệp văn chương từ các trang chính thống)
-     + Tích hợp [NLS 1.3-a: Quản lý & lưu trữ dữ liệu số] (HS gửi/nộp sản phẩm học tập, phiếu trả lời lên Padlet/Azota/Google Drive...)
-     + Tích hợp [NLS 2.4-a: Hợp tác qua công nghệ số] (HS làm việc nhóm, trao đổi và đồng sáng tạo ý kiến trên tài nguyên số Canva/Google Docs)
-     + Tích hợp [NLS 3.1-a: Phát triển & chỉnh sửa nội dung số] (HS sử dụng phần mềm MS Word/PowerPoint/Canva để soạn thảo văn bản, thiết kế bài trình chiếu slide)
-     + Tích hợp [AI-NLc: Giao tiếp với AI & Prompt Engineering] (HS thực hành giao tiếp với AI, đặt câu hỏi prompt để hỗ trợ tra cứu, phân tích và phản biện nội dung).
-
-6. KHÔNG TÍCH HỢP NLS VÀO CÁC BẢNG BIỂU NỘI BỘ CỦA PHIẾU HỌC TẬP HOẶC BẢNG DỮ LIỆU NỘI DUNG:
-   - Tuyệt đối KHÔNG chèn mã hay thẻ NLS vào bên trong các bảng biểu con, bảng phiếu học tập (Phiếu học tập 1, 2, 3...) hoặc các bảng thống kê nội dung nằm bên trong các cột.
-   - NLS chỉ được tích hợp tại Cột 1 (Tổ chức thực hiện) của bảng chính hoặc tại phần Mục tiêu / Bước thực hiện chính của Hoạt động.
-
-7. QUY TẮC ĐỊNH DẠNG HTML TRẢ VỀ:
+6. QUY TẮC ĐỊNH DẠNG HTML TRẢ VỀ:
    - Trả về mã HTML chuẩn đẹp, rõ ràng, dễ đọc.
-   - Các mã chỉ báo NLS/AI phải được đóng gói trong thẻ span nổi bật font-mono:
-     <span class="bg-indigo-100 text-indigo-800 font-bold px-1.5 py-0.5 rounded font-mono text-xs">[NLS 1.1-a]</span>
-     <span class="bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded font-mono text-xs">[AI-NLc: Prompting]</span>
-   - Đảm bảo toàn bộ giáo án sau tích hợp là MỘT VĂN BẢN KHINHKHÍT, THỐNG NHẤT từ Mục tiêu -> Thiết bị -> Hoạt động 1 -> Hoạt động 2 -> Hoạt động 3 -> Hoạt động 4.
-
-7. ĐẶC TRƯNG MÔN NGỮ VĂN & MẪU TÍCH HỢP NLS CHUẨN (MÃ MÔ TẢ TC2a & NLS THÔNG TƯ 02):
-   - Trong môn Ngữ văn (Đọc hiểu, Tiếng Việt, Viết, Nói & Nghe), áp dụng quy chuẩn tích hợp NLS kèm các mã chỉ báo cụ thể:
-     + Mục tiêu Năng lực số: "Tìm kiếm, đánh giá độ tin cậy và tổng hợp các nguồn tài liệu số về lịch sử, văn học phục vụ cho việc đọc hiểu và viết bài văn nghị luận. (1.2.TC2a); Sử dụng các công cụ số như phần mềm trình chiếu, soạn thảo văn bản và các nền tảng tương tác trực tuyến để hợp tác nhóm, chia sẻ kết quả học tập. (2.4.TC2a)"
-     + Thiết bị & Học liệu số (Mục II): "GV: Hệ thống học liệu số bao gồm video tư liệu lịch sử trên Youtube, các phiếu học tập số được lưu trữ và chia sẻ trên Google Drive. (1.3.TC2a) | HS: Thiết bị công nghệ cá nhân như máy tính hoặc điện thoại thông minh có kết nối Internet để tra cứu tư liệu và thực hiện các nhiệm vụ học tập số. (5.2.TC2a)"
-     + Mở đầu / Khởi động (Hoạt động 1): Cho HS xem/truy cập video tư liệu lịch sử/văn học trên nền tảng Youtube hoặc nhận link qua Zalo/lớp. (1.1.TC2a) (2.1.TC2a)
-     + Đọc - Tìm hiểu chung tác giả, tác phẩm (Hoạt động 2): BẮT BUỘC chèn vào CỘT BÊN TRÁI ('Tổ chức thực hiện'): HS sử dụng máy tính/điện thoại tra cứu thông tin trên các trang web chính thống (Viện Lịch sử, Cổng TTĐT Chính phủ, Bách khoa toàn thư uy tín) và đánh giá độ tin cậy của thông tin trước khi báo cáo. (1.2.TC2a)
-     + Vẽ Sơ đồ tư duy kiến thức (Hoạt động 2): GV hướng dẫn HS sử dụng công cụ Canva hoặc Mindmeister để vẽ sơ đồ tư duy thể hiện mối quan hệ giữa luận đề, luận điểm, lí lẽ và bằng chứng. (3.1.TC2a)
-     + Thảo luận nhóm trực tuyến (Hoạt động 2 / Phiếu học tập): GV gửi đường liên kết tài liệu Google Docs chứa Phiếu học tập số để các thành viên trong nhóm cùng truy cập, thảo luận trực tuyến và hoàn thành nội dung. (2.4.TC2a)
-     + Soạn thảo văn bản / Làm bài tập Viết (Hoạt động 3): HS thực hiện soạn thảo bài viết/đoạn văn trên máy tính bằng phần mềm MS Word/PowerPoint, áp dụng đúng quy chuẩn kỹ thuật (phông Times New Roman, cỡ 13-14, căn lề Justify, giãn dòng 1.15) và lưu tệp tin đúng cú pháp "HoTen_TenBai.docx" trong thư mục học tập cá nhân. (3.1.TC2a)
-     + Vận dụng / Đăng tải & Đánh giá chéo (Hoạt động 4): Đăng tải đoạn văn/bài viết lên Padlet chung của lớp, đọc và nhận xét, góp ý mang tính xây dựng theo quy tắc ứng xử văn minh trên không gian mạng. (2.5.TC2a) (3.2.TC2a)`;
+   - Đảm bảo toàn bộ giáo án sau tích hợp là MỘT VĂN BẢN KHINHKHÍT, THỐNG NHẤT từ Mục tiêu -> Thiết bị -> Hoạt động 1 -> Hoạt động 2 -> Hoạt động 3 -> Hoạt động 4.`;
 
     const userPrompt = `Môn học: ${subject}
 Cấp/Khối: ${grade}

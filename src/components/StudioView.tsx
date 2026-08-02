@@ -263,7 +263,7 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
         const now = new Date();
         const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         setAutoSaveTime(timeStr);
-        onSuccessToast('Đã phân tích & tích hợp NLS thành công bằng AI!');
+        onSuccessToast('Đã phân tích ngữ liệu KHBD gốc, tích hợp NLS & AI kèm dẫn chứng/chỉ dẫn cụ thể và lưu toàn bộ vào CSDL!');
       }, 300);
 
     } catch (err) {
@@ -289,7 +289,7 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
       const now = new Date();
       const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
       setAutoSaveTime(timeStr);
-      onSuccessToast('Đã tích hợp NLS và lưu thành công vào Kho giáo án!');
+      onSuccessToast('Đã phân tích KHBD gốc, tích hợp NLS & AI kèm dẫn chứng cụ thể và lưu toàn bộ vào CSDL!');
     }
   };
 
