@@ -173,9 +173,9 @@ export function injectNlsActivityGoals(htmlStr: string): string {
 
   // Match Mục tiêu: in Hoạt động 1
   result = result.replace(
-    /((?:HOẠT ĐỘNG 1|KHỞI ĐỘNG|MỞ ĐẦU)[\s\S]{0,120}?<b>Mục tiêu:<\/b>|<b>Mục tiêu:<\/b>(?=[\s\S]{0,150}?(?:khởi động|mở đầu)))/gi,
+    /((?:HOẠT ĐỘNG 1|KHỞI ĐỘNG|MỞ ĐẦU)[\s\S]{0,300}?(?:<b>|<strong>)?\s*Mục tiêu\s*:?\s*(?:<\/b>|<\/strong>)?)/gi,
     (match) => {
-      if (!match.includes('border-red-500') && !match.includes('[NLS 1.1-a')) {
+      if (!match.includes('border-red-500') && !match.includes('NLS 1.1-a')) {
         return `${match}<br/>${act1Badge}`;
       }
       return match;
@@ -184,9 +184,9 @@ export function injectNlsActivityGoals(htmlStr: string): string {
 
   // Match Mục tiêu: in Hoạt động 2
   result = result.replace(
-    /((?:HOẠT ĐỘNG 2|HÌNH THÀNH KIẾN THỨC)[\s\S]{0,120}?<b>Mục tiêu:<\/b>|<b>Mục tiêu:<\/b>(?=[\s\S]{0,150}?hình thành kiến thức))/gi,
+    /((?:HOẠT ĐỘNG 2|HÌNH THÀNH KIẾN THỨC)[\s\S]{0,300}?(?:<b>|<strong>)?\s*Mục tiêu\s*:?\s*(?:<\/b>|<\/strong>)?)/gi,
     (match) => {
-      if (!match.includes('border-red-500') && !match.includes('[NLS 3.1-a')) {
+      if (!match.includes('border-red-500') && !match.includes('NLS 3.1-a')) {
         return `${match}<br/>${act2Badge}`;
       }
       return match;
@@ -195,9 +195,9 @@ export function injectNlsActivityGoals(htmlStr: string): string {
 
   // Match Mục tiêu: in Hoạt động 3
   result = result.replace(
-    /((?:HOẠT ĐỘNG 3|LUYỆN TẬP)[\s\S]{0,120}?<b>Mục tiêu:<\/b>|<b>Mục tiêu:<\/b>(?=[\s\S]{0,150}?luyện tập))/gi,
+    /((?:HOẠT ĐỘNG 3|LUYỆN TẬP)[\s\S]{0,300}?(?:<b>|<strong>)?\s*Mục tiêu\s*:?\s*(?:<\/b>|<\/strong>)?)/gi,
     (match) => {
-      if (!match.includes('border-red-500') && !match.includes('[NLS 2.4-a')) {
+      if (!match.includes('border-red-500') && !match.includes('NLS 2.4-a')) {
         return `${match}<br/>${act3Badge}`;
       }
       return match;
@@ -206,9 +206,9 @@ export function injectNlsActivityGoals(htmlStr: string): string {
 
   // Match Mục tiêu: in Hoạt động 4
   result = result.replace(
-    /((?:HOẠT ĐỘNG 4|VẬN DỤNG)[\s\S]{0,120}?<b>Mục tiêu:<\/b>|<b>Mục tiêu:<\/b>(?=[\s\S]{0,150}?vận dụng))/gi,
+    /((?:HOẠT ĐỘNG 4|VẬN DỤNG)[\s\S]{0,300}?(?:<b>|<strong>)?\s*Mục tiêu\s*:?\s*(?:<\/b>|<\/strong>)?)/gi,
     (match) => {
-      if (!match.includes('border-red-500') && !match.includes('[NLS 5.3-a')) {
+      if (!match.includes('border-red-500') && !match.includes('NLS 5.3-a')) {
         return `${match}<br/>${act4Badge}`;
       }
       return match;
@@ -216,16 +216,16 @@ export function injectNlsActivityGoals(htmlStr: string): string {
   );
 
   // Fallback: If "Mục tiêu:" exists under an activity title but hasn't received a badge, inject appropriate badge
-  result = result.replace(/<b>Mục tiêu:<\/b>(?!\s*<br\/>\s*<div[^>]*border-red-500)/gi, (match, offset, string) => {
-    const beforeStr = string.slice(Math.max(0, offset - 200), offset);
-    if (/hoạt động 1|khởi động|mở đầu/i.test(beforeStr)) {
-      return `<b>Mục tiêu:</b><br/>${act1Badge}`;
-    } else if (/hoạt động 2|hình thành kiến thức/i.test(beforeStr)) {
-      return `<b>Mục tiêu:</b><br/>${act2Badge}`;
-    } else if (/hoạt động 3|luyện tập/i.test(beforeStr)) {
-      return `<b>Mục tiêu:</b><br/>${act3Badge}`;
-    } else if (/hoạt động 4|vận dụng/i.test(beforeStr)) {
-      return `<b>Mục tiêu:</b><br/>${act4Badge}`;
+  result = result.replace(/(?:<b>|<strong>)?\s*Mục tiêu\s*:?\s*(?:<\/b>|<\/strong>)?(?!\s*<br\s*\/?>\s*<div[^>]*border-red-500)/gi, (match, offset, string) => {
+    const beforeStr = string.slice(Math.max(0, offset - 250), offset);
+    if (/hoạt động 1|khởi động|mở đầu/i.test(beforeStr) && !string.slice(offset, offset + 300).includes('NLS 1.1-a')) {
+      return `${match}<br/>${act1Badge}`;
+    } else if (/hoạt động 2|hình thành kiến thức/i.test(beforeStr) && !string.slice(offset, offset + 300).includes('NLS 3.1-a')) {
+      return `${match}<br/>${act2Badge}`;
+    } else if (/hoạt động 3|luyện tập/i.test(beforeStr) && !string.slice(offset, offset + 300).includes('NLS 2.4-a')) {
+      return `${match}<br/>${act3Badge}`;
+    } else if (/hoạt động 4|vận dụng/i.test(beforeStr) && !string.slice(offset, offset + 300).includes('NLS 5.3-a')) {
+      return `${match}<br/>${act4Badge}`;
     }
     return match;
   });
@@ -493,8 +493,16 @@ export function deduplicateNlsBadges(htmlStr: string): string {
  */
 export function isExamPeriod(textOrHtml: string): boolean {
   if (!textOrHtml) return false;
-  const examKeywordsRegex = /(kiểm\s+tra\s+(giữa|cuối)\s+kỳ|kiểm\s+tra\s+(giữa|cuối)\s+kì|đánh\s+giá\s+(giữa|cuối)\s+kỳ|đánh\s+giá\s+(giữa|cuối)\s+kì|kiểm\s+tra\s+định\s+kỳ|bài\s+kiểm\s+tra|tiết\s+kiểm\s+tra|đề\s+kiểm\s+tra)/i;
-  return examKeywordsRegex.test(textOrHtml);
+
+  // Regular lesson plans with activity structures are NOT exam periods
+  if (/hoạt động 1|hoạt động 2|hoạt động 3|hoạt động 4|khởi động|mở đầu|hình thành kiến thức|luyện tập|vận dụng/i.test(textOrHtml)) {
+    return false;
+  }
+
+  // Examine the header / title portion (first ~800 characters) for formal assessment titles
+  const header = textOrHtml.slice(0, 800);
+  const formalExamRegex = /(?:bài|tiết|đề)\s+kiểm\s+tra\s+(?:giữa|cuối)\s+(?:học\s+)?k[ỳì]|kiểm\s+tra\s+(?:giữa|cuối)\s+(?:học\s+)?k[ỳì]|đánh\s+giá\s+(?:giữa|cuối)\s+(?:học\s+)?k[ỳì]|kiểm\s+tra\s+định\s+k[ỳì]/i;
+  return formalExamRegex.test(header);
 }
 
 /**
@@ -573,33 +581,33 @@ export function autoInjectNlsTagsIntoHtml(
 
   // Inject into Hoạt động 1 if missing
   if (/hoạt động 1|mở đầu|khởi động/i.test(processed) && !processed.includes('NLS 1.1-a')) {
-    processed = processed.replace(/((?:<b>)?(?:HOẠT ĐỘNG 1|Khởi động|Mở đầu)[^<\n]*)/i, `$1<br/>${act1Badge}`);
+    processed = processed.replace(/((?:<p\b[^>]*>|<div\b[^>]*>|<td>)?\s*(?:<b>|<strong>)?\s*(?:HOẠT ĐỘNG 1|Khởi động|Mở đầu)[^<\n]*(?:<\/b>|<\/strong>)?(?:<\/p>|<\/div>|<\/td>)?)/i, `$1<br/>${act1Badge}`);
   }
 
   // Inject into Hoạt động 2 if missing
   if (/hoạt động 2|hình thành kiến thức/i.test(processed) && !processed.includes('NLS 3.1-a')) {
-    processed = processed.replace(/((?:<b>)?(?:HOẠT ĐỘNG 2|Hình thành kiến thức)[^<\n]*)/i, `$1<br/>${act2Badge}`);
+    processed = processed.replace(/((?:<p\b[^>]*>|<div\b[^>]*>|<td>)?\s*(?:<b>|<strong>)?\s*(?:HOẠT ĐỘNG 2|Hình thành kiến thức)[^<\n]*(?:<\/b>|<\/strong>)?(?:<\/p>|<\/div>|<\/td>)?)/i, `$1<br/>${act2Badge}`);
   }
 
   // Inject into Hoạt động 3 if missing
   if (/hoạt động 3|luyện tập/i.test(processed) && !processed.includes('NLS 4.1-a')) {
-    processed = processed.replace(/((?:<b>)?(?:HOẠT ĐỘNG 3|Luyện tập)[^<\n]*)/i, `$1<br/>${act3Badge}`);
+    processed = processed.replace(/((?:<p\b[^>]*>|<div\b[^>]*>|<td>)?\s*(?:<b>|<strong>)?\s*(?:HOẠT ĐỘNG 3|Luyện tập)[^<\n]*(?:<\/b>|<\/strong>)?(?:<\/p>|<\/div>|<\/td>)?)/i, `$1<br/>${act3Badge}`);
   }
 
   // Inject into Hoạt động 4 if missing
   if (/hoạt động 4|vận dụng/i.test(processed) && !processed.includes('NLS 5.3-a')) {
-    processed = processed.replace(/((?:<b>)?(?:HOẠT ĐỘNG 4|Vận dụng)[^<\n]*)/i, `$1<br/>${act4Badge}`);
+    processed = processed.replace(/((?:<p\b[^>]*>|<div\b[^>]*>|<td>)?\s*(?:<b>|<strong>)?\s*(?:HOẠT ĐỘNG 4|Vận dụng)[^<\n]*(?:<\/b>|<\/strong>)?(?:<\/p>|<\/div>|<\/td>)?)/i, `$1<br/>${act4Badge}`);
   }
 
   // Ensure Section I (Mục tiêu) has NLS & AI goals
-  if ((/MỤC TIÊU/i.test(processed) || /I\./i.test(processed)) && !processed.includes('NLS 1.1-a')) {
+  if ((/MỤC TIÊU/i.test(processed) || /I\./i.test(processed)) && !processed.includes('Năng lực Số & Trí tuệ nhân tạo (AI):')) {
     const nlsGoalsBlock = `<div class="my-2 p-2.5 bg-rose-50/20 border border-red-400 rounded-lg text-xs leading-relaxed"><span class="font-bold text-red-700 block uppercase mb-1">• Năng lực Số & Trí tuệ nhân tạo (AI):</span><div class="flex flex-wrap gap-1.5"><span class="font-mono font-bold text-red-600 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block">Tích hợp [NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số]</span> <span class="font-mono font-bold text-red-600 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block">Tích hợp [NLS 2.4-a: Hợp tác qua công nghệ số]</span> <span class="font-mono font-bold text-red-600 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block">Tích hợp [NLS 3.1-a: Phát triển & chỉnh sửa nội dung số]</span> <span class="font-mono font-bold text-indigo-950 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block">Tích hợp [AI-NLc: Giao tiếp với AI & Prompt Engineering]</span></div></div>`;
-    processed = processed.replace(/(I\.\s*MỤC TIÊU[^\n<]*|MỤC TIÊU BÀI HỌC[^\n<]*)/i, `$1\n${nlsGoalsBlock}`);
+    processed = processed.replace(/(?:<p\b[^>]*>|<div\b[^>]*>)?\s*(?:<b>|<strong>)?\s*(?:I\.\s*MỤC TIÊU|MỤC TIÊU BÀI HỌC|MỤC TIÊU\s*:?)[^<\n]*(?:<\/b>|<\/strong>)?(?:<\/p>|<\/div>)?/i, `$&\n${nlsGoalsBlock}`);
   }
 
   // Ensure Section II (Thiết bị & học liệu) mentions digital resources
   if (/THIẾT BỊ/i.test(processed) && !/học liệu số|máy tính|internet|canva|padlet/i.test(processed)) {
-    processed = processed.replace(/(II\.\s*THIẾT BỊ DẠY HỌC VÀ HỌC LIỆU[^\n<]*)/i, `$1\n<p class="pl-2 my-1 text-slate-700"><b>Học liệu số & Thiết bị:</b> Máy tính kết nối Internet, màn hình tương tác, hệ thống lưu trữ Google Drive, tài nguyên Padlet/Canva AI, trợ lý AI (Gemini/ChatGPT).</p>`);
+    processed = processed.replace(/(?:<p\b[^>]*>|<div\b[^>]*>)?\s*(?:<b>|<strong>)?\s*(?:II\.\s*THIẾT BỊ DẠY HỌC|THIẾT BỊ DẠY HỌC VÀ HỌC LIỆU)[^<\n]*(?:<\/b>|<\/strong>)?(?:<\/p>|<\/div>)?/i, `$&\n<p class="pl-2 my-1 text-slate-700"><b>Học liệu số & Thiết bị:</b> Máy tính kết nối Internet, màn hình tương tác, hệ thống lưu trữ Google Drive, tài nguyên Padlet/Canva AI, trợ lý AI (Gemini/ChatGPT).</p>`);
   }
 
   // Ensure Part 4 has NLS block
