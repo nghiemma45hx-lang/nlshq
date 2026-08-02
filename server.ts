@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 import mammoth from 'mammoth';
 import { marked } from 'marked';
 import { supabase, supabaseAdmin } from './src/lib/supabase.js';
-import { relocateNlsToLeftColumn } from './src/utils/lessonPlanUtils.js';
+import { relocateNlsToLeftColumn, autoInjectNlsTagsIntoHtml } from './src/utils/lessonPlanUtils.js';
 import { buildDynamicLocalWorksheet } from './src/utils/worksheetUtils.js';
 
 dotenv.config();
@@ -1508,24 +1508,41 @@ ${lessonText}
     let source = 'gemini-3.6-flash';
 
     if (ai) {
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.6-flash',
-        contents: userPrompt,
-        config: {
-          systemInstruction: systemPrompt,
-          temperature: 0.4,
-        },
-      });
+      try {
+        const response = await ai.models.generateContent({
+          model: 'gemini-3.6-flash',
+          contents: userPrompt,
+          config: {
+            systemInstruction: systemPrompt,
+            temperature: 0.4,
+          },
+        });
 
-      resultHtml = response.text || '';
-      // Clean up any unwanted Legal Basis banner if outputted
-      resultHtml = resultHtml.replace(/<div[^>]*class="[^"]*bg-rose-50[^"]*"[\s\S]*?CĂN CỨ PHÁP LÝ[\s\S]*?<\/div>/gi, '');
-      resultHtml = resultHtml.replace(/<div[^>]*>[\s\S]*?CĂN CỨ PHÁP LÝ TÍCH HỢP[\s\S]*?<\/div>/gi, '');
-      
-      // Ensure all NLS integration blocks are strictly in the left column (Tổ chức thực hiện)
-      resultHtml = relocateNlsToLeftColumn(resultHtml);
+        resultHtml = response.text || '';
+        // Clean markdown code fence blocks if outputted by Gemini
+        resultHtml = resultHtml
+          .replace(/^```[a-z]*\s*/i, '')
+          .replace(/\s*```$/i, '')
+          .trim();
+
+        // Clean up any unwanted Legal Basis banner if outputted
+        resultHtml = resultHtml.replace(/<div[^>]*class="[^"]*bg-rose-50[^"]*"[\s\S]*?CĂN CỨ PHÁP LÝ[\s\S]*?<\/div>/gi, '');
+        resultHtml = resultHtml.replace(/<div[^>]*>[\s\S]*?CĂN CỨ PHÁP LÝ TÍCH HỢP[\s\S]*?<\/div>/gi, '');
+        
+        // Ensure all NLS integration blocks are strictly in the left column and complete
+        resultHtml = autoInjectNlsTagsIntoHtml(resultHtml, subject, grade, framework);
+      } catch (err) {
+        console.warn('Gemini API call warning, falling back to local engine:', err);
+        source = 'local-engine';
+        resultHtml = autoInjectNlsTagsIntoHtml(lessonText, subject, grade, framework);
+      }
     } else {
       source = 'local-engine';
+      resultHtml = autoInjectNlsTagsIntoHtml(lessonText, subject, grade, framework);
+    }
+
+    if (!resultHtml) {
+      resultHtml = autoInjectNlsTagsIntoHtml(lessonText, subject, grade, framework);
     }
 
     const duration = Date.now() - startTime;

@@ -540,6 +540,81 @@ export function stripNlsFromInternalTables(htmlStr: string): string {
 }
 
 /**
+ * Automatically inject complete NLS and AI tags, goals, digital tools, and activity badges
+ * into any lesson plan HTML document (from Word upload or sample text).
+ */
+export function autoInjectNlsTagsIntoHtml(
+  htmlStr: string,
+  subject: string = 'Ngữ văn',
+  grade: string = 'Khối THCS',
+  framework: string = 'TT 02/2025/TT-BGDĐT'
+): string {
+  if (!htmlStr) return htmlStr;
+
+  // 1. Check if exam period
+  if (isExamPeriod(htmlStr)) {
+    return processExamPeriodHtml(htmlStr);
+  }
+
+  // Clean markdown code blocks if present
+  let cleanHtml = htmlStr
+    .replace(/^```[a-z]*\s*/i, '')
+    .replace(/\s*```$/i, '')
+    .trim();
+
+  // 2. Run standard relocation & basic injection
+  let processed = relocateNlsToLeftColumn(cleanHtml);
+
+  // 3. Activity Red Badges
+  const act1Badge = `<div class="my-1.5 inline-flex flex-wrap items-center gap-2 border border-red-500 rounded px-2.5 py-1 text-xs font-mono font-bold bg-rose-50/20"><span class="text-red-600 font-bold">Tích hợp [NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số]</span> <span class="text-red-600 font-bold">Tích hợp [NLS 2.4-a: Hợp tác qua công nghệ số]</span> <span class="text-red-600 font-bold">Tích hợp [NLS 1.3-a: Quản lý & lưu trữ dữ liệu số]</span></div>`;
+  const act2Badge = `<div class="my-1.5 inline-flex flex-wrap items-center gap-2 border border-red-500 rounded px-2.5 py-1 text-xs font-mono font-bold bg-rose-50/20"><span class="text-red-600 font-bold">Tích hợp [NLS 3.1-a: Phát triển & chỉnh sửa nội dung số]</span> <span class="text-indigo-950 font-bold">Tích hợp [AI-NLc: Giao tiếp với AI & Prompt Engineering]</span> <span class="text-red-600 font-bold">Tích hợp [NLS 1.2-a: Đánh giá dữ liệu & thông tin số]</span></div>`;
+  const act3Badge = `<div class="my-1.5 inline-flex flex-wrap items-center gap-2 border border-red-500 rounded px-2.5 py-1 text-xs font-mono font-bold bg-rose-50/20"><span class="text-red-600 font-bold">Tích hợp [NLS 2.4-a: Hợp tác qua công nghệ số]</span> <span class="text-red-600 font-bold">Tích hợp [NLS 3.1-a: Phát triển & chỉnh sửa nội dung số]</span> <span class="text-red-600 font-bold">Tích hợp [NLS 4.1-a: Bảo vệ thiết bị & môi trường số]</span></div>`;
+  const act4Badge = `<div class="my-1.5 inline-flex flex-wrap items-center gap-2 border border-red-500 rounded px-2.5 py-1 text-xs font-mono font-bold bg-rose-50/20"><span class="text-red-600 font-bold">Tích hợp [NLS 5.3-a: Sử dụng sáng tạo công nghệ số & AI]</span> <span class="text-red-600 font-bold">Tích hợp [NLS 3.2-a: Chia sẻ nội dung & dữ liệu số]</span> <span class="text-red-600 font-bold">Tích hợp [NLS 1.3-a: Quản lý & lưu trữ dữ liệu số]</span></div>`;
+
+  // Inject into Hoạt động 1 if missing
+  if (/hoạt động 1|mở đầu|khởi động/i.test(processed) && !processed.includes('NLS 1.1-a')) {
+    processed = processed.replace(/((?:<b>)?(?:HOẠT ĐỘNG 1|Khởi động|Mở đầu)[^<\n]*)/i, `$1<br/>${act1Badge}`);
+  }
+
+  // Inject into Hoạt động 2 if missing
+  if (/hoạt động 2|hình thành kiến thức/i.test(processed) && !processed.includes('NLS 3.1-a')) {
+    processed = processed.replace(/((?:<b>)?(?:HOẠT ĐỘNG 2|Hình thành kiến thức)[^<\n]*)/i, `$1<br/>${act2Badge}`);
+  }
+
+  // Inject into Hoạt động 3 if missing
+  if (/hoạt động 3|luyện tập/i.test(processed) && !processed.includes('NLS 4.1-a')) {
+    processed = processed.replace(/((?:<b>)?(?:HOẠT ĐỘNG 3|Luyện tập)[^<\n]*)/i, `$1<br/>${act3Badge}`);
+  }
+
+  // Inject into Hoạt động 4 if missing
+  if (/hoạt động 4|vận dụng/i.test(processed) && !processed.includes('NLS 5.3-a')) {
+    processed = processed.replace(/((?:<b>)?(?:HOẠT ĐỘNG 4|Vận dụng)[^<\n]*)/i, `$1<br/>${act4Badge}`);
+  }
+
+  // Ensure Section I (Mục tiêu) has NLS & AI goals
+  if ((/MỤC TIÊU/i.test(processed) || /I\./i.test(processed)) && !processed.includes('NLS 1.1-a')) {
+    const nlsGoalsBlock = `<div class="my-2 p-2.5 bg-rose-50/20 border border-red-400 rounded-lg text-xs leading-relaxed"><span class="font-bold text-red-700 block uppercase mb-1">• Năng lực Số & Trí tuệ nhân tạo (AI):</span><div class="flex flex-wrap gap-1.5"><span class="font-mono font-bold text-red-600 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block">Tích hợp [NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số]</span> <span class="font-mono font-bold text-red-600 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block">Tích hợp [NLS 2.4-a: Hợp tác qua công nghệ số]</span> <span class="font-mono font-bold text-red-600 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block">Tích hợp [NLS 3.1-a: Phát triển & chỉnh sửa nội dung số]</span> <span class="font-mono font-bold text-indigo-950 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block">Tích hợp [AI-NLc: Giao tiếp với AI & Prompt Engineering]</span></div></div>`;
+    processed = processed.replace(/(I\.\s*MỤC TIÊU[^\n<]*|MỤC TIÊU BÀI HỌC[^\n<]*)/i, `$1\n${nlsGoalsBlock}`);
+  }
+
+  // Ensure Section II (Thiết bị & học liệu) mentions digital resources
+  if (/THIẾT BỊ/i.test(processed) && !/học liệu số|máy tính|internet|canva|padlet/i.test(processed)) {
+    processed = processed.replace(/(II\.\s*THIẾT BỊ DẠY HỌC VÀ HỌC LIỆU[^\n<]*)/i, `$1\n<p class="pl-2 my-1 text-slate-700"><b>Học liệu số & Thiết bị:</b> Máy tính kết nối Internet, màn hình tương tác, hệ thống lưu trữ Google Drive, tài nguyên Padlet/Canva AI, trợ lý AI (Gemini/ChatGPT).</p>`);
+  }
+
+  // Ensure Part 4 has NLS block
+  processed = formatPart4NlsBottom(processed);
+
+  // Final passes: prefix, title expansion, deduplication, style cleaning
+  processed = ensureTichHopPrefix(processed);
+  processed = expandNlsTagTitles(processed);
+  processed = deduplicateNlsBadges(processed);
+  processed = stripNlsBackgrounds(processed);
+
+  return processed;
+}
+
+/**
  * Utility to process and re-align Lesson Plan HTML.
  * Moves NLS tags from Right Column to Left Column if needed,
  * filters exam periods, injects NLS tags into group task questions, etc.

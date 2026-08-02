@@ -20,7 +20,12 @@ import {
 } from 'lucide-react';
 import mammoth from 'mammoth';
 import { LessonPlanItem } from '../types';
-import { relocateNlsToLeftColumn, extractLessonTitle, expandNlsTagTitles } from '../utils/lessonPlanUtils';
+import {
+  relocateNlsToLeftColumn,
+  extractLessonTitle,
+  expandNlsTagTitles,
+  autoInjectNlsTagsIntoHtml,
+} from '../utils/lessonPlanUtils';
 
 interface StudioViewProps {
   onSaveLesson: (lesson: Partial<LessonPlanItem> & Omit<LessonPlanItem, 'createdAt' | 'dateString'>) => void;
@@ -211,12 +216,12 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
     }, 250);
 
     try {
-      // Call backend Gemini AI endpoint
+      // Call backend Gemini AI endpoint with originalHtml
       const res = await fetch('/api/gemini/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          lessonText: originalHtml.replace(/<[^>]+>/g, '\n'),
+          lessonText: originalHtml,
           subject,
           grade,
           framework,
@@ -231,10 +236,10 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
 
       let finalIntegrated = '';
       if (data.success && data.integratedHtml) {
-        finalIntegrated = relocateNlsToLeftColumn(data.integratedHtml);
+        finalIntegrated = autoInjectNlsTagsIntoHtml(data.integratedHtml, subject, grade, framework);
       } else {
         // Fallback generator if offline/no key
-        finalIntegrated = relocateNlsToLeftColumn(generateFallbackIntegrated(originalHtml, subject, framework));
+        finalIntegrated = autoInjectNlsTagsIntoHtml(originalHtml, subject, grade, framework);
       }
 
       setTimeout(() => {
@@ -319,113 +324,7 @@ export const StudioView: React.FC<StudioViewProps> = ({ onSaveLesson, onSuccessT
 
   // Fallback intelligent HTML NLS injector
   const generateFallbackIntegrated = (inputHtml: string, sub: string, fw: string) => {
-    // Check if the lesson plan is explicitly a formal exam period (Kiểm tra thường xuyên, giữa kỳ I/II, cuối kỳ I/II)
-    const checkIsFormalExamPeriod = (text: string) => {
-      const cleanHead = text.slice(0, 800).toLowerCase();
-      const formalExamKeywords = [
-        'kiểm tra thường xuyên',
-        'kiểm tra giữa học kỳ',
-        'kiểm tra giữa kỳ',
-        'kiểm tra cuối học kỳ',
-        'kiểm tra cuối kỳ',
-        'đề kiểm tra giữa học kỳ',
-        'đề kiểm tra cuối học kỳ',
-        'bài kiểm tra giữa học kỳ',
-        'bài kiểm tra cuối học kỳ',
-        'tiết kiểm tra giữa học kỳ',
-        'tiết kiểm tra cuối học kỳ',
-        'tiết kiểm tra thường xuyên'
-      ];
-      return formalExamKeywords.some(kw => cleanHead.includes(kw));
-    };
-
-    const isExamPeriod = checkIsFormalExamPeriod(inputHtml);
-
-    if (isExamPeriod) {
-      return `
-        <div class="space-y-4 text-xs text-slate-800 leading-relaxed">
-          <div class="bg-amber-50 border-l-4 border-amber-500 p-3.5 rounded-r-lg shadow-xs">
-            <span class="font-bold text-amber-900 block text-xs uppercase mb-1">
-              TIẾT KIỂM TRA / ĐÁNH GIÁ ĐỊNH KỲ (ĐỘC LẬP)
-            </span>
-            <p class="text-amber-800">
-              Giáo án này thuộc <b>Tiết kiểm tra (Kiểm tra thường xuyên / Giữa học kỳ / Cuối học kỳ)</b>. Theo quy định, giữ nguyên hình thức kiểm tra đánh giá độc lập của học sinh, không thực hiện tích hợp Năng lực số & AI.
-            </p>
-          </div>
-
-          <div class="border-t border-slate-200 pt-3">
-            <div class="font-bold text-slate-800 uppercase mb-2">NỘI DUNG GIÁO ÁN GỐC:</div>
-            <div class="bg-white p-3.5 rounded-lg border border-slate-200 leading-relaxed">
-              ${inputHtml}
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    return relocateNlsToLeftColumn(`
-      <div class="space-y-4 text-xs text-slate-800 leading-relaxed font-sans">
-        <div class="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-          <div class="border-b border-slate-200 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div>
-              <h2 class="text-sm font-extrabold text-indigo-950 uppercase tracking-wide">
-                KẾ HOẠCH BÀI DẠY (TÍCH HỢP NĂNG LỰC SỐ & AI)
-              </h2>
-              <p class="text-[11px] font-semibold text-slate-500 mt-0.5">
-                Môn: ${sub} (${grade}) | Tích hợp chuẩn TT 02/2025/TT-BGDĐT & QĐ 3439/QĐ-BGDĐT
-              </p>
-            </div>
-            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 w-fit">
-              ✓ Đã tích hợp NLS trực tiếp
-            </span>
-          </div>
-
-          <!-- Direct Integrated Content Area -->
-          <div class="lesson-content space-y-4 leading-relaxed text-slate-800">
-            ${(() => {
-              let modified = inputHtml;
-
-              // Process lesson plan HTML directly
-              const processedHtml = relocateNlsToLeftColumn(modified);
-
-              // Check if inputHtml already has 4 activities or structured layout
-              const hasAct1 = /hoạt động 1|khởi động|mở đầu/i.test(modified);
-              const hasAct2 = /hoạt động 2|hình thành kiến thức/i.test(modified);
-              const hasAct3 = /hoạt động 3|luyện tập/i.test(modified);
-              const hasAct4 = /hoạt động 4|vận dụng/i.test(modified);
-
-              if (hasAct1 || hasAct2 || hasAct3 || hasAct4) {
-                return processedHtml;
-              }
-
-              // Fallback view for unstructured content: Goals section + Processed Content
-              return expandNlsTagTitles(`
-                <div>
-                  <div class="mb-4 p-3 border border-slate-200 rounded-lg">
-                    <h3 class="font-bold text-slate-900 text-xs border-l-3 border-indigo-600 pl-2 uppercase">I. MỤC TIÊU BÀI HỌC (TÍCH HỢP NLS & AI)</h3>
-                    <ul class="list-disc pl-5 mt-2 space-y-1 text-slate-700 text-sm">
-                      <li><b>Kiến thức:</b> Đảm bảo chuẩn môn ${sub} (${grade}).</li>
-                      <li><b>Năng lực Số:</b> <span class="font-mono font-bold text-slate-900 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block mr-1">[NLS 1.1-a: Duyệt, tìm kiếm & lọc dữ liệu số]</span>, <span class="font-mono font-bold text-slate-900 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block mr-1">[NLS 2.4-a: Hợp tác qua công nghệ số]</span>.</li>
-                      <li><b>Năng lực AI:</b> <span class="font-mono font-bold text-slate-900 border border-slate-300 px-1.5 py-0.5 rounded text-[11px] inline-block mr-1">[AI-NLc: Giao tiếp với AI & Prompt Engineering]</span>.</li>
-                    </ul>
-                  </div>
-
-                  <div class="mb-4 p-3 border border-slate-200 rounded-lg">
-                    <h3 class="font-bold text-slate-900 text-xs border-l-3 border-indigo-600 pl-2 uppercase">II. THIẾT BỊ DẠY HỌC VÀ HỌC LIỆU SỐ</h3>
-                    <p class="pl-3 mt-1 text-slate-700 text-sm">Máy tính, màn hình tương tác, Quizizz AI, GeoGebra, Padlet, Canva AI, ChatGPT / Gemini.</p>
-                  </div>
-
-                  <div>
-                    <h3 class="font-bold text-slate-900 text-xs border-l-3 border-indigo-600 pl-2 uppercase mb-2">III. TIẾN TRÌNH DẠY HỌC</h3>
-                    <div class="text-slate-700 leading-relaxed">${processedHtml}</div>
-                  </div>
-                </div>
-              `);
-            })()}
-          </div>
-        </div>
-      </div>
-    `);
+    return autoInjectNlsTagsIntoHtml(inputHtml, sub, grade, fw);
   };
 
   // Export to Word document (.doc / .docx)
